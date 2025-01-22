@@ -41,10 +41,10 @@ class QuadplaneDynamics:
         forces_moments = self._forces_moments(delta)
         # Integrate ODE using Runge-Kutta RK4 algorithm
         time_step = self._ts
-        k1 = self._f(self._state, forces_moments, delta)
-        k2 = self._f(self._state + time_step/2.*k1, forces_moments, delta)
-        k3 = self._f(self._state + time_step/2.*k2, forces_moments, delta)
-        k4 = self._f(self._state + time_step*k3, forces_moments, delta)
+        k1 = self._f(self._state, forces_moments)
+        k2 = self._f(self._state + time_step/2.*k1, forces_moments)
+        k3 = self._f(self._state + time_step/2.*k2, forces_moments)
+        k4 = self._f(self._state + time_step*k3, forces_moments)
         self._state += time_step/6 * (k1 + 2*k2 + 2*k3 + k4)
         # update the airspeed and angle of attack using new state
         self._update_velocity_data(wind)
@@ -54,9 +54,9 @@ class QuadplaneDynamics:
     ###################################
     # private functions
     def _f(self, 
-                     state: np.ndarray, 
-                     forces_moments: np.ndarray, 
-                     delta: MsgDelta):
+            state: np.ndarray, 
+            forces_moments: np.ndarray 
+            ):
         '''
             Implements equations of motion xdot = f(x, u)
         '''
@@ -70,7 +70,7 @@ class QuadplaneDynamics:
         R = np.array([[np.cos(theta), -np.sin(theta)],
                       [np.sin(theta), np.cos(theta)]]) 
         q = state.item(5)
-        #   extract forces/moments
+        #   extract forces/moments in body frame
         fx = forces_moments.item(0)
         fz = forces_moments.item(1)
         My = forces_moments.item(2)
@@ -164,9 +164,9 @@ class QuadplaneDynamics:
         # compute velocity in the body frame
         v_b = R.T @ v_w
         # compute airspeed through each propeller
-        V_f = -v_b.item(1)
-        V_r = -v_b.item(1)
-        V_t = v_b.item(0)
+        V_f = v_b.item(1)
+        V_r = v_b.item(1)
+        V_t = -v_b.item(0)
         # compute forces and torques from each propeller
         T_f, Q_f = self._motor_thrust_torque(V_f, delta.throttle_front)
         T_r, Q_r = self._motor_thrust_torque(V_r, delta.throttle_rear)

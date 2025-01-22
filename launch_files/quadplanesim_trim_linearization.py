@@ -10,56 +10,34 @@ import os, sys
 from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
 import numpy as np
+np.errstate(overflow="ignore")
+from copy import deepcopy
 import parameters.simulation_parameters as SIM
 from models.quadplane_dynamics import QuadplaneDynamics
-#from tools.trim import compute_trim, compute_ss_model, print_ss_model
+from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from viewers.view_manager import ViewManager
-from message_types.msg_delta import MsgDelta
+#from message_types.msg_delta import MsgDelta
 
 # initialize elements of the architecture
 quadplane = QuadplaneDynamics(SIM.ts_simulation)
 viewers = ViewManager(animation=True, data=True)
+#viewers = ViewManager(animation=True)
 
 # # compute trim and state space models at zeros airspeed (hover)
 # Va = 0.
-# gamma = np.radians(0)
-# motor_angles0 = np.radians(90)
-# trim_state, trim_delta = compute_trim(vtol, Va, gamma, motor0=motor_angles0)
-# vtol._state = trim_state  # set the initial state of the vtol to the trim state
+# trim_state, trim_delta = compute_trim(quadplane, Va)
+# quadplane._state = trim_state  # set the initial state of the vtol to the trim state
 # delta = trim_delta  # set input to constant constant trim input
-# A, B = compute_ss_model(vtol, trim_state, trim_delta)
-# print_ss_model('ss_model_Va_0.py', A, B, Va, gamma, trim_state, trim_delta)
+# A, B = compute_ss_model(quadplane, trim_state, trim_delta)
+# print_ss_model('ss_model_Va_0.py', A, B, Va, trim_state, trim_delta)
 
-# # compute trim and state space models at Va=5
-# Va = 5.
-# gamma = np.radians(0)
-# motor_angles0 = np.radians(70)
-# trim_state, trim_delta = compute_trim(vtol, Va, gamma, motor0=motor_angles0)
-# vtol._state = trim_state  # set the initial state of the vtol to the trim state
-# delta = trim_delta  # set input to constant constant trim input
-# A, B = compute_ss_model(vtol, trim_state, trim_delta)
-# print_ss_model('ss_model_Va_5.py', A, B, Va, gamma, trim_state, trim_delta)
-
-# # compute trim and state space models at Va=10
-# Va = 10.
-# gamma = np.radians(0)
-# motor_angles0 = np.radians(30)
-# trim_state, trim_delta = compute_trim(vtol, Va, gamma, motor0=motor_angles0)
-# vtol._state = trim_state  # set the initial state of the vtol to the trim state
-# delta = trim_delta  # set input to constant constant trim input
-# A, B = compute_ss_model(vtol, trim_state, trim_delta)
-# print_ss_model('ss_model_Va_10.py', A, B, Va, gamma, trim_state, trim_delta)
-
-# # compute trim and state space models at Va=15 (level)
-# Va = 15.
-# gamma = np.radians(0)
-# motor_angles0 = np.radians(0)
-# trim_state, trim_delta = compute_trim(vtol, Va, gamma, motor0=motor_angles0)
-# vtol._state = trim_state  # set the initial state of the vtol to the trim state
-# delta = trim_delta  # set input to constant constant trim input
-# A, B = compute_ss_model(vtol, trim_state, trim_delta)
-# print_ss_model('ss_model_Va_15.py', A, B, Va, gamma, trim_state, trim_delta)
-
+# compute trim and state space models at zeros airspeed (hover)
+Va = 20.
+trim_state, trim_delta = compute_trim(quadplane, Va)
+quadplane._state = trim_state  # set the initial state of the vtol to the trim state
+delta = trim_delta  # set input to constant constant trim input
+A, B = compute_ss_model(quadplane, trim_state, trim_delta)
+print_ss_model('ss_model_Va_20.py', A, B, Va, trim_state, trim_delta)
 
 # initialize the simulation time
 sim_time = SIM.start_time
@@ -69,7 +47,7 @@ print("Press Command-Q to exit...")
 while sim_time < SIM.end_time:
     #-------update physical system-------------
     current_wind = np.zeros((4, 1))
-    delta = MsgDelta()
+    #delta = MsgDelta()
     quadplane.update(delta, current_wind)  
 
     #-------update viewers-------------

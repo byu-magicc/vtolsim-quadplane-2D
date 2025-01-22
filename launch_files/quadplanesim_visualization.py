@@ -1,14 +1,13 @@
 """
-quadplanesim
+quadplanesim-visualization
         1/16/2025 - RWB
 """
 import os, sys
 # insert parent directory at beginning of python search path
 from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
-# import viewers and video writer
-import pyqtgraph as pg
-from viewers.quadplane_viewer import QuadplaneViewer
+# import view manager
+from viewers.view_manager import ViewManager
 from tools.rotations import euler_to_rotation
 import parameters.simulation_parameters as SIM
 from message_types.msg_state import MsgState
@@ -17,10 +16,7 @@ from message_types.msg_state import MsgState
 state = MsgState()  # instantiate state message
 
 # initialize viewers and video
-plot_app = pg.QtWidgets.QApplication([])
-quadplane_view = QuadplaneViewer(
-    app=plot_app, dt=SIM.ts_simulation,
-    plot_period=SIM.ts_plot_refresh)
+viewers = ViewManager(animation=True)
 
 # initialize the simulation time
 sim_time = SIM.start_time
@@ -49,8 +45,15 @@ while sim_time < end_time:
         state.motor_angle[1,0] += 0.01*SIM.ts_simulation  # left motor
     state.R = euler_to_rotation(phi, theta, psi)
 
-    # -------update viewer and video-------------
-    quadplane_view.update(state)
+    #-------update viewers-------------
+    viewers.update(
+        sim_time,
+        state,  # true states
+        state,  # estimated states
+        state,  # commanded states
+        None,  # inputs to aircraft
+        None,  # measurements
+    )    
 
     # -------increment time-------------
     sim_time += SIM.ts_simulation

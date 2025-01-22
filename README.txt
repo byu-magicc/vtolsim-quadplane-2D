@@ -26,7 +26,7 @@ pip3 install Pillow
 python -m venv /User/beard/repositories/.venv
 
 # activite virtual environment using
-source /User/beard/repositories/.venv/activite
+source /User/beard/repositories/.venv/bin/activite
 
 # close environemnt
 deactivate

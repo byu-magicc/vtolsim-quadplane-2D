@@ -3,10 +3,7 @@
 import numpy as np
 import pyqtgraph.opengl as gl
 from tools.rotations import euler_to_rotation
-
-
 from message_types.msg_state import MsgState
-
 import pyqtgraph.opengl as gl
 
 
@@ -14,8 +11,6 @@ class DrawQuadplane():
 
     #defines the initialization function
     def __init__(self, state: MsgState, window: gl.GLViewWidget, scale=1.0):
-
-
         #saves the unit length
         self.unit_length = scale
         #gets the position of the vtol

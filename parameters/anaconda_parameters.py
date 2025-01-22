@@ -36,7 +36,7 @@ gravity = 9.81
 #sets the physical positions of the props. That is, where their bases are located.
 #in units of meters
 ell_f = 0.5
-ell_r = -0.5
+ell_r = 0.5
 
 #######################################################################################
 # Aerodynamic Coefficients
