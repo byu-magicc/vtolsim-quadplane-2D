@@ -18,9 +18,11 @@ class MsgTrajectory:
                  acceleration: np.ndarray=np.array([[0.], [0.]]),
                  pitch: float=0.,
                  pitch_rate: float=0.
+                 pitch_accel: float=0.
                  ):
         self.position = position
         self.velocity = velocity
         self.acceleration = acceleration
         self.pitch = pitch
         self.pitch_rate = pitch_rate
+        self.pitch_accel = pitch_accel
