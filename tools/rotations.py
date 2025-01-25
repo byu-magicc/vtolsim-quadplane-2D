@@ -3,6 +3,7 @@ various tools to be used in mavPySim
 """
 import numpy as np
 import scipy.linalg as linalg
+from numpy import pi
 
 def quaternion_to_euler(quaternion):
     """
@@ -63,6 +64,19 @@ def euler_to_rotation(phi, theta, psi):
     #               [-s_theta, s_phi*c_theta, c_phi*c_theta]])
 
     return R
+
+
+#creates the 2d euler to rotation
+def theta_to_rotation_2d(theta: float):
+    c_theta = np.cos(theta)
+    s_theta = np.sin(theta)
+    
+    R_pitch = np.array([[c_theta, s_theta],
+                        [-s_theta, c_theta]])
+
+    #returns the Rotation matrix
+    return R_pitch
+
 
 def quaternion_to_rotation(quaternion):
     """

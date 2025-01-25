@@ -3,7 +3,7 @@
 #uses unit quaternion for the attitude state
 import numpy as np
 import parameters.anaconda_parameters as QP
-from tools.rotations import rotation_to_euler, euler_to_rotation
+from tools.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d
 from tools.quaternions import *
 from message_types.msg_state import MsgState
 from message_types.msg_delta import MsgDelta
@@ -206,21 +206,29 @@ class QuadplaneDynamics:
 
     #function to update the true state
     def _update_true_state(self):
-        '''update the class structure for the true state '''
-        self.true_state.pos = np.array([[self._state.item(0)], [0.0], [self._state.item(1)]])
-        self.true_state.vel = np.array([[self._state.item(2)], [0.0], [self._state.item(3)]])
-        self.true_state.R = euler_to_rotation(0., self._state.item(4), 0.)
-        self.true_state.omega = np.array([[0.], [self._state.item(5)], [0.0]])
-        self.true_state.gyro_bias = np.array([
-            [0.],
-            [0.],
-            [0.]])  
+
+        #gets the components of the vector state
+        #gets the positions
+        pn = self._state.item(0)
+        pd = self._state.item(1)
+        #gets the body frame velocities
+        u = self._state.item(2)
+        w = self._state.item(3)
+        #gets the pitch
+        theta = self._state.item(4)
+        #gets the pitch rate
+        q = self._state.item(5)
+
+        #saves them all to the respective variables
+        self.true_state.pos = np.array([[pn], 
+                                        [pd]])
+        self.true_state.vel = np.array([[u], 
+                                        [w]])
+        self.true_state.R = theta_to_rotation_2d(theta=theta)
+        self.true_state.omega = np.array([[q]])
+
         self.true_state.Va = self._Va
         self.true_state.alpha = self._alpha
-        self.true_state.beta = 0.
-        self.true_state.Vg = self._Vg
-        self.true_state.chi = 0.
-        self.true_state.v_air = self.v_air
 
     def _set_internal_state(self, state: MsgState):
         roll, pitch, yaw = rotation_to_euler(state.R)

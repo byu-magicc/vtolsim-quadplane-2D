@@ -4,7 +4,7 @@
 """
 import numpy as np 
 from scipy.linalg import solve_continuous_are, inv
-from tools.rotations import rotation_to_euler, euler_to_rotation
+from tools.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d
 import parameters.anaconda_parameters as PARAM
 #from controllers.integrator import Integrator
 from message_types.msg_state import MsgState
@@ -52,8 +52,9 @@ class TrajectoryTracker:
 
     def update(self, 
                trajectory: MsgTrajectory, 
-               state: MsgState,
-               ):
+               state: MsgState):
+        
+
         roll, pitch, yaw = rotation_to_euler(state.R)
         q = state.omega.item(1)
         x_err = np.array([
@@ -64,7 +65,8 @@ class TrajectoryTracker:
             [pitch - trajectory.pitch],
             [q-trajectory.pitch_rate],
             ])       
-        R = np.array([[np.cos(pitch), -np.sin(pitch)], [np.sin(pitch), np.cos(pitch)]])
+        R = theta_to_rotation_2d(theta=pitch)
+        
         e_z = np.array([[0.], [1.]])
         F_des = PARAM.mass * R.T @ (trajectory.accel - PARAM.gravity * e_z - self.K_F @ x_err)
         M_des = PARAM.Jy * (trajectory.pitch_accel - self.K_M @ x_err)
