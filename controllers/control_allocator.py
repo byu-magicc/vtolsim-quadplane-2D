@@ -24,8 +24,7 @@ class ControlAllocator:
                wrench_des: np.ndarray, 
                state: MsgState,
                ):
-        
-        elevator0 = 0.
+        x0 = 0. # initial guess for elevator
         # define inequality constraints
         cons = ([
             {'type': 'ineq', #>0
@@ -33,30 +32,74 @@ class ControlAllocator:
                     np.radians(45)-x[0], # theta <= thetabar
                     x[0]+np.radians(45), # theta >= -thetabar
                     ]),
-                'jac': lambda x: np.array([
-                    [-1.],
-                    [1.],
-                    ])
+                # 'jac': lambda x: np.array([
+                #     [-1.],
+                #     [1.],
+                #     ])
             }
         ])
-        result = minimize(wrench_objective_fun, 
-                          elevator0, 
+        result = minimize(wrench_objective_fun1, 
+                          x0, 
                           method='SLSQP', 
                           args = (self.quadplane_model, wrench_des, state),
                           constraints=cons, 
                           options={'ftol': 1e-10, 'disp': True, 'maxiter': 1000})
         self.delta.elevator = result.x.item(0)
-
-        self.throttle_front = throttle_f
-        self.throttle_rear = throttle_r
-        self.throttle_thrust = throttle_t
+        x0 = np.array([
+            0.5, # initial guess for throttle_front
+            0.5, # initial guess for throttle_rear
+            0.5, # initial guess for throttle_thrust
+        ])
+        # define inequality constraints
+        cons = ([
+            {'type': 'ineq', #>0
+                'fun': lambda x: np.array([# elevator constraint
+                    x[0],
+                    x[1],
+                    x[2],
+                    1.-x[0],
+                    1.-x[1],
+                    1.-x[2],
+                    ]),
+                'jac': lambda x: np.array([
+                    [1., 0., 0.],
+                    [0., 1., 0.],
+                    [0., 0., 1.],
+                    [-1., 0., 0.],
+                    [0., -1., 0.],
+                    [0., 0., -1.],
+                    ])
+            }
+        ])
+        result = minimize(wrench_objective_fun2, 
+                          x0, 
+                          method='SLSQP', 
+                          args = (self.quadplane_model, wrench_des, 
+                                  state, self.delta.elevator),
+                          constraints=cons, 
+                          options={'ftol': 1e-10, 'disp': True, 'maxiter': 1000})
+        self.throttle_front = result.x.item(0)
+        self.throttle_rear = result.x.item(1)
+        self.throttle_thrust = result.x.item(2)
         return self.delta
 
-# objective function to be minimized
-def wrench_objective_fun(x, quadplane_model, wrench_des, state):
-    quadplane_model._state = state
+# objective functions to be minimized
+def wrench_objective_fun1(x, quadplane_model, wrench_des, state):
+    quadplane_model._set_internal_state(state)
     quadplane_model._update_velocity_data()
     delta = MsgDelta(elevator=x)
+    wrench_actual = quadplane_model._forces_moments(delta)
+    J = np.linalg.norm(wrench_des - wrench_actual)**2.0
+    return J
+
+def wrench_objective_fun2(x, quadplane_model, wrench_des, state, elevator):
+    quadplane_model._set_internal_state(state)
+    quadplane_model._update_velocity_data()
+    delta = MsgDelta(elevator=elevator, 
+                     throttle_front=x.item(0),
+                     throttle_rear=x.item(1),
+                     throttle_thrust=x.item(2),
+                     )
     wrench_actual = quadplane_model._forces_moments(delta)
     J = np.linalg.norm(wrench_des - wrench_actual)**2.0
     return J

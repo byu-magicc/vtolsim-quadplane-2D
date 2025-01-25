@@ -47,7 +47,7 @@ class TrajectoryTracker:
         P = solve_continuous_are(A, B, Q, R)
         K = inv(R) @ B.T @ P
         self.K_F = K[0:2,:]
-        self.K_M = K[2,:]
+        self.K_M = K[2:3,:]
         self.commanded_state = MsgState()
 
     def update(self, 
@@ -57,17 +57,17 @@ class TrajectoryTracker:
         roll, pitch, yaw = rotation_to_euler(state.R)
         q = state.omega.item(1)
         x_err = np.array([
-            [state.pos.item(0) - trajectory.position.item(0)],
-            [state.pos.item(2) - trajectory.position.item(1)],
-            [state.vel.item(0) - trajectory.velocity.item(0)],
-            [state.vel.item(2) - trajectory.velocity.item(1)],
+            [state.pos.item(0) - trajectory.pos.item(0)],
+            [state.pos.item(2) - trajectory.pos.item(1)],
+            [state.vel.item(0) - trajectory.vel.item(0)],
+            [state.vel.item(2) - trajectory.vel.item(1)],
             [pitch - trajectory.pitch],
             [q-trajectory.pitch_rate],
             ])       
         R = np.array([[np.cos(pitch), -np.sin(pitch)], [np.sin(pitch), np.cos(pitch)]])
-        e_z = np.array([[0.], [0.], [1.]])
-        F_des = PARAM.mass * R.T @ (trajectory.acceleration - PARAM.gravity * e_z - self.K_F @ x_err)
-        M_des = PARAM.J_y * (trajectory.pitch_accel - self.K_M @ x_err)
+        e_z = np.array([[0.], [1.]])
+        F_des = PARAM.mass * R.T @ (trajectory.accel - PARAM.gravity * e_z - self.K_F @ x_err)
+        M_des = PARAM.Jy * (trajectory.pitch_accel - self.K_M @ x_err)
         W_des = np.concatenate((F_des, M_des), axis=0)
         # construct control outputs and commanded states
         self.commanded_state.pos = np.array([[trajectory.pos.item(0)], 

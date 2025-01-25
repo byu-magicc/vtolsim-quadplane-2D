@@ -1,11 +1,9 @@
 #quadplane dynamics
 #-this file implements the dynamic equations of motion for the quad plane
 #uses unit quaternion for the attitude state
-
-
 import numpy as np
 import parameters.anaconda_parameters as QP
-from tools.rotations import quaternion_to_rotation, quaternion_to_euler, euler_to_rotation
+from tools.rotations import rotation_to_euler, euler_to_rotation
 from tools.quaternions import *
 from message_types.msg_state import MsgState
 from message_types.msg_delta import MsgDelta
@@ -13,12 +11,10 @@ from message_types.msg_delta import MsgDelta
 
 #creates the QuadplaneDynamics class
 class QuadplaneDynamics:
-
     #creates the initialization function
     #saves the timestep for simulation, as well as the 
     #bool to enable whether the quadrotors will be enabled or disabled in the dynamics
-    def __init__(self, ts: float,
-                 quadRotorsEnabled = True):
+    def __init__(self, ts: float):
         self._ts = ts
         #creates the state array and initializes them to the original positions
         self._state = np.array([
@@ -225,3 +221,14 @@ class QuadplaneDynamics:
         self.true_state.Vg = self._Vg
         self.true_state.chi = 0.
         self.true_state.v_air = self.v_air
+
+    def _set_internal_state(self, state: MsgState):
+        roll, pitch, yaw = rotation_to_euler(state.R)
+        self._state = np.array([
+            [state.pos.item(0)],    # [0]  north position
+            [state.pos.item(1)],    # [1]  down position
+            [state.vel.item(0)],     # [2]  velocity along body x-axis
+            [state.vel.item(1)],     # [3]  velocity along body z-axis
+            [pitch], # [4] initial pitch angle
+            [state.omega.item(1)],     # [5]  pitch rate
+        ])
