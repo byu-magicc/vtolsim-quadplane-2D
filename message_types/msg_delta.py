@@ -10,11 +10,17 @@ class MsgDelta:
             throttle_rear: throttle for rear rotor in [0, 1]
             throttle_thrust:  throttle for forward thruster in [0, 1]
     '''
-    def __init__(self):
-            self.elevator = np.radians(0.0)  
-            self.throttle_front = float(0.0)   
-            self.throttle_rear = float(0.0)  
-            self.throttle_thrust = float(0.0)  
+    def __init__(self,
+                 elevator: float=0.,  
+                 throttle_front: float=0.,  
+                 throttle_rear: float=0.,  
+                 throttle_thrust: float=0.,  
+
+                 ):
+            self.elevator = elevator  
+            self.throttle_front = throttle_front   
+            self.throttle_rear = throttle_rear 
+            self.throttle_thrust = throttle_thrust  
     
     def from_array(self, delta_array: np.ndarray):
         self.elevator =  delta_array.item(0)

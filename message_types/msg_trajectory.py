@@ -13,14 +13,16 @@ class MsgTrajectory:
         Trajectory message, defining the instanteous position, velocity, acceleration, and pitch angle and pitch rate
     '''
     def __init__(self, 
-                 position: np.ndarray=np.array([[0.], [0.]]),
-                 velocity: np.ndarray=np.array([[0.], [0.]]),
-                 acceleration: np.ndarray=np.array([[0.], [0.]]),
+                 pos: np.ndarray=np.array([[0.], [0.]]),
+                 vel: np.ndarray=np.array([[0.], [0.]]),
+                 accel: np.ndarray=np.array([[0.], [0.]]),
                  pitch: float=0.,
-                 pitch_rate: float=0.
+                 pitch_rate: float=0.,
+                 pitch_accel: float=0.,
                  ):
-        self.position = position
-        self.velocity = velocity
-        self.acceleration = acceleration
+        self.pos = pos
+        self.vel = vel
+        self.accel = accel
         self.pitch = pitch
         self.pitch_rate = pitch_rate
+        self.pitch_accel = pitch_accel
