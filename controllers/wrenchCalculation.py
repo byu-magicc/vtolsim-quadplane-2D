@@ -24,7 +24,10 @@ class wrenchCalculator:
 
         temp = 0
 
-        #gets th
+        #gets the forces and moments achieved
+        wrenchAchieved = self.forces_moments_achieved(delta=delta, state=state)
+
+
 
 
     #creates the function to get the actual force and torque acheived, WITHOUT gravity
@@ -112,8 +115,23 @@ class wrenchCalculator:
 
     #gets the wrench Jacobian
     def wrench_Jacobian(self, delta: MsgDelta, state: MsgState):
+        #gets the gamma variable
+        Gamma = (1/2)*QP.rho*((state.Va)**2)*QP.S_wing
+        #gets the alpha variable
+        alpha = state.alpha
 
+        #gets the alpha rotation matrix
+        alpha_rotation = alphaToRotation(alpha=alpha)
+
+        #gets the list and drag vector
         
+
+
+        #gets the rotor forces, moments, and their derivitives lists
+        rotorForces, rotorMoments, rotorForceDerivatives, rotorMomentDerivatives = \
+                            self.rotor_thrust_torque_derivatives(delta=delta, state=state)
+
+
 
 
 
@@ -147,3 +165,99 @@ class wrenchCalculator:
         Q_p = QP.rho * n**2 * np.power(D_prop, 5) * C_Q
         return T_p, Q_p   
     
+
+
+
+    #creates the function to get the rotor thrust torques and derivatives of thrust and torque.
+    #this function is structured so that it obtains the information for all three rotors, and 
+    #returns the information as a vector
+
+    def rotor_thrust_torque_derivatives(self, delta: MsgDelta, state: MsgState)->tuple[list, list, list, list]:
+        
+        #gets the airspeed vector
+        v_air = state.v_air
+
+        numProps = 3
+    
+
+        #gets the airspeed through the propellers
+        airmass_velocity_rotors = np.array([-v_air.item(1),
+                                            -v_air.item(1),
+                                            v_air.item(0)])
+
+
+        #creates the array for the three throttles
+        delta_throttles = np.array([delta.throttle_front,
+                                    delta.throttle_rear,
+                                    delta.throttle_thrust])
+        
+        #creates the list for the thrusts, torques, thrust_derivatives, and torque derivatives
+        thrusts = []
+        torques = []
+        thrust_derivatives = []
+        torque_derivatives = []
+        
+        #iterates through the three props
+        for i in range(numProps):
+            #saves the coefficients of aerodynamics for the propeller model
+            C_Q0 = QP.C_Q0
+            C_Q1 = QP.C_Q1
+            C_T0 = QP.C_T0
+            C_Q2 = QP.C_Q2
+            C_T1 = QP.C_T1
+            C_T2 = QP.C_T2
+
+            #sets the diameter of the propeller
+            D_prop = QP.D_prop
+            KQ = QP.KQ
+            R_motor = QP.R_motor
+            i0 = QP.i0
+
+            # map delta_t throttle command(0 to 1) into motor input voltage
+            V_in = QP.V_max * delta_throttles[i]
+            V_in_der = QP.V_max
+
+            # Quadratic formula to solve for motor speed
+            a = C_Q0 * QP.rho * np.power(D_prop, 5) \
+                / ((2.*np.pi)**2)
+            b = (C_Q1 * QP.rho * np.power(D_prop, 4)
+                / (2.*np.pi)) * airmass_velocity_rotors[i] + KQ**2/R_motor
+            c = C_Q2 * QP.rho * np.power(D_prop, 3) \
+                * (airmass_velocity_rotors[i])**2 - (KQ / R_motor) * V_in + KQ * i0
+            c_der = (KQ / R_motor) * V_in_der
+
+            # Consider only positive root
+            Omega_op = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
+            Omega_op_der = c_der / np.sqrt(b**2 - 4*a*c)
+
+            # compute advance ratio
+            J_op = 2 * np.pi * airmass_velocity_rotors[i] / (Omega_op * D_prop)
+            J_op_der = -2 * np.pi * airmass_velocity_rotors[i] * Omega_op_der / (Omega_op**2 * D_prop)
+
+            # compute non-dimensionalized coefficients of thrust and torque
+            C_T = C_T2 * J_op**2 + C_T1 * J_op + C_T0
+            C_Q = C_Q2 * J_op**2 + C_Q1 * J_op + C_Q0
+            C_T_der = 2 * C_T2 * J_op * J_op_der + C_T1 * J_op_der
+            C_Q_der = 2 * C_Q2 * J_op * J_op_der + C_Q1 * J_op_der
+
+            # add thrust and torque due to propeller
+            n = Omega_op / (2 * np.pi)
+            T_p = QP.rho * n**2 * np.power(D_prop, 4) * C_T
+            Q_p = QP.rho * n**2 * np.power(D_prop, 5) * C_Q
+            T_p_der = QP.rho * Omega_op * Omega_op_der * np.power(D_prop, 4) * C_T / (2 * np.pi**2) + \
+                QP.rho * Omega_op**2 * np.power(D_prop, 4) * C_T_der / (2 * np.pi)**2
+            Q_p_der = QP.rho * Omega_op * Omega_op_der * np.power(D_prop, 5) * C_Q / (2 * np.pi**2) + \
+                QP.rho * Omega_op**2 * np.power(D_prop, 5) * C_Q_der / (2 * np.pi)**2
+            
+            #changes the direction
+            Q_p = (QP.propDirections)[i]*Q_p
+
+            #appends to the lists
+            thrusts.append(T_p)
+            torques.append(Q_p)
+            thrust_derivatives.append(T_p_der)
+            torque_derivatives.append(Q_p_der)
+
+        #returns the arrays
+        return thrusts, torques, thrust_derivatives, torque_derivatives
+            

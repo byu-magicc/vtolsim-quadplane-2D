@@ -85,3 +85,9 @@ C_Q0 = 0.005230
 C_T2 = -0.1079
 C_T1 = -0.06044
 C_T0 = 0.09357
+
+
+#creates the prop direction 
+propDirections = np.array([1.0, #front vertical prop
+                           -1.0, #rear vertical prop
+                           1.0]) #forward thrust prop
