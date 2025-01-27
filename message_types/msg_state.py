@@ -18,7 +18,8 @@ class MsgState:
                  vel: np.ndarray=np.array([[0.], [0.]]), #saves the body frame forward and down velocities
                  R: np.ndarray=np.identity(2), #saves the 2x2 Rotation matrix, which is made by theta
                  omega: np.ndarray=np.array([[0.]]), #saves the q_dot matrix
-                 Va: float=0., #saves the airspeed variable
+                 Va: float=0., #saves the airspeed magnitude variable
+                 v_air: np.ndarray=np.array([[0.0], [0.0]]), #saves the airspeed vector
                  alpha: float=0., #saves the angle of attack.
                  ):
             self.pos = pos  
@@ -27,6 +28,7 @@ class MsgState:
             self.omega = omega  
             self.Va = Va
             self.alpha = alpha
+            self.v_air = v_air
 
     def add_to_position(self, n=0, e=0, d=0):
         self.pos = self.pos + np.array([[n], [d]])

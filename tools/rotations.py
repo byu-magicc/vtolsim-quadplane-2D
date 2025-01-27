@@ -77,6 +77,13 @@ def theta_to_rotation_2d(theta: float):
     #returns the Rotation matrix
     return R_pitch
 
+#creates the 2d rotation matrix to theta euler angle
+def rotation_to_theta_2d(R: np.ndarray):
+    #gets the components of the Rotation matrix R
+    r12 = R[0,1]
+    r22 = R[1,1]
+    #gets the rotation angle theta in radians
+    theta = np.arctan2(r12,r22)
 
 def quaternion_to_rotation(quaternion):
     """
@@ -174,3 +181,10 @@ def hat(omega):
                           [-b, a, 0]])
     return omega_hat
 
+
+#creates the function to get the rotation matrix to 
+#transform from the wind frame to the body  frame
+def alphaToRotation(alpha: float):
+
+    return np.array([[-np.cos(alpha), np.sin(alpha)],
+                     [-np.sin(alpha), -np.cos(alpha)]])

@@ -3,7 +3,7 @@
 #uses unit quaternion for the attitude state
 import numpy as np
 import parameters.anaconda_parameters as QP
-from tools.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d
+from tools.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d, rotation_to_theta_2d
 from tools.quaternions import *
 from message_types.msg_state import MsgState
 from message_types.msg_delta import MsgDelta
@@ -31,6 +31,12 @@ class QuadplaneDynamics:
         # update the message class for the true state
         self._update_true_state()
 
+        #creates the v_air vector, which is an airspeed vector, in the body frame.
+        #it is the velocity of the aircraft with respect to the airmass
+        #in which it is travelling through. 
+        self.v_air_body = np.array([[QP.u0],
+                                    [QP.w0]])
+
     #creates the update function for the system
     def update(self, delta: MsgDelta, wind: np.ndarray):
         #calls to get the forces and the moments of the system
@@ -51,11 +57,8 @@ class QuadplaneDynamics:
     # private functions
     def _f(self, 
             state: np.ndarray, 
-            forces_moments: np.ndarray 
-            ):
-        '''
-            Implements equations of motion xdot = f(x, u)
-        '''
+            forces_moments: np.ndarray):
+
         # extract the states
         # pn = state.item(0)
         # pd = state.item(1)
@@ -88,23 +91,28 @@ class QuadplaneDynamics:
     #creates the update velocity data function
     def _update_velocity_data(self, wind: np.ndarray=np.zeros((4,1))):
         #gets the steady state wind
-        steady_state = wind[0:2]
+        steadyStateWind_inertial = wind[0:2]
         gust = wind[2:4]
         # convert wind vector from world to body frame
         theta = self._state.item(4)
-        R = np.array([[np.cos(theta), -np.sin(theta)],
-                      [np.sin(theta), np.cos(theta)]]) # rotation from body to world frame
-        wind_body_frame = R.T @ steady_state  # rotate steady state wind to body frame
-        wind_body_frame += gust  # add the gust
-        self._wind = R @ wind_body_frame  # wind in the world frame
+        #gets the rotation from body to inertial
+        R_body2inertial = theta_to_rotation_2d(theta=theta)
+        #gets the Rotation from inertial to body
+        R_inertial2body = R_body2inertial.T
+
+        #
+        wind_body = R_inertial2body @ steadyStateWind_inertial # rotate steady state wind to body frame
+        wind_body += gust  # add the gust
+        wind_inertial = R_body2inertial @ wind_body  # wind in the world frame
+        self._wind = wind_inertial
         #gets the velocity in the body frame
-        velocity_body_frame = R.T @ self._state[2:4]
-        # velocity vector relative to the airmass
-        self.v_air = velocity_body_frame - wind_body_frame
+        velocity_body_frame = self._state[2:4]
+        # velocity vector relative to the airmass, in the body frame
+        self.v_air_body = velocity_body_frame - wind_body
         # compute airspeed
-        self._Va = np.linalg.norm( self.v_air )
-        ur = self.v_air.item(0)
-        wr = self.v_air.item(1)
+        self._Va = np.linalg.norm( self.v_air_body )
+        ur = self.v_air_body.item(0)
+        wr = self.v_air_body.item(1)
         # compute angle of attack
         if ur==0:
             self._alpha = np.sign(wr)*np.pi/2.
@@ -117,22 +125,29 @@ class QuadplaneDynamics:
     def _forces_moments(self, delta: MsgDelta)->np.ndarray:
         # rotation from body to world frame
         theta = self._state.item(4)
-        R = np.array([[np.cos(theta), -np.sin(theta)],
-                      [np.sin(theta), np.cos(theta)]]) 
+
+        #gets the rotation matrix from the body to the inertial
+        R_body2Inertial = theta_to_rotation_2d(theta=theta)
+        #gets the rotation matrix from the inertial to the body
+        R_inertial2Body = np.transpose(R_body2Inertial)
+
+
         # pitch rate
         q = self._state.item(5)
+        #gets the force of gravity in the inertial frame
+        fg_inertial = QP.mass * QP.gravity_accel_inertial
         # gravitational force in body frame
-        f_g = R.T @ np.array([[0.], [QP.mass * QP.gravity]])
-        # gets each portion of the gravitational force
-        fx = f_g.item(0)
-        fz = f_g.item(1)
+        f_g_body = R_inertial2Body @ fg_inertial
+        # gets each portion of the gravitational force, and creates the fx and fz body components
+        fx_body = f_g_body.item(0)
+        fz_body = f_g_body.item(1)
         #intermediate variables
         qbar = 0.5 * QP.rho * self._Va**2
         ca = np.cos(self._alpha)
         sa = np.sin(self._alpha)
         # nondimensionalize q
         if self._Va > 1:
-            q_nondim = q * QP.c / (2 * self._Va)  
+            q_nondim = q * QP.c / (2 * self._Va)
         else:
             q_nondim = 0.0
         # compute Lift and Drag coefficients
@@ -146,8 +161,8 @@ class QuadplaneDynamics:
         F_lift = qbar * QP.S_wing * (CL + QP.C_L_q * q_nondim + QP.C_L_delta_e * delta.elevator)
         F_drag = qbar * QP.S_wing * (CD + QP.C_D_q * q_nondim + QP.C_D_delta_e * delta.elevator)
         # compute longitudinal forces in body frame
-        fx += - ca * F_drag + sa * F_lift
-        fz += - sa * F_drag - ca * F_lift
+        fx_body += - ca * F_drag + sa * F_lift
+        fz_body += - sa * F_drag - ca * F_lift
         # compute pitching moment 
         My = qbar * QP.S_wing * QP.c * (
                 QP.C_m_0
@@ -155,24 +170,29 @@ class QuadplaneDynamics:
                 + QP.C_m_q * q_nondim
                 + QP.C_m_delta_e * delta.elevator
         )
-        # velocity in world frame
-        v_w = np.array([[self._state.item(2)],[self._state.item(3)]])
-        # compute velocity in the body frame
-        v_b = R.T @ v_w
+        
+        #gets the airspeed through the 
         # compute airspeed through each propeller
-        V_f = v_b.item(1)
-        V_r = v_b.item(1)
-        V_t = -v_b.item(0)
+        #remember that it is the velocity of the air coming at the front of the prop,
+        #which is the negative of the airspeed of the aircraft going through the air
+
+        #the front vertically oriented prop
+        Va_front_prop = self.v_air_body.item(1)
+        #the rear vertically oriented prop
+        Va_rear_prop = self.v_air_body.item(1)
+        #the forward oriented prop, generating the main thrust
+        Va_forward_prop = -self.v_air_body.item(0)
+
         # compute forces and torques from each propeller
-        T_f, Q_f = self._motor_thrust_torque(V_f, delta.throttle_front)
-        T_r, Q_r = self._motor_thrust_torque(V_r, delta.throttle_rear)
-        T_t, Q_t = self._motor_thrust_torque(V_t, delta.throttle_thrust)
+        Thrust_front, Q_f = self._motor_thrust_torque(Va_front_prop, delta.throttle_front)
+        Thrust_rear, Q_r = self._motor_thrust_torque(Va_rear_prop, delta.throttle_rear)
+        Thrust_forward, Q_t = self._motor_thrust_torque(Va_forward_prop, delta.throttle_thrust)
         # add propeller forces and torques to body
-        fx += T_t
-        fz += -T_f - T_r
-        My += QP.ell_f * T_f - QP.ell_r * T_r
+        fx_body += Thrust_forward
+        fz_body += -Thrust_front - Thrust_rear
+        My += QP.ell_f * Thrust_front - QP.ell_r * Thrust_rear
         #returns the forces
-        return np.array([[fx, fz, My]]).T
+        return np.array([[fx_body, fz_body, My]]).T
     
     def _motor_thrust_torque(self, Va: float, delta_t: float)->tuple[float, float]:
         C_Q0 = QP.C_Q0
@@ -226,17 +246,10 @@ class QuadplaneDynamics:
                                         [w]])
         self.true_state.R = theta_to_rotation_2d(theta=theta)
         self.true_state.omega = np.array([[q]])
-
+        #updates the airspeed magnitude and the angle of attack
         self.true_state.Va = self._Va
         self.true_state.alpha = self._alpha
+        #updates the airspeed vector
+        self.true_state.v_air = self.v_air_body
 
-    def _set_internal_state(self, state: MsgState):
-        roll, pitch, yaw = rotation_to_euler(state.R)
-        self._state = np.array([
-            [state.pos.item(0)],    # [0]  north position
-            [state.pos.item(1)],    # [1]  down position
-            [state.vel.item(0)],     # [2]  velocity along body x-axis
-            [state.vel.item(1)],     # [3]  velocity along body z-axis
-            [pitch], # [4] initial pitch angle
-            [state.omega.item(1)],     # [5]  pitch rate
-        ])
+
