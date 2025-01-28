@@ -71,7 +71,7 @@ i0 = 1.5                     # no-load (zero-torque) current (A)
 k_force = 65.0
 k_moment = 5.0
 # Inputs
-ncells = 12.
+ncells = 24 #12.
 V_max = 3.7 * ncells  # max voltage for specified number of battery cells
 #sets the maximum thrust
 Tmax = 40

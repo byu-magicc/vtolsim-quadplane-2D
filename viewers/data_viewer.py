@@ -1,5 +1,4 @@
 import numpy as np
-np.errstate(overflow="ignore")
 from viewers.plotter import Plotter
 from tools.wrap import wrap
 from tools.rotations import rotation_to_euler

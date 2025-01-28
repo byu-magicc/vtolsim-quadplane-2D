@@ -31,7 +31,7 @@ class TrajectoryTracker:
             [0., 0., 0.],
             [0., 0., 1.],
         ])
-        Q = np.diag([
+        Q = 1e-5 * np.diag([
             1., # pn - error
             1., # pd - error
             1., # v_n - error
@@ -39,7 +39,7 @@ class TrajectoryTracker:
             np.radians(1), # theta - error
             1., # q - error 
             ]) 
-        R = np.diag([
+        R = 1000 * np.diag([
             1., # u - Fn
             1., # u - Fe
             1., # u - M

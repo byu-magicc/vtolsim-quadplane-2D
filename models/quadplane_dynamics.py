@@ -160,8 +160,8 @@ class QuadplaneDynamics:
         # compute velocity in the body frame
         v_b = R.T @ v_w
         # compute airspeed through each propeller
-        V_f = v_b.item(1)
-        V_r = v_b.item(1)
+        V_f = -v_b.item(1)
+        V_r = -v_b.item(1)
         V_t = -v_b.item(0)
         # compute forces and torques from each propeller
         T_f, Q_f = self._motor_thrust_torque(V_f, delta.throttle_front)
@@ -174,7 +174,7 @@ class QuadplaneDynamics:
         #returns the forces
         return np.array([[fx, fz, My]]).T
     
-    def _motor_thrust_torque(self, Va: float, delta_t: float)->tuple[float, float]:
+    def _motor_thrust_torque(self, Vp: float, delta_t: float)->tuple[float, float]:
         C_Q0 = QP.C_Q0
         C_Q1 = QP.C_Q1
         C_T0 = QP.C_T0
@@ -185,23 +185,20 @@ class QuadplaneDynamics:
         KQ = QP.KQ
         R_motor = QP.R_motor
         i0 = QP.i0
+        rho = QP.rho
         #gets the voltage in, based on the delta_t
         V_in = QP.V_max * delta_t
         # Quadratic formula to solve for motor speed
-        a = C_Q0 * QP.rho * np.power(D_prop, 5)/((2.*np.pi)**2)
-        b = (C_Q1 * QP.rho * np.power(D_prop, 4)/ (2.*np.pi)) * Va + KQ**2/R_motor
-        c = C_Q2 * QP.rho * np.power(D_prop, 3)* Va**2 - (KQ / R_motor) * V_in + KQ * i0        
+        a = C_Q0 * rho * np.power(D_prop, 5)/((2.*np.pi)**2)
+        b = (C_Q1 * rho * np.power(D_prop, 4)/ (2.*np.pi)) * Vp + KQ**2/R_motor
+        c = C_Q2 * rho * np.power(D_prop, 3)* Vp**2 - (KQ / R_motor) * V_in + KQ * i0        
         # Consider only positive root
-        Omega_op = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
-        # compute advance ratio
-        J_op = 2 * np.pi * Va / (Omega_op * D_prop)
-        # compute non-dimensionalized coefficients of thrust and torque
-        C_T = C_T2 * J_op**2 + C_T1 * J_op + C_T0
-        C_Q = C_Q2 * J_op**2 + C_Q1 * J_op + C_Q0
-        # add thrust and torque due to propeller
-        n = Omega_op / (2 * np.pi)
-        T_p = QP.rho * n**2 * np.power(D_prop, 4) * C_T
-        Q_p = QP.rho * n**2 * np.power(D_prop, 5) * C_Q
+        Omega_p = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
+        aa = rho * np.power(D_prop,4) / (4. * np.pi**2)
+        bb = rho * np.power(D_prop,3) * Vp/(2 * np.pi)
+        cc = rho * D_prop**2 * Vp**2
+        T_p = (C_T0 * aa) * Omega_p**2 + (C_T1 * bb) * Omega_p + (C_T2 * cc)
+        Q_p = (C_Q0 * D_prop * aa) * Omega_p**2 + (C_Q1 * D_prop * bb) * Omega_p + (C_Q2 * D_prop * cc)
         return T_p, Q_p
 
     #function to update the true state
