@@ -3,7 +3,7 @@
 #uses unit quaternion for the attitude state
 import numpy as np
 import parameters.anaconda_parameters as QP
-from tools.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d, rotation_to_theta_2d
+from tools.rotations import *
 from tools.quaternions import *
 from message_types.msg_state import MsgState
 from message_types.msg_delta import MsgDelta
@@ -244,7 +244,7 @@ class QuadplaneDynamics:
                                         [pd]])
         self.true_state.vel = np.array([[u], 
                                         [w]])
-        self.true_state.R = theta_to_rotation_2d(theta=theta)
+        self.true_state.R = theta_to_rotation_3d(theta=theta)
         self.true_state.omega = np.array([[q]])
         #updates the airspeed magnitude and the angle of attack
         self.true_state.Va = self._Va

@@ -16,7 +16,7 @@ class MsgState:
     def __init__(self, 
                  pos: np.ndarray=np.array([[0.], [0.]]), #saves the inertial north and down positions
                  vel: np.ndarray=np.array([[0.], [0.]]), #saves the body frame forward and down velocities
-                 R: np.ndarray=np.identity(2), #saves the 2x2 Rotation matrix, which is made by theta
+                 R: np.ndarray=np.identity(3), #saves the 3x3 Rotation matrix, which is made by theta, but we need to stay in 3d for simulation purposes
                  omega: np.ndarray=np.array([[0.]]), #saves the q_dot matrix
                  Va: float=0., #saves the airspeed magnitude variable
                  v_air: np.ndarray=np.array([[0.0], [0.0]]), #saves the airspeed vector

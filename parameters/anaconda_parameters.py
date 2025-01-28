@@ -3,6 +3,7 @@
 
 import numpy as np
 from tools.rotations import euler_to_quaternion
+from message_types.msg_delta import MsgDelta
 
 
 ######################################################################################
@@ -91,3 +92,18 @@ C_T0 = 0.09357
 propDirections = np.array([1.0, #front vertical prop
                            -1.0, #rear vertical prop
                            1.0]) #forward thrust prop
+
+
+
+######################################################################################
+                #  Trim parameters
+######################################################################################
+
+trim_elevator=-0.124778
+trim_forwardThrottle=0.676752
+
+#creates the trim message
+trimDelta = MsgDelta(elevator=trim_elevator, 
+                throttle_thrust=trim_forwardThrottle,
+                throttle_front=0.0,
+                throttle_rear=0.0)

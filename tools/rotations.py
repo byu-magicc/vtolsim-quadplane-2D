@@ -77,6 +77,7 @@ def theta_to_rotation_2d(theta: float):
     #returns the Rotation matrix
     return R_pitch
 
+
 #creates the 2d rotation matrix to theta euler angle
 def rotation_to_theta_2d(R: np.ndarray):
     #gets the components of the Rotation matrix R
@@ -84,6 +85,30 @@ def rotation_to_theta_2d(R: np.ndarray):
     r22 = R[1,1]
     #gets the rotation angle theta in radians
     theta = np.arctan2(r12,r22)
+
+
+#creates the 3d theta to rotation
+def theta_to_rotation_3d(theta: float):
+    c_theta = np.cos(theta)
+    s_theta = np.sin(theta)
+
+    return np.array([[c_theta, 0, s_theta],
+                     [0, 1, 0],
+                     [-s_theta, 0, c_theta]])
+
+
+#converts a 2d pitch rotation matrix to a 3d pitch rotation matrix
+def pitch_2d_to_3d(R:np.ndarray):
+
+    #creates the new rotation matrix
+    Rotation = np.array([[R[0][0], 0.0, R[0][1]],
+                         [0.0, 1.0, 0.0],
+                         [R[1][0], 0.0, R[1][1]]])
+
+    #returns the rotation matrix
+    return Rotation
+
+
 
 def quaternion_to_rotation(quaternion):
     """

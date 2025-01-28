@@ -2,7 +2,7 @@
 
 import numpy as np
 import pyqtgraph.opengl as gl
-from tools.rotations import euler_to_rotation
+from tools.rotations import euler_to_rotation, pitch_2d_to_3d
 from message_types.msg_state import MsgState
 import pyqtgraph.opengl as gl
 
@@ -15,8 +15,11 @@ class DrawQuadplane():
         self.unit_length = scale
         #gets the position of the vtol
         quad_position = state.pos
-        #gets the body to inertial rotation matrix
-        R_bi = state.R
+        #gets the body to inertial rotation matrix. after converting it to a 3d rotation and everything.
+        R_bi = pitch_2d_to_3d(state.R)
+
+
+        #in order to do this in 3d, we need to translate from a 2d to a 3d matrix
         #converts to north east down for rendering
         self.R_ned = np.array([[0, 1, 0],
                                [1, 0, 0],
