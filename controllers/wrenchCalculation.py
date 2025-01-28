@@ -27,6 +27,12 @@ class wrenchCalculator:
         #gets the forces and moments achieved
         wrenchAchieved = self.forces_moments_achieved(delta=delta, state=state)
 
+        #gets the jacobian
+        wrenchJacobian = self.wrench_Jacobian(delta=delta, state=state)
+
+        #returns the wrench achieved and wrench Jacobain 
+        return wrenchAchieved, wrenchJacobian
+
 
 
 
@@ -123,18 +129,56 @@ class wrenchCalculator:
         #gets the alpha rotation matrix
         alpha_rotation = alphaToRotation(alpha=alpha)
 
-        #gets the list and drag vector
+        #creates the vector of the partials of the Lift and Drag Forces
+        partial_F_drag = Gamma*QP.C_D_delta_e
+        partial_F_lift = Gamma*QP.C_L_delta_e
+
+        liftDragPartials = np.array([[partial_F_drag],
+                                     [partial_F_lift]])
         
+        #gets the rotated partials
+        rotatedPartials = alpha_rotation @ liftDragPartials
+        #gets the two components of the above vector and breaks them up
+        partial_fx_delta_e = rotatedPartials.item(0)
+        partial_fz_delta_e = rotatedPartials.item(1)
+        #gets the partial of My with respect to delta_e
+        partial_My_delta_e = Gamma*QP.c*QP.C_m_delta_e
 
 
         #gets the rotor forces, moments, and their derivitives lists
         rotorForces, rotorMoments, rotorForceDerivatives, rotorMomentDerivatives = \
                             self.rotor_thrust_torque_derivatives(delta=delta, state=state)
 
+        
+        #gets the partial for the forces
+        partial_T_delta_t1 = rotorForceDerivatives[0]
+        partial_T_delta_t2 = rotorForceDerivatives[1]
+        partial_T_delta_t3 = rotorForceDerivatives[2]
+
+        #creates the gradient vector for each wrench component
+        fx_gradient = [partial_fx_delta_e, 
+                       0,
+                       0,
+                       partial_T_delta_t3]
+        
+        #creates the z gradient
+        fz_gradient = [partial_fz_delta_e,
+                       -partial_T_delta_t1,
+                       -partial_T_delta_t2,
+                       0]
+        
+        My_gradient = [partial_My_delta_e,
+                       QP.ell_f*partial_T_delta_t1,
+                       -QP.ell_r*partial_T_delta_t2,
+                       0]
+        
+
+        #returns a vector of the gradients
+        return np.array([fx_gradient, fz_gradient, My_gradient])
 
 
 
-
+    #function to calculate the motor thrust and aerodynamic torque or moment
     def _motor_thrust_torque(self, Va: float, delta_t: float)->tuple[float, float]:
         C_Q0 = QP.C_Q0
         C_Q1 = QP.C_Q1
@@ -261,3 +305,4 @@ class wrenchCalculator:
         #returns the arrays
         return thrusts, torques, thrust_derivatives, torque_derivatives
             
+    
