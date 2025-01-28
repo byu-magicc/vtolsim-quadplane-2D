@@ -240,12 +240,16 @@ class QuadplaneDynamics:
         q = self._state.item(5)
 
         #saves them all to the respective variables
-        self.true_state.pos = np.array([[pn], 
+        self.true_state.pos = np.array([[pn],
+                                        [0.0],
                                         [pd]])
-        self.true_state.vel = np.array([[u], 
+        self.true_state.vel = np.array([[u],
+                                        [0.0], 
                                         [w]])
         self.true_state.R = theta_to_rotation_3d(theta=theta)
-        self.true_state.omega = np.array([[q]])
+        self.true_state.omega = np.array([[0.0],
+                                          [q],
+                                          [0.0]])
         #updates the airspeed magnitude and the angle of attack
         self.true_state.Va = self._Va
         self.true_state.alpha = self._alpha

@@ -110,6 +110,7 @@ def pitch_2d_to_3d(R:np.ndarray):
 
 
 
+
 def quaternion_to_rotation(quaternion):
     """
     converts a quaternion attitude to a rotation matrix
