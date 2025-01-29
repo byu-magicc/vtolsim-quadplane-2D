@@ -36,6 +36,8 @@ class QuadplaneDynamics:
         #in which it is travelling through. 
         self.v_air_body = np.array([[QP.u0],
                                     [QP.w0]])
+        
+        potato = 0
 
     #creates the update function for the system
     def update(self, delta: MsgDelta, wind: np.ndarray):
@@ -62,24 +64,35 @@ class QuadplaneDynamics:
         # extract the states
         # pn = state.item(0)
         # pd = state.item(1)
+
+        #u and w are the body frame velocities
+        pn = state.item(0)
+        pd = state.item(1)
         u = state.item(2)
         w = state.item(3)
         theta = state.item(4)
-        # rotation from body to world frame
-        R = np.array([[np.cos(theta), -np.sin(theta)],
-                      [np.sin(theta), np.cos(theta)]]) 
         q = state.item(5)
+        # rotation from body to world frame
+        #TODO Make sure this is correct, and that I am rotating correctly
+        #gets the rotation from Body to inertial frame
+        R_body2inertial = theta_to_rotation_2d(theta=theta)
         #   extract forces/moments in body frame
-        fx = forces_moments.item(0)
-        fz = forces_moments.item(1)
+        fx_body = forces_moments.item(0)
+        fz_body = forces_moments.item(1)
         My = forces_moments.item(2)
         # position kinematics
-        pn_dot = u
-        pd_dot = w
+
+        #TODO These two actually do need to be rotated into the inertial frame
+        #rotates  the u and v into the inertial frame and saves it here
+        pos_dot_inert = R_body2inertial @ np.array([[u],
+                                                    [w]])
+        pn_dot = pos_dot_inert.item(0)
+        pd_dot = pos_dot_inert.item(1)
         # position dynamics
-        f_w = R @ np.array([[fx], [fz]])
-        u_dot = f_w.item(0)/QP.mass
-        w_dot = f_w.item(1)/QP.mass
+        #TODO. This Should not be rotated to the inertial frame. u_dot and w_dot 
+        #It is not rotated in the mavsim and vtolsim dynamics
+        u_dot = fx_body/QP.mass
+        w_dot = fz_body/QP.mass
         # rotational kinematics
         theta_dot = q
         # rotatonal dynamics
@@ -168,8 +181,7 @@ class QuadplaneDynamics:
                 QP.C_m_0
                 + QP.C_m_alpha * self._alpha
                 + QP.C_m_q * q_nondim
-                + QP.C_m_delta_e * delta.elevator
-        )
+                + QP.C_m_delta_e * delta.elevator)
         
         #gets the airspeed through the 
         # compute airspeed through each propeller
@@ -181,7 +193,7 @@ class QuadplaneDynamics:
         #the rear vertically oriented prop
         Va_rear_prop = self.v_air_body.item(1)
         #the forward oriented prop, generating the main thrust
-        Va_forward_prop = -self.v_air_body.item(0)
+        Va_forward_prop = self.v_air_body.item(0)
 
         # compute forces and torques from each propeller
         Thrust_front, Q_f = self._motor_thrust_torque(Va_front_prop, delta.throttle_front)
