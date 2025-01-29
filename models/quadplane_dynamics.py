@@ -18,8 +18,8 @@ class QuadplaneDynamics:
         self._ts = ts
         #creates the state array and initializes them to the original positions
         self._state = np.array([
-            [QP.pn0],    # [0]  north position
-            [QP.pd0],    # [1]  down position
+            [QP.pn0],    # [0]  north position inertial
+            [QP.pd0],    # [1]  down position inertial
             [QP.u0],     # [2]  velocity along body x-axis
             [QP.w0],     # [3]  velocity along body z-axis
             [QP.theta0], # [4] initial pitch angle
@@ -57,7 +57,7 @@ class QuadplaneDynamics:
 
     ###################################
     # private functions
-    def _f(self, 
+    def _f(self,
             state: np.ndarray, 
             forces_moments: np.ndarray):
 
@@ -91,8 +91,8 @@ class QuadplaneDynamics:
         # position dynamics
         #TODO. This Should not be rotated to the inertial frame. u_dot and w_dot 
         #It is not rotated in the mavsim and vtolsim dynamics
-        u_dot = fx_body/QP.mass
-        w_dot = fz_body/QP.mass
+        u_dot = -q*w + fx_body/QP.mass
+        w_dot = q*u + fz_body/QP.mass
         # rotational kinematics
         theta_dot = q
         # rotatonal dynamics

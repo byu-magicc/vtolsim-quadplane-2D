@@ -38,7 +38,7 @@ viewers = ViewManager(animation=True, data=True)
 Va = 20.
 trim_state, trim_delta = compute_trim(quadplane, Va)
 quadplane._state = trim_state  # set the initial state of the vtol to the trim state
-delta = trim_delta # set input to constant constant trim input
+delta = QP.trimDelta # set input to constant constant trim input
 #TODO temporarily sets the delta to just zeros, and sees what happens
 '''
 delta = MsgDelta(elevator=0.0,
