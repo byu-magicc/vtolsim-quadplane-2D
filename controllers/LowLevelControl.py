@@ -40,7 +40,10 @@ class LowLevelControl:
         self.wrenchCalculator = wrenchCalculator()
 
         #creates an instance of the state message class
-    
+        self.state = MsgState()
+
+        #creates the previous delta solution
+        self.delta_previous = np.array([[]])
 
 
     

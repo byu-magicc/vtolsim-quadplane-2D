@@ -86,6 +86,7 @@ class QuadplaneDynamics:
         #rotates  the u and v into the inertial frame and saves it here
         pos_dot_inert = R_body2inertial @ np.array([[u],
                                                     [w]])
+                                                    
         pn_dot = pos_dot_inert.item(0)
         pd_dot = pos_dot_inert.item(1)
         # position dynamics
