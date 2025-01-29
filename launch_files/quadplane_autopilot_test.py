@@ -67,4 +67,6 @@ while sim_time < end_time:
     #increments the simulation time
     sim_time += SIM.ts_simulation
 
+    time.sleep(SIM.sleep_time)
+
 
