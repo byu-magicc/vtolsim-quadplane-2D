@@ -11,7 +11,7 @@ from tools.rotations import euler_to_quaternion
 #initial conditions for the QUADPLANE
 pn0 = 0.  # initial north position
 pd0 = 0.  # initial down position
-u0 = 0.  # initial velocity along body x-axis
+u0 = 20.  # initial velocity along body x-axis
 w0 = 0.  # initial velocity along body z-axis
 theta0 = 0.  # initial pitch angle
 q0 = 0.  # initial pitch rate
