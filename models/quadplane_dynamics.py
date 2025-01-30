@@ -20,8 +20,8 @@ class QuadplaneDynamics:
         self._state = np.array([
             [QP.pn0],    # [0]  north position inertial
             [QP.pd0],    # [1]  down position inertial
-            [QP.u0],     # [2]  velocity along body x-axis
-            [QP.w0],     # [3]  velocity along body z-axis
+            [QP.pndot0],     # [2]  velocity along inertial north axis
+            [QP.pddot0],     # [3]  velocity along inertial east axis
             [QP.theta0], # [4] initial pitch angle
             [QP.q0],     # [5]  pitch rate
         ])

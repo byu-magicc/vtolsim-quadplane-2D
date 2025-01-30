@@ -29,20 +29,20 @@ class TrajectoryTracker:
             [1., 0.],
             [0., 1.],
         ])
-        Q = 1e-5 * np.diag([
+        Q = 1e-1 * np.diag([
             1., # pn - error
             1., # pd - error
             1., # v_n - error
             1., # v_e - error
             ]) 
-        R = 1000 * np.diag([
+        R = 1 * np.diag([
             1., # u - Fn
             1., # u - Fe
             ])  
         P = solve_continuous_are(A, B, Q, R)
         self.K = inv(R) @ B.T @ P
-        self.kp_theta = 10.
-        self.kd_theta = 10.
+        self.kp_theta = 1.
+        self.kd_theta = 1.
         self.theta_star_d1 = 0.  # theta star delayed one sample
         self.theta_star_dot = 0.  # first derivative of theta star
         self.theta_star_dot_d1 = 0.  # first derivative of theta star delayed by one sample

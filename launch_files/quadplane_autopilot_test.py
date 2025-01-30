@@ -5,7 +5,7 @@ import os, sys
 from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
 import numpy as np
-np.errstate(overflow="ignore")
+#np.errstate(overflow="ignore")
 from copy import deepcopy
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as QP
