@@ -19,6 +19,8 @@ from message_types.msg_sensors import MsgSensors
 import time
 
 
+import pandas as pd
+
 
 #initializes the quadplane and the viewer
 quadplane = QuadplaneDynamics(SIM.ts_simulation)
@@ -38,6 +40,7 @@ autopilot_commands.altitude_command = 110
 
 
 #list to store the forces and moments
+wrenches = []
 
 
 #sets the start and end time
@@ -57,6 +60,10 @@ while sim_time < end_time:
     #updates the quadplane based on those inputs
     quadplane.update(delta=delta, wind=current_wind)
 
+    #gets the wrenches
+    currentWrench = quadplane._forces_moments(delta=delta)
+    wrenches.append(currentWrench)
+
     #updates the viewers
     viewers.update(sim_time=sim_time,
                    true_state=quadplane.true_state,
@@ -69,6 +76,16 @@ while sim_time < end_time:
     #increments the simulation time
     sim_time += SIM.ts_simulation
 
-    time.sleep(SIM.sleep_time)
+    #time.sleep(SIM.sleep_time)
 
 
+
+#creates the output path
+outputPath = os.path.abspath("launch_files/outputFiles")
+
+
+wrenches = (np.array(wrenches)[:,:,0]).T
+dataFrame = pd.DataFrame(wrenches)
+dataFrame.to_csv(outputPath + "/controlWrenches.csv", header=False, index=False)
+
+potato = 0
