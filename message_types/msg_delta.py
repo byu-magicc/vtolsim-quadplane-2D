@@ -38,7 +38,7 @@ class MsgDelta:
                 throttle_thrust,
                 ]]).T
         '''
-        delta = np.zeros((8,1))
+        delta = np.zeros((4,1))
         delta[0,0] = self.elevator
         delta[1,0] = self.throttle_front
         delta[2,0] = self.throttle_rear

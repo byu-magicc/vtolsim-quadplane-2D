@@ -190,9 +190,9 @@ class QuadplaneDynamics:
         #which is the negative of the airspeed of the aircraft going through the air
 
         #the front vertically oriented prop
-        Va_front_prop = self.v_air_body.item(1)
+        Va_front_prop = -self.v_air_body.item(1)
         #the rear vertically oriented prop
-        Va_rear_prop = self.v_air_body.item(1)
+        Va_rear_prop = -self.v_air_body.item(1)
         #the forward oriented prop, generating the main thrust
         Va_forward_prop = self.v_air_body.item(0)
 
@@ -207,6 +207,19 @@ class QuadplaneDynamics:
         #returns the forces
         return np.array([[fx_body, fz_body, My]]).T
     
+
+    #creates a wrapper function for the forces and moments
+    #has a delta array instead of a message
+    def forces_moments_wrapper(self, deltaArray: np.ndarray):
+        #creates the delta message
+        deltaMessage = MsgDelta()
+        deltaMessage.from_array(delta_array=deltaArray)
+        #runs the _forces_moments function
+        forcesMoments = (self._forces_moments(delta=deltaMessage))[:,0]
+
+        return forcesMoments
+
+
     def _motor_thrust_torque(self, Va: float, delta_t: float)->tuple[float, float]:
         C_Q0 = QP.C_Q0
         C_Q1 = QP.C_Q1

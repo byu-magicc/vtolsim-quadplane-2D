@@ -37,6 +37,8 @@ autopilot_commands.altitude_command = 110
 
 
 
+#list to store the forces and moments
+
 
 #sets the start and end time
 sim_time = SIM.start_time

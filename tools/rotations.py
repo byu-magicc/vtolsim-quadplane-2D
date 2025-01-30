@@ -86,6 +86,8 @@ def rotation_to_theta_2d(R: np.ndarray):
     #gets the rotation angle theta in radians
     theta = np.arctan2(r12,r22)
 
+    return theta
+
 
 #creates the 3d theta to rotation
 def theta_to_rotation_3d(theta: float):

@@ -3,7 +3,7 @@ import numpy as np
 from message_types.msg_delta import MsgDelta
 from message_types.msg_state import MsgState
 
-from tools.rotations import rotation_to_theta_2d, theta_to_rotation_2d, alphaToRotation
+from tools.rotations import *
 
 import parameters.anaconda_parameters as QP
 
@@ -39,7 +39,7 @@ class wrenchCalculator:
     #creates the function to get the actual force and torque acheived, WITHOUT gravity
     def forces_moments_achieved(self, delta: MsgDelta, state: MsgState):
         #gets the theta from the state 
-        theta = rotation_to_theta_2d(R=state.R)
+        phi, theta, psi = rotation_to_euler(R=state.R)
 
         #gets the rotation matrix from the body to the inertial
         R_body2Inertial = theta_to_rotation_2d(theta=theta)
@@ -83,8 +83,8 @@ class wrenchCalculator:
         F_drag = qbar * QP.S_wing * (CD + QP.C_D_q * q_nondim + QP.C_D_delta_e * delta.elevator)
 
         #gets the forces in the body frame
-        f_body = alphaToRotation(alpha=alpha) @ np.array([[F_lift],
-                                                          [F_drag]])
+        f_body = alphaToRotation(alpha=alpha) @ np.array([[F_drag],
+                                                          [F_lift]])
         
         # compute pitching moment 
         My = qbar * QP.S_wing * QP.c * (
@@ -95,11 +95,11 @@ class wrenchCalculator:
         )
 
         #the front vertically oriented prop
-        Va_front_prop = self.v_air_body.item(1)
+        Va_front_prop = -state.v_air.item(1)
         #the rear vertically oriented prop
-        Va_rear_prop = self.v_air_body.item(1)
+        Va_rear_prop = -state.v_air.item(1)
         #the forward oriented prop, generating the main thrust
-        Va_forward_prop = -self.v_air_body.item(0)
+        Va_forward_prop = state.v_air.item(0)
 
 
         # compute forces and torques from each propeller
@@ -174,7 +174,7 @@ class wrenchCalculator:
         
 
         #returns a vector of the gradients
-        return np.array([fx_gradient, fz_gradient, My_gradient])
+        return np.array([fx_gradient, fz_gradient, My_gradient]).T
 
 
 
