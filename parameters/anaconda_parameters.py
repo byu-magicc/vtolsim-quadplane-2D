@@ -32,6 +32,9 @@ e = 0.9
 AR = (b**2) / S_wing # aspect ratio
 gravity = 9.81
 
+#creates the gravity acceleration vector in the inertial frame
+gravity_accel_inertial = np.array([[0.0],[gravity]])
+
 
 #sets the physical positions of the props. That is, where their bases are located.
 #in units of meters

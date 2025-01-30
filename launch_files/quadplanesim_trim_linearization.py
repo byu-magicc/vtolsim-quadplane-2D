@@ -16,6 +16,7 @@ import parameters.simulation_parameters as SIM
 from models.quadplane_dynamics import QuadplaneDynamics
 from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from viewers.view_manager import ViewManager
+import time
 #from message_types.msg_delta import MsgDelta
 
 # initialize elements of the architecture
@@ -63,5 +64,5 @@ while sim_time < SIM.end_time:
     sim_time += SIM.ts_simulation
 
 
-
+    time.sleep(SIM.sleep_time)
 

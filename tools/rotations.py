@@ -3,6 +3,7 @@ various tools to be used in mavPySim
 """
 import numpy as np
 import scipy.linalg as linalg
+from numpy import pi
 
 def quaternion_to_euler(quaternion):
     """
@@ -63,6 +64,52 @@ def euler_to_rotation(phi, theta, psi):
     #               [-s_theta, s_phi*c_theta, c_phi*c_theta]])
 
     return R
+
+
+#creates the 2d euler to rotation
+def theta_to_rotation_2d(theta: float):
+    c_theta = np.cos(theta)
+    s_theta = np.sin(theta)
+    
+    R_pitch = np.array([[c_theta, s_theta],
+                        [-s_theta, c_theta]])
+
+    #returns the Rotation matrix
+    return R_pitch
+
+
+#creates the 2d rotation matrix to theta euler angle
+def rotation_to_theta_2d(R: np.ndarray):
+    #gets the components of the Rotation matrix R
+    r12 = R[0,1]
+    r22 = R[1,1]
+    #gets the rotation angle theta in radians
+    theta = np.arctan2(r12,r22)
+
+
+#creates the 3d theta to rotation
+def theta_to_rotation_3d(theta: float):
+    c_theta = np.cos(theta)
+    s_theta = np.sin(theta)
+
+    return np.array([[c_theta, 0, s_theta],
+                     [0, 1, 0],
+                     [-s_theta, 0, c_theta]])
+
+
+#converts a 2d pitch rotation matrix to a 3d pitch rotation matrix
+def pitch_2d_to_3d(R:np.ndarray):
+
+    #creates the new rotation matrix
+    Rotation = np.array([[R[0][0], 0.0, R[0][1]],
+                         [0.0, 1.0, 0.0],
+                         [R[1][0], 0.0, R[1][1]]])
+
+    #returns the rotation matrix
+    return Rotation
+
+
+
 
 def quaternion_to_rotation(quaternion):
     """
@@ -160,3 +207,10 @@ def hat(omega):
                           [-b, a, 0]])
     return omega_hat
 
+
+#creates the function to get the rotation matrix to 
+#transform from the wind frame to the body  frame
+def alphaToRotation(alpha: float):
+
+    return np.array([[-np.cos(alpha), np.sin(alpha)],
+                     [-np.sin(alpha), -np.cos(alpha)]])

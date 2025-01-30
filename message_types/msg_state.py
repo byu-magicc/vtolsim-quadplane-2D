@@ -57,9 +57,12 @@ class MsgState:
                  omega: np.ndarray=np.array([[0.], [0.], [0.]]), 
                  gyro_bias: np.ndarray=np.array([[0.], [0.], [0.]]), 
                  motor_angle: np.ndarray=np.array([[0.], [0.]]),  
-                 Va: float=0.,  
+                 Va: float=0.,
+                 v_air = np.array([[0.0],[0.0]]), 
                  alpha: float=0.,  
                  beta: float=0.,  
+                 Vg: float = 0,
+                 chi: float = 0
                  ):
             self.pos = pos  
             self.vel = vel  
@@ -70,6 +73,9 @@ class MsgState:
             self.Va = Va
             self.alpha = alpha
             self.beta = beta
+            self.v_air = v_air
+            self.Vg = Vg
+            self.chi = chi
 
     def add_to_position(self, n=0, e=0, d=0):
         self.pos = self.pos + np.array([[n], [e], [d]])
