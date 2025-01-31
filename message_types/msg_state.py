@@ -22,8 +22,8 @@ from tools.rotations import rotation_to_euler, euler_to_rotation
 
 class MsgState:
     def __init__(self, 
-                 pos: np.ndarray=np.array([[0.], [0.], [0.]]), 
-                 vel: np.ndarray=np.array([[0.], [0.], [0.]]), 
+                 pos: np.ndarray=np.array([[0.], [0.], [0.]]), #inertial position. east term is always zero
+                 vel: np.ndarray=np.array([[0.], [0.], [0.]]), #inertial velocities. east term is always zero
                  R: np.ndarray=np.identity(3), 
                  omega: np.ndarray=np.array([[0.], [0.], [0.]]), 
                  gyro_bias: np.ndarray=np.array([[0.], [0.], [0.]]), 

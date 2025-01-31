@@ -12,11 +12,11 @@ from message_types.msg_delta import MsgDelta
 #initial conditions for the QUADPLANE
 pn0 = 0.  # initial north position
 pd0 = 0.  # initial down position
-u0 = 20.  # initial velocity along body x-axis
-w0 = 0.  # initial velocity along body z-axis
+pn_dot0 = 20.  # initial velocity along inertial x-axis
+pd_dot0 = 0.  # initial velocity along inertial z-axis
 theta0 = 0.  # initial pitch angle
 q0 = 0.  # initial pitch rate
-Va0 = np.sqrt(u0**2+w0**2)
+Va0 = np.sqrt(pn_dot0**2+pd_dot0**2)
 
 ######################################################################################
                 #Physical Parameters
