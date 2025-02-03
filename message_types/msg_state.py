@@ -32,6 +32,8 @@ class MsgState:
                  v_air: np.ndarray=np.array([[0.0], [0.0]]), #saves the airspeed vector 
                  alpha: float=0.,  
                  beta: float=0.,  
+                 Vg: float = 0,
+                 chi: float = 0
                  ):
             self.pos = pos  
             self.vel = vel  
@@ -43,6 +45,9 @@ class MsgState:
             self.v_air = v_air
             self.alpha = alpha
             self.beta = beta
+            self.v_air = v_air
+            self.Vg = Vg
+            self.chi = chi
 
     def add_to_position(self, n=0, e=0, d=0):
         self.pos = self.pos + np.array([[n], [e], [d]])

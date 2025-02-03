@@ -77,5 +77,5 @@ while sim_time < SIM.end_time:
     time.sleep(SIM.sleep_time/10)
 
 
-
+    time.sleep(SIM.sleep_time)
 
