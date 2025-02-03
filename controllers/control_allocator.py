@@ -56,7 +56,7 @@ class ControlAllocator:
         # compute airspeed through each propeller
         V_f = -v_b.item(2)
         V_r = -v_b.item(2)
-        V_t = -v_b.item(0)
+        V_t = v_b.item(0)
         self.delta.throttle_front = invert_motor(T_f_des, V_f)
         self.delta.throttle_rear = invert_motor(T_r_des, V_r)
         self.delta.throttle_thrust = invert_motor(T_t_des, V_t)
@@ -112,9 +112,9 @@ def motor_thrust(Vp: float, delta_t: float)->float:
     c = C_Q2 * rho * np.power(D_prop, 3)* Vp**2 - (KQ / R_motor) * V_in + KQ * i0        
     # Consider only positive root
     Omega_p = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
-    aa = rho * np.power(D_prop,4) / (4. * np.pi**2)
-    bb = rho * np.power(D_prop,3) * Vp/(2 * np.pi)
-    cc = rho * D_prop**2 * Vp**2
-    T_p = (C_T0 * aa) * Omega_p**2 + (C_T1 * bb) * Omega_p + (C_T2 * cc)
+    aa = C_T0 * rho * np.power(D_prop,4) / (4. * np.pi**2)
+    bb = C_T1 * rho * np.power(D_prop,3) * Vp/(2 * np.pi)
+    cc = C_T2 * rho * D_prop**2 * Vp**2
+    T_p = (aa) * Omega_p**2 + (bb) * Omega_p + (cc)
     return T_p
 

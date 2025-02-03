@@ -265,8 +265,8 @@ class QuadplaneDynamics:
         pn = self._state.item(0)
         pd = self._state.item(1)
         #gets the body frame velocities
-        u = self._state.item(2)
-        w = self._state.item(3)
+        pn_dot = self._state.item(2)
+        pd_dot = self._state.item(3)
         #gets the pitch
         theta = self._state.item(4)
         #gets the pitch rate
@@ -276,9 +276,9 @@ class QuadplaneDynamics:
         self.true_state.pos = np.array([[pn],
                                         [0.0],
                                         [pd]])
-        self.true_state.vel = np.array([[u],
+        self.true_state.vel = np.array([[pn_dot],
                                         [0.0], 
-                                        [w]])
+                                        [pd_dot]])
         self.true_state.R = theta_to_rotation_3d(theta=theta)
         self.true_state.omega = np.array([[0.0],
                                           [q],

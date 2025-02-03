@@ -6,10 +6,11 @@
 import numpy as np 
 from scipy.linalg import solve_continuous_are, inv
 from tools.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d
-import parameters.anaconda_parameters as PARAM
+import parameters.anaconda_parameters as QP
 #from controllers.integrator import Integrator
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
+from scipy.optimize import minimize
 
 
 class TrajectoryTracker:
