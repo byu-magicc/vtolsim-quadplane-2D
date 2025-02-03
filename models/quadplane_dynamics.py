@@ -20,8 +20,8 @@ class QuadplaneDynamics:
         self._state = np.array([
             [QP.pn0],    # [0]  north position inertial
             [QP.pd0],    # [1]  down position inertial
-            [QP.pndot0],     # [2]  velocity along inertial north axis
-            [QP.pddot0],     # [3]  velocity along inertial east axis
+            [QP.pn_dot0],     # [2]  velocity along body x-axis
+            [QP.pd_dot0],     # [3]  velocity along body z-axis
             [QP.theta0], # [4] initial pitch angle
             [QP.q0],     # [5]  pitch rate
         ])
@@ -34,8 +34,10 @@ class QuadplaneDynamics:
         #creates the v_air vector, which is an airspeed vector, in the body frame.
         #it is the velocity of the aircraft with respect to the airmass
         #in which it is travelling through. 
-        self.v_air_body = np.array([[QP.u0],
-                                    [QP.w0]])
+        self.v_air_inertial = np.array([[QP.pn_dot0],
+                                        [QP.pd_dot0]])
+        self.v_air_body = np.array([[QP.pn_dot0],
+                                    [QP.pd_dot0]])
         
         potato = 0
 
@@ -68,38 +70,36 @@ class QuadplaneDynamics:
         #u and w are the body frame velocities
         pn = state.item(0)
         pd = state.item(1)
-        u = state.item(2)
-        w = state.item(3)
+        pn_dot = state.item(2)
+        pd_dot = state.item(3)
         theta = state.item(4)
         q = state.item(5)
-        # rotation from body to world frame
-        #TODO Make sure this is correct, and that I am rotating correctly
-        #gets the rotation from Body to inertial frame
-        R_body2inertial = theta_to_rotation_2d(theta=theta)
+
         #   extract forces/moments in body frame
         fx_body = forces_moments.item(0)
         fz_body = forces_moments.item(1)
         My = forces_moments.item(2)
         # position kinematics
 
-        #TODO These two actually do need to be rotated into the inertial frame
-        #rotates  the u and v into the inertial frame and saves it here
-        pos_dot_inert = R_body2inertial @ np.array([[u],
-                                                    [w]])
-                                                    
-        pn_dot = pos_dot_inert.item(0)
-        pd_dot = pos_dot_inert.item(1)
+        #gets the rotation matrix from body to inertial
+        R_body2inertial = theta_to_rotation_2d(theta=theta)
+        #from inertial to body
+        R_inertial2body = np.transpose(R_body2inertial)
+
+        #gets the forces in the inertial frame
+        f_inertial = R_body2inertial @ np.array([[fx_body],
+                                                 [fz_body]])
+
+        #
         # position dynamics
-        #TODO. This Should not be rotated to the inertial frame. u_dot and w_dot 
-        #It is not rotated in the mavsim and vtolsim dynamics
-        u_dot = -q*w + fx_body/QP.mass
-        w_dot = q*u + fz_body/QP.mass
+        pn_ddot = (1/QP.mass)*f_inertial.item(0)
+        pd_ddot = (1/QP.mass)*f_inertial.item(1)
         # rotational kinematics
         theta_dot = q
         # rotatonal dynamics
         q_dot = My/QP.Jy
         # collect the derivative of the states
-        x_dot = np.array([[pn_dot, pd_dot, u_dot, w_dot, theta_dot, q_dot]]).T
+        x_dot = np.array([[pn_dot, pd_dot, pn_ddot, pd_ddot, theta_dot, q_dot]]).T
         return x_dot
 
     #creates the update velocity data function
@@ -119,10 +119,17 @@ class QuadplaneDynamics:
         wind_body += gust  # add the gust
         wind_inertial = R_body2inertial @ wind_body  # wind in the world frame
         self._wind = wind_inertial
-        #gets the velocity in the body frame
-        velocity_body_frame = self._state[2:4]
-        # velocity vector relative to the airmass, in the body frame
-        self.v_air_body = velocity_body_frame - wind_body
+
+
+
+        #gets the velocity in the inertial frame
+        velocity_inertial_frame = self._state[2:4]
+        #gets the air velocity with respect to the inertial frame
+        self.v_air_inertial = velocity_inertial_frame - wind_inertial
+
+        #gets the v air in the body frame
+        self.v_air_body = R_inertial2body @ self.v_air_inertial
+        #computes the actual airspeed
         # compute airspeed
         self._Va = np.linalg.norm( self.v_air_body )
         ur = self.v_air_body.item(0)
@@ -133,7 +140,7 @@ class QuadplaneDynamics:
         else:
             self._alpha = np.arctan(wr/ur)
         #computes the groundspeed
-        self._Vg = np.linalg.norm(velocity_body_frame)
+        self._Vg = np.linalg.norm(velocity_inertial_frame)
         
     #creates the forces moments function
     def _forces_moments(self, delta: MsgDelta)->np.ndarray:
@@ -190,9 +197,9 @@ class QuadplaneDynamics:
         #which is the negative of the airspeed of the aircraft going through the air
 
         #the front vertically oriented prop
-        Va_front_prop = self.v_air_body.item(1)
+        Va_front_prop = -self.v_air_body.item(1)
         #the rear vertically oriented prop
-        Va_rear_prop = self.v_air_body.item(1)
+        Va_rear_prop = -self.v_air_body.item(1)
         #the forward oriented prop, generating the main thrust
         Va_forward_prop = self.v_air_body.item(0)
 
@@ -207,6 +214,19 @@ class QuadplaneDynamics:
         #returns the forces
         return np.array([[fx_body, fz_body, My]]).T
     
+
+    #creates a wrapper function for the forces and moments
+    #has a delta array instead of a message
+    def forces_moments_wrapper(self, deltaArray: np.ndarray):
+        #creates the delta message
+        deltaMessage = MsgDelta()
+        deltaMessage.from_array(delta_array=deltaArray)
+        #runs the _forces_moments function
+        forcesMoments = (self._forces_moments(delta=deltaMessage))[:,0]
+
+        return forcesMoments
+
+
     def _motor_thrust_torque(self, Va: float, delta_t: float)->tuple[float, float]:
         C_Q0 = QP.C_Q0
         C_Q1 = QP.C_Q1
@@ -245,8 +265,8 @@ class QuadplaneDynamics:
         pn = self._state.item(0)
         pd = self._state.item(1)
         #gets the body frame velocities
-        u = self._state.item(2)
-        w = self._state.item(3)
+        pn_dot = self._state.item(2)
+        pd_dot = self._state.item(3)
         #gets the pitch
         theta = self._state.item(4)
         #gets the pitch rate
@@ -256,9 +276,9 @@ class QuadplaneDynamics:
         self.true_state.pos = np.array([[pn],
                                         [0.0],
                                         [pd]])
-        self.true_state.vel = np.array([[u],
+        self.true_state.vel = np.array([[pn_dot],
                                         [0.0], 
-                                        [w]])
+                                        [pd_dot]])
         self.true_state.R = theta_to_rotation_3d(theta=theta)
         self.true_state.omega = np.array([[0.0],
                                           [q],
