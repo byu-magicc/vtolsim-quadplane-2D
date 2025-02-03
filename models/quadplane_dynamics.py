@@ -288,5 +288,3 @@ class QuadplaneDynamics:
         self.true_state.alpha = self._alpha
         #updates the airspeed vector
         self.true_state.v_air = self.v_air_body
-
-
