@@ -13,7 +13,7 @@ from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from controllers.autopilot_fixedWing import Autopilot
 from viewers.view_manager import ViewManager
 from message_types.msg_delta import MsgDelta
-from message_types.msg_autopilot import MsgAutopilot
+from message_types.msg_autopilot import MsgAutopilot_FixedWing
 from message_types.msg_sensors import MsgSensors
 from controllers.wrenchCalculation import wrenchCalculator
 import time
@@ -39,7 +39,7 @@ wrench_calculator = wrenchCalculator()
 
 
 #creates the command for the autopilot
-autopilot_commands = MsgAutopilot()
+autopilot_commands = MsgAutopilot_FixedWing()
 
 #creates the Low level controller
 low_level_controller = LowLevelControl(ts=SIM.ts_simulation, torqueControl=True)

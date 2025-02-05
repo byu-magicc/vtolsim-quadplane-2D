@@ -8,7 +8,7 @@ from controllers.pd_control_with_rate import PDControlWithRate
 
 from message_types.msg_state import MsgState
 from message_types.msg_delta import MsgDelta
-from message_types.msg_autopilot import MsgAutopilot
+from message_types.msg_autopilot import MsgAutopilot_FixedWing
 from tools.saturate import saturate
 from tools.rotations import *
 
@@ -44,7 +44,7 @@ class Autopilot:
 
     #creates the update function
     def update(self,
-               cmd: MsgAutopilot,
+               cmd: MsgAutopilot_FixedWing,
                state: MsgState):
         
         #creates the lateral autopilot

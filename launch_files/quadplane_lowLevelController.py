@@ -15,7 +15,7 @@ from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from controllers.autopilot_fixedWing import Autopilot
 from viewers.view_manager import ViewManager
 from message_types.msg_delta import MsgDelta
-from message_types.msg_autopilot import MsgAutopilot
+from message_types.msg_autopilot import MsgAutopilot_FixedWing
 from message_types.msg_sensors import MsgSensors
 import time
 

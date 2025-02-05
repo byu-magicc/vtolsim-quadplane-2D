@@ -217,9 +217,3 @@ def alphaToRotation(alpha: float):
 
     return np.array([[-np.cos(alpha), np.sin(alpha)],
                      [-np.sin(alpha), -np.cos(alpha)]])
-#creates the function to get the rotation matrix to 
-#transform from the wind frame to the body  frame
-def alphaToRotation(alpha: float):
-
-    return np.array([[-np.cos(alpha), np.sin(alpha)],
-                     [-np.sin(alpha), -np.cos(alpha)]])

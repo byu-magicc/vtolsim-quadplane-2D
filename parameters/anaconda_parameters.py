@@ -12,7 +12,7 @@ from message_types.msg_delta import MsgDelta
 #initial conditions for the QUADPLANE
 pn0 = 0.  # initial north position
 pd0 = 0.  # initial down position
-pn_dot0 = 20.  # initial velocity along inertial x-axis
+pn_dot0 = 0.  # initial velocity along inertial x-axis
 pd_dot0 = 0.  # initial velocity along inertial z-axis
 theta0 = 0.  # initial pitch angle
 q0 = 0.  # initial pitch rate
@@ -44,6 +44,16 @@ gravity_accel_inertial = np.array([[0.0],[gravity]])
 #in units of meters
 ell_f = 0.5
 ell_r = 0.5
+
+
+#mixes individual thrusts to get the net thrust and torque
+individualThrustMixer = np.array([[1, 1],
+                                  [ell_f, -ell_r]])
+
+#creates the mapping from total Thrust and Torque to front and rear thrusts
+individualThrustUnmixer = np.linalg.inv(individualThrustMixer)
+
+
 
 #######################################################################################
 # Aerodynamic Coefficients

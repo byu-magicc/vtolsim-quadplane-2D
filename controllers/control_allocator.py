@@ -27,8 +27,8 @@ class ControlAllocator:
                wrench_des: np.ndarray, 
                state: MsgState,
                ):
-        Va = np.linalg.norm(state.vel)
-        alpha = np.arctan2(state.vel.item(1), state.vel.item(0))
+        Va = state.Va
+        alpha = state.alpha
         q = state.omega.item(1)
         F_des_x = wrench_des.item(0)
         F_des_z = wrench_des.item(1)
@@ -43,7 +43,7 @@ class ControlAllocator:
         M_delta_e = qbar * QP.S_wing * QP.c * QP.C_m_q
         # use elevator to get as much torque as possible
         self.delta.elevator = saturate((M_des - M_0 - M_q * q_nondim) / (M_delta_e+0.00001), 
-                                  -np.radians(35), np.radians(35) )
+                                  -1, 1)
         M_unachieved = M_des - M_0 - M_q * q_nondim - M_delta_e * self.delta.elevator
         # compute desired thrust for each rotor
         T_f_des = -QP.ell_r/(QP.ell_r+QP.ell_f) * F_des_z + 1/(QP.ell_r+QP.ell_f) * M_unachieved
