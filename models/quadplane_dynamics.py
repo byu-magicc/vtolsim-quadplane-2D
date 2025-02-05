@@ -93,7 +93,7 @@ class QuadplaneDynamics:
         #
         # position dynamics
         pn_ddot = (1/QP.mass)*f_inertial.item(0)
-        pd_ddot = (1/QP.mass)*f_inertial.item(1)
+        pd_ddot = QP.gravity + (1/QP.mass)*f_inertial.item(1)
         # rotational kinematics
         theta_dot = q
         # rotatonal dynamics
@@ -155,13 +155,6 @@ class QuadplaneDynamics:
 
         # pitch rate
         q = self._state.item(5)
-        #gets the force of gravity in the inertial frame
-        fg_inertial = QP.mass * QP.gravity_accel_inertial
-        # gravitational force in body frame
-        f_g_body = R_inertial2Body @ fg_inertial
-        # gets each portion of the gravitational force, and creates the fx and fz body components
-        fx_body = f_g_body.item(0)
-        fz_body = f_g_body.item(1)
         #intermediate variables
         qbar = 0.5 * QP.rho * self._Va**2
         ca = np.cos(self._alpha)
@@ -182,8 +175,8 @@ class QuadplaneDynamics:
         F_lift = qbar * QP.S_wing * (CL + QP.C_L_q * q_nondim + QP.C_L_delta_e * delta.elevator)
         F_drag = qbar * QP.S_wing * (CD + QP.C_D_q * q_nondim + QP.C_D_delta_e * delta.elevator)
         # compute longitudinal forces in body frame
-        fx_body += - ca * F_drag + sa * F_lift
-        fz_body += - sa * F_drag - ca * F_lift
+        fx_body = - ca * F_drag + sa * F_lift
+        fz_body = - sa * F_drag - ca * F_lift
         # compute pitching moment 
         My = qbar * QP.S_wing * QP.c * (
                 QP.C_m_0
@@ -223,7 +216,6 @@ class QuadplaneDynamics:
         deltaMessage.from_array(delta_array=deltaArray)
         #runs the _forces_moments function
         forcesMoments = (self._forces_moments(delta=deltaMessage))[:,0]
-
         return forcesMoments
 
 

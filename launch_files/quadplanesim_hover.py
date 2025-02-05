@@ -25,9 +25,9 @@ trajectory = MsgTrajectory()
 viewers = ViewManager(animation=True, data=True)
 
 # trajectory definition (step response)
-pn_command = SignalGenerator(dc_offset=0, amplitude=5, 
+pn_command = SignalGenerator(dc_offset=0, amplitude=0, 
                              start_time=5.0, frequency = 0.0025)
-h_command = SignalGenerator(dc_offset=10, amplitude=5, 
+h_command = SignalGenerator(dc_offset=10, amplitude=0, 
                             start_time=0.0, frequency = 0.0025)
 
 # initialize the simulation time

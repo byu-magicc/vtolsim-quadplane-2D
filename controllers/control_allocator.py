@@ -28,7 +28,7 @@ class ControlAllocator:
                state: MsgState,
                ):
         Va = np.linalg.norm(state.vel)
-        alpha = np.arctan2(state.vel.item(1), state.vel.item(0))
+        alpha = np.arctan2(state.vel.item(2), state.vel.item(0))
         q = state.omega.item(1)
         F_des_x = wrench_des.item(0)
         F_des_z = wrench_des.item(1)
@@ -47,7 +47,7 @@ class ControlAllocator:
         M_unachieved = M_des - M_0 - M_q * q_nondim - M_delta_e * self.delta.elevator
         # compute desired thrust for each rotor
         T_f_des = -QP.ell_r/(QP.ell_r+QP.ell_f) * F_des_z + 1/(QP.ell_r+QP.ell_f) * M_unachieved
-        T_r_des = QP.ell_f/(QP.ell_r+QP.ell_f) * F_des_z - 1/(QP.ell_r+QP.ell_f) * M_unachieved
+        T_r_des = -QP.ell_f/(QP.ell_r+QP.ell_f) * F_des_z - 1/(QP.ell_r+QP.ell_f) * M_unachieved
         T_t_des = F_des_x
         # compute rotor commands
         # velocity in world frame
@@ -56,7 +56,7 @@ class ControlAllocator:
         # compute airspeed through each propeller
         V_f = -v_b.item(2)
         V_r = -v_b.item(2)
-        V_t = -v_b.item(0)
+        V_t = v_b.item(0)
         self.delta.throttle_front = invert_motor(T_f_des, V_f)
         self.delta.throttle_rear = invert_motor(T_r_des, V_r)
         self.delta.throttle_thrust = invert_motor(T_t_des, V_t)
@@ -71,10 +71,10 @@ def invert_motor(T_des: float, Vp: float)->float:
                 1.-delta[0], # delta <=1 
                 delta[0], # delta>=0
                 ]),
-                'jac': lambda delta: np.array([
-                [-1.],
-                [1.],
-                ])
+                # 'jac': lambda delta: np.array([
+                # [-1.],
+                # [1.],
+                # ])
             }
         ])
     result = minimize(objective_motor, 
@@ -109,9 +109,13 @@ def motor_thrust(Vp: float, delta_t: float)->float:
     # Quadratic formula to solve for motor speed
     a = C_Q0 * rho * np.power(D_prop, 5)/((2.*np.pi)**2)
     b = (C_Q1 * rho * np.power(D_prop, 4)/ (2.*np.pi)) * Vp + KQ**2/R_motor
-    c = C_Q2 * rho * np.power(D_prop, 3)* Vp**2 - (KQ / R_motor) * V_in + KQ * i0        
-    # Consider only positive root
-    Omega_p = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
+    c = C_Q2 * rho * np.power(D_prop, 3)* Vp**2 - (KQ / R_motor) * V_in + KQ * i0      
+    if (b**2-4*a*c)<0:
+        print("yikes")  
+        Omega_p=0
+    else:
+        # Consider only positive root
+        Omega_p = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
     aa = rho * np.power(D_prop,4) / (4. * np.pi**2)
     bb = rho * np.power(D_prop,3) * Vp/(2 * np.pi)
     cc = rho * D_prop**2 * Vp**2
