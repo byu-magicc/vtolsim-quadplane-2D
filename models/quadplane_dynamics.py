@@ -93,7 +93,7 @@ class QuadplaneDynamics:
         #
         # position dynamics
         pn_ddot = (1/QP.mass)*f_inertial.item(0)
-        pd_ddot = QP.gravity + (1/QP.mass)*f_inertial.item(1)
+        pd_ddot = (1/QP.mass)*f_inertial.item(1)
         # rotational kinematics
         theta_dot = q
         # rotatonal dynamics
@@ -155,6 +155,13 @@ class QuadplaneDynamics:
 
         # pitch rate
         q = self._state.item(5)
+        #gets the force of gravity in the inertial frame
+        fg_inertial = QP.mass * QP.gravity_accel_inertial
+        # gravitational force in body frame
+        f_g_body = R_inertial2Body @ fg_inertial
+        # gets each portion of the gravitational force, and creates the fx and fz body components
+        fx_body = f_g_body.item(0)
+        fz_body = f_g_body.item(1)
         #intermediate variables
         qbar = 0.5 * QP.rho * self._Va**2
         ca = np.cos(self._alpha)
@@ -175,8 +182,8 @@ class QuadplaneDynamics:
         F_lift = qbar * QP.S_wing * (CL + QP.C_L_q * q_nondim + QP.C_L_delta_e * delta.elevator)
         F_drag = qbar * QP.S_wing * (CD + QP.C_D_q * q_nondim + QP.C_D_delta_e * delta.elevator)
         # compute longitudinal forces in body frame
-        fx_body = - ca * F_drag + sa * F_lift
-        fz_body = - sa * F_drag - ca * F_lift
+        fx_body += - ca * F_drag + sa * F_lift
+        fz_body += - sa * F_drag - ca * F_lift
         # compute pitching moment 
         My = qbar * QP.S_wing * QP.c * (
                 QP.C_m_0
@@ -197,9 +204,9 @@ class QuadplaneDynamics:
         Va_forward_prop = self.v_air_body.item(0)
 
         # compute forces and torques from each propeller
-        Thrust_front, Q_f = self._motor_thrust_torque(Va_front_prop, delta.throttle_front)
-        Thrust_rear, Q_r = self._motor_thrust_torque(Va_rear_prop, delta.throttle_rear)
-        Thrust_forward, Q_t = self._motor_thrust_torque(Va_forward_prop, delta.throttle_thrust)
+        Thrust_front = self._motor_thrust_torque_simplified(delta_t=delta.throttle_front)
+        Thrust_rear = self._motor_thrust_torque_simplified(delta_t=delta.throttle_rear)
+        Thrust_forward = self._motor_thrust_torque_simplified(delta_t=delta.throttle_thrust)
         # add propeller forces and torques to body
         fx_body += Thrust_forward
         fz_body += -Thrust_front - Thrust_rear
@@ -216,10 +223,18 @@ class QuadplaneDynamics:
         deltaMessage.from_array(delta_array=deltaArray)
         #runs the _forces_moments function
         forcesMoments = (self._forces_moments(delta=deltaMessage))[:,0]
+
         return forcesMoments
 
 
-    def _motor_thrust_torque(self, Va: float, delta_t: float)->tuple[float, float]:
+    #creates the new motor thrust and torque function, which is an over simplification,
+    #but is better for our simpler modelling and figuring everything out
+    def _motor_thrust_torque_simplified(self, delta_t: float):
+        #returns the delta_t times the max thrust
+        return delta_t*QP.MaxThrust
+
+
+    def _motor_thrust_torque_advanced(self, Va: float, delta_t: float)->tuple[float, float]:
         C_Q0 = QP.C_Q0
         C_Q1 = QP.C_Q1
         C_T0 = QP.C_T0

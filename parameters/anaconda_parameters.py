@@ -3,6 +3,7 @@
 
 import numpy as np
 from tools.rotations import euler_to_quaternion
+from message_types.msg_delta import MsgDelta
 
 
 ######################################################################################
@@ -11,8 +12,8 @@ from tools.rotations import euler_to_quaternion
 #initial conditions for the QUADPLANE
 pn0 = 0.  # initial north position
 pd0 = 0.  # initial down position
-pn_dot0 = 0.  # initial velocity along body x-axis
-pd_dot0 = 0.  # initial velocity along body z-axis
+pn_dot0 = 20.  # initial velocity along inertial x-axis
+pd_dot0 = 0.  # initial velocity along inertial z-axis
 theta0 = 0.  # initial pitch angle
 q0 = 0.  # initial pitch rate
 Va0 = np.sqrt(pn_dot0**2+pd_dot0**2)
@@ -35,11 +36,24 @@ gravity = 9.81
 #creates the gravity acceleration vector in the inertial frame
 gravity_accel_inertial = np.array([[0.0],[gravity]])
 
+#creates the gravity acceleration vector in the inertial frame
+gravity_accel_inertial = np.array([[0.0],[gravity]])
+
 
 #sets the physical positions of the props. That is, where their bases are located.
 #in units of meters
 ell_f = 0.5
 ell_r = 0.5
+
+
+#mixes individual thrusts to get the net thrust and torque
+individualThrustMixer = np.array([[1, 1],
+                                  [ell_f, -ell_r]])
+
+#creates the mapping from total Thrust and Torque to front and rear thrusts
+individualThrustUnmixer = np.linalg.inv(individualThrustMixer)
+
+
 
 #######################################################################################
 # Aerodynamic Coefficients
@@ -85,3 +99,28 @@ C_Q0 = 0.005230
 C_T2 = -0.1079
 C_T1 = -0.06044
 C_T0 = 0.09357
+
+
+#creates the prop direction 
+propDirections = np.array([1.0, #front vertical prop
+                           -1.0, #rear vertical prop
+                           1.0]) #forward thrust prop
+
+
+#defines the Maximum Thrust. TODO
+#I calculated this by setting delta_t to 1.0 and then running through all the Va's
+MaxThrust = 320.0
+
+
+######################################################################################
+                #  Trim parameters
+######################################################################################
+
+trim_elevator=-0.124778
+trim_forwardThrottle=0.676752
+
+#creates the trim message
+trimDelta = MsgDelta(elevator=trim_elevator, 
+                throttle_thrust=trim_forwardThrottle,
+                throttle_front=0.0,
+                throttle_rear=0.0)
