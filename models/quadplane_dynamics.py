@@ -204,9 +204,9 @@ class QuadplaneDynamics:
         Va_forward_prop = self.v_air_body.item(0)
 
         # compute forces and torques from each propeller
-        Thrust_front, Q_f = self._motor_thrust_torque(Va_front_prop, delta.throttle_front)
-        Thrust_rear, Q_r = self._motor_thrust_torque(Va_rear_prop, delta.throttle_rear)
-        Thrust_forward, Q_t = self._motor_thrust_torque(Va_forward_prop, delta.throttle_thrust)
+        Thrust_front = self._motor_thrust_torque_simplified(delta_t=delta.throttle_front)
+        Thrust_rear = self._motor_thrust_torque_simplified(delta_t=delta.throttle_rear)
+        Thrust_forward = self._motor_thrust_torque_simplified(delta_t=delta.throttle_thrust)
         # add propeller forces and torques to body
         fx_body += Thrust_forward
         fz_body += -Thrust_front - Thrust_rear
@@ -227,7 +227,14 @@ class QuadplaneDynamics:
         return forcesMoments
 
 
-    def _motor_thrust_torque(self, Va: float, delta_t: float)->tuple[float, float]:
+    #creates the new motor thrust and torque function, which is an over simplification,
+    #but is better for our simpler modelling and figuring everything out
+    def _motor_thrust_torque_simplified(self, delta_t: float):
+        #returns the delta_t times the max thrust
+        return delta_t*QP.MaxThrust
+
+
+    def _motor_thrust_torque_advanced(self, Va: float, delta_t: float)->tuple[float, float]:
         C_Q0 = QP.C_Q0
         C_Q1 = QP.C_Q1
         C_T0 = QP.C_T0

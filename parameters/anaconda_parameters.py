@@ -12,7 +12,7 @@ from message_types.msg_delta import MsgDelta
 #initial conditions for the QUADPLANE
 pn0 = 0.  # initial north position
 pd0 = 0.  # initial down position
-pn_dot0 = 0.  # initial velocity along inertial x-axis
+pn_dot0 = 20.  # initial velocity along inertial x-axis
 pd_dot0 = 0.  # initial velocity along inertial z-axis
 theta0 = 0.  # initial pitch angle
 q0 = 0.  # initial pitch rate
@@ -106,6 +106,10 @@ propDirections = np.array([1.0, #front vertical prop
                            -1.0, #rear vertical prop
                            1.0]) #forward thrust prop
 
+
+#defines the Maximum Thrust. TODO
+#I calculated this by setting delta_t to 1.0 and then running through all the Va's
+MaxThrust = 320.0
 
 
 ######################################################################################
