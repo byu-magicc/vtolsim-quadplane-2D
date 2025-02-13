@@ -54,6 +54,9 @@ print("Max Thrust: ", maxThrust)
 print("max thrust index: ", maxThrustIndex)
 print("max thrust Va: ", informationArray[0,maxThrustIndex])
 
+print("Thrust at Zero Airspeed: ", thrusts[500])
+
+
 
 #plots the maximum thrusts
 plt.figure(0)

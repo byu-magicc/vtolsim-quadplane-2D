@@ -124,3 +124,16 @@ trimDelta = MsgDelta(elevator=trim_elevator,
                 throttle_thrust=trim_forwardThrottle,
                 throttle_front=0.0,
                 throttle_rear=0.0)
+
+
+
+######################################################################################
+                #  Stall parameters
+######################################################################################
+
+
+#sets minimum and maximum for the stall conditions
+minimumAlpha = np.radians(-20)
+maximumAlpha = np.radians(20)
+
+alphaRange = [minimumAlpha, maximumAlpha]
