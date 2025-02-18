@@ -33,6 +33,8 @@ class ControlAllocator:
         F_des_x = wrench_des.item(0)
         F_des_z = wrench_des.item(1)
         M_des = wrench_des.item(2)
+        print('F_des=', F_des_x, ', ', F_des_z)
+        print('M_des=', M_des)
         if Va > 0.1:
             q_nondim = q * QP.c / (2 * Va)  
         else:
@@ -40,7 +42,7 @@ class ControlAllocator:
         qbar = 0.5 * QP.rho * Va**2  
         M_0 = qbar * QP.S_wing * QP.c * (QP.C_m_0 + QP.C_m_alpha * alpha)
         M_q = qbar * QP.S_wing * QP.c * QP.C_m_q
-        M_delta_e = qbar * QP.S_wing * QP.c * QP.C_m_q
+        M_delta_e = qbar * QP.S_wing * QP.c * QP.C_m_delta_e
         # use elevator to get as much torque as possible
         self.delta.elevator = saturate((M_des - M_0 - M_q * q_nondim) / (M_delta_e+0.00001), 
                                   -np.radians(35), np.radians(35) )
@@ -57,10 +59,17 @@ class ControlAllocator:
         V_f = -v_b.item(2)
         V_r = -v_b.item(2)
         V_t = v_b.item(0)
-        self.delta.throttle_front = invert_motor(T_f_des, V_f)
-        self.delta.throttle_rear = invert_motor(T_r_des, V_r)
-        self.delta.throttle_thrust = invert_motor(T_t_des, V_t)
+        self.delta.throttle_front = invert_motor_simplified(T_f_des, V_f)
+        self.delta.throttle_rear = invert_motor_simplified(T_r_des, V_r)
+        self.delta.throttle_thrust = invert_motor_simplified(T_t_des, V_t)
         return self.delta
+    
+
+def invert_motor_simplified(T_des: float, Vp: float)->float:
+    # Simplified model is Thurst = QP.MaxThurst * delta, or return delta = T_des/QP.MaxThrust
+    delta_unsat = T_des/QP.MaxThrust
+    delta = saturate(delta_unsat, 0.0, 1.0)
+    return delta
 
 def invert_motor(T_des: float, Vp: float)->float:
     delta0 = 0.5 # initial guess for throttle

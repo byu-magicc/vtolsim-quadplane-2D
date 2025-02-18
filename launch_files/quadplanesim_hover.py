@@ -18,7 +18,7 @@ from controllers.control_allocator import ControlAllocator
 from viewers.view_manager import ViewManager
 
 # initialize elements of the architecture
-quadplane = QuadplaneDynamics(SIM.ts_simulation)
+quadplane = QuadplaneDynamics(SIM.ts_simulation, pn_dot0=0.0, pd_dot0=0.0)
 tracker = TrajectoryTracker(SIM.ts_simulation)
 allocator = ControlAllocator(SIM.ts_simulation)
 trajectory = MsgTrajectory()

@@ -30,20 +30,20 @@ class TrajectoryTracker:
             [1., 0.],
             [0., 1.],
         ])
-        Q = 0.1 * np.diag([
+        Q = 0.001 * np.diag([
             1., # pn - error
             1., # pd - error
             1., # v_n - error
             1., # v_e - error
             ]) 
-        R = 1 * np.diag([
+        R = 1000 * np.diag([
             1., # u - Fn
             1., # u - Fe
             ])  
         P = solve_continuous_are(A, B, Q, R)
         self.K = inv(R) @ B.T @ P
         self.kp_theta = 1.
-        self.kd_theta = 1.
+        self.kd_theta = 10.
         self.dirty_derivative_of_theta = BetaFilter(beta=0.1,Ts=ts_control)
         self.dirty_derivative_of_theta_dot = BetaFilter(beta=0.1,Ts=ts_control)
         self.theta_star = 0.  # theta_star delayed by one sample
@@ -56,7 +56,7 @@ class TrajectoryTracker:
         # compute error state for LQR trajectory tracker
         x_err = np.array([
             [state.pos.item(0) - trajectory.pos.item(0)],
-            [state.pos.item(2) - trajectory.pos.item(1)],
+            [state.pos.item(2) + trajectory.pos.item(1)],
             [state.vel.item(0) - trajectory.vel.item(0)],
             [state.vel.item(2) - trajectory.vel.item(1)],
             ])       
