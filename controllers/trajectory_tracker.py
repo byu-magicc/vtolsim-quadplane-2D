@@ -56,7 +56,7 @@ class TrajectoryTracker:
         # compute error state for LQR trajectory tracker
         x_err = np.array([
             [state.pos.item(0) - trajectory.pos.item(0)],
-            [state.pos.item(2) + trajectory.pos.item(1)],
+            [state.pos.item(2) - trajectory.pos.item(1)],
             [state.vel.item(0) - trajectory.vel.item(0)],
             [state.vel.item(2) - trajectory.vel.item(1)],
             ])       
