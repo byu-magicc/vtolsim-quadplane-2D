@@ -30,23 +30,23 @@ class TrajectoryTracker:
             [1., 0.],
             [0., 1.],
         ])
-        Q = 0.001 * np.diag([
-            1., # pn - error
-            1., # pd - error
-            1., # v_n - error
-            1., # v_e - error
+        Q = 0.01 * np.diag([
+            1.0, # pn - error
+            1.0, # pd - error
+            0.1, # v_n - error
+            0.1, # v_d - error
             ]) 
-        R = 1000 * np.diag([
-            1., # u - Fn
-            1., # u - Fe
+        R = 0.01 * np.diag([
+            1.0, # u - Fn
+            1.0, # u - Fe
             ])  
         P = solve_continuous_are(A, B, Q, R)
         self.K = inv(R) @ B.T @ P
-        self.kp_theta = 1.
-        self.kd_theta = 10.
+        self.kp_theta = 200.0
+        self.kd_theta = 50.0
         self.dirty_derivative_of_theta = BetaFilter(beta=0.1,Ts=ts_control)
         self.dirty_derivative_of_theta_dot = BetaFilter(beta=0.1,Ts=ts_control)
-        self.theta_star = 0.  # theta_star delayed by one sample
+        self.theta_star = 0.0  # theta_star delayed by one sample
         self.commanded_state = MsgState()
 
     def update(self, 
@@ -74,7 +74,8 @@ class TrajectoryTracker:
         M_des = QP.Jy * (theta_star_ddot \
                          - self.kd_theta * (q - theta_star_dot) \
                             - self.kp_theta * (theta-self.theta_star))
-        # desired wrench
+        # M_des = QP.Jy * (- self.kd_theta * q \
+        #                     - self.kp_theta * (theta-self.theta_star))        # desired wrench
         W_des = np.concatenate((F_des_b, np.array([[M_des]])))
         # update delayed variables
         # construct control outputs and commanded states
@@ -95,9 +96,9 @@ def optimize_pitch(F_des_i: np.ndarray,
                    Ts: float,
                    )->float:
     # define limits on pitch theta and pitchrate q
-    theta_max = np.radians(25)
-    theta_min = -np.radians(25)
-    q_max = np.radians(1)
+    theta_max = np.radians(20)
+    theta_min = np.radians(-20)
+    q_max = np.radians(10)
     # compute speed and flight path angle along trajectory
     V_traj = np.linalg.norm(trajectory.vel)
     gamma_traj = np.arctan2(-trajectory.vel.item(1), trajectory.vel.item(0))
@@ -109,8 +110,8 @@ def optimize_pitch(F_des_i: np.ndarray,
             'fun': lambda theta: np.array([
                 theta[0]-theta_min,
                 theta_max-theta[0],
-                theta[0]-theta_old+q_max*Ts,
-                q_max*Ts + theta_old - theta[0],
+                (theta[0]-theta_old)+q_max*Ts,
+                q_max*Ts-(theta[0]-theta_old),
                 ]),
             # 'jac': lambda theta: np.array([
             #     [1.],
@@ -134,11 +135,12 @@ def optimize_pitch(F_des_i: np.ndarray,
 def objective_pitch(theta, F_des_i, V_traj, gamma_traj):
     # desired force from propellers
     Fp = F_p(theta.item(0), F_des_i, V_traj, gamma_traj)
-    if np.abs(V_traj)<5.:
-        J = np.abs(Fp.item(1))**2
-    else:
+    # if np.abs(V_traj)<5.:
+    #     J = np.abs(Fp.item(1))**2
+    # else:
     # objective is the 1-norm of Fp
-        J = np.abs(Fp.item(0)) + np.abs(Fp.item(1))
+    J = np.abs(Fp.item(0)) + np.abs(Fp.item(1))
+    #J = np.abs(Fp.item(0))**2 + np.abs(Fp.item(1))**2
     return J
 
 # compute the desired force from the propellers
@@ -153,11 +155,16 @@ def F_p(theta, F_des, V_traj, gamma_traj):
 def F_0(Va, alpha):
     R = np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])
     # compute Lift and Drag coefficients
-    tmp1 = np.exp(-QP.M * (alpha - QP.alpha0))
-    tmp2 = np.exp(QP.M * (alpha + QP.alpha0))
-    sigma = (1 + tmp1 + tmp2) / ((1 + tmp1) * (1 + tmp2))
-    CL = (1 - sigma) * (QP.C_L_0 + QP.C_L_alpha * alpha) \
-        + sigma * 2 * np.sign(alpha) * np.sin(alpha)**2 * np.cos(alpha)
+    #print('alpha=', alpha)
+    # tmp1 = np.exp(-QP.M * (alpha - QP.alpha0))
+    # tmp2 = np.exp(QP.M * (alpha + QP.alpha0))
+    # sigma = (1.0 + tmp1 + tmp2) / ((1.0 + tmp1) * (1.0 + tmp2))
+    # CL = (1 - sigma) * (QP.C_L_0 + QP.C_L_alpha * alpha) \
+    #     + sigma * 2 * np.sign(alpha) * np.sin(alpha)**2 * np.cos(alpha)
+    if abs(alpha)<QP.alpha0:
+        CL = (QP.C_L_0 + QP.C_L_alpha * alpha)
+    else:
+        CL = 0.0
     CD = QP.C_D_p + ((QP.C_L_0 + QP.C_L_alpha * alpha)**2)/(np.pi * QP.e * QP.AR)
     F = 0.5 * QP.rho * Va**2 * QP.S_wing * R @ np.array([[-CD], [-CL]])
     return F

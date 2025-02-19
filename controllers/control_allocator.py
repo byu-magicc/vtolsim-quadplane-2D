@@ -33,8 +33,8 @@ class ControlAllocator:
         F_des_x = wrench_des.item(0)
         F_des_z = wrench_des.item(1)
         M_des = wrench_des.item(2)
-        print('F_des=', F_des_x, ', ', F_des_z)
-        print('M_des=', M_des)
+        #print('F_des=', F_des_x, ', ', F_des_z)
+        #print('M_des=', M_des)
         if Va > 0.1:
             q_nondim = q * QP.c / (2 * Va)  
         else:
