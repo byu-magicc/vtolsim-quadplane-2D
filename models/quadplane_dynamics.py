@@ -14,16 +14,24 @@ class QuadplaneDynamics:
     #creates the initialization function
     #saves the timestep for simulation, as well as the 
     #bool to enable whether the quadrotors will be enabled or disabled in the dynamics
-    def __init__(self, ts: float):
+    def __init__(self, 
+                 ts: float,
+                 pn0: float=QP.pn0,
+                 pd0: float=QP.pd0,
+                 pn_dot0: float=QP.pn_dot0,
+                 pd_dot0: float=QP.pd_dot0,
+                 theta0: float=QP.theta0,
+                 q0: float=QP.q0,
+                 ):
         self._ts = ts
         #creates the state array and initializes them to the original positions
         self._state = np.array([
-            [QP.pn0],    # [0]  north position inertial
-            [QP.pd0],    # [1]  down position inertial
-            [QP.pn_dot0],     # [2]  velocity along body x-axis
-            [QP.pd_dot0],     # [3]  velocity along body z-axis
-            [QP.theta0], # [4] initial pitch angle
-            [QP.q0],     # [5]  pitch rate
+            [pn0],    # [0]  north position inertial
+            [pd0],    # [1]  down position inertial
+            [pn_dot0],     # [2]  velocity along body x-axis
+            [pd_dot0],     # [3]  velocity along body z-axis
+            [theta0], # [4] initial pitch angle
+            [q0],     # [5]  pitch rate
         ])
         self.true_state = MsgState()
         self._update_velocity_data()
@@ -94,6 +102,8 @@ class QuadplaneDynamics:
         # position dynamics
         pn_ddot = (1/QP.mass)*f_inertial.item(0)
         pd_ddot = (1/QP.mass)*f_inertial.item(1)
+        #print('F=', f_inertial.item(0), ', ', f_inertial.item(1))
+        #print('M=', My)
         # rotational kinematics
         theta_dot = q
         # rotatonal dynamics
@@ -174,8 +184,8 @@ class QuadplaneDynamics:
         # compute Lift and Drag coefficients
         tmp1 = np.exp(-QP.M * (self._alpha - QP.alpha0))
         tmp2 = np.exp(QP.M * (self._alpha + QP.alpha0))
-        sigma = (1 + tmp1 + tmp2) / ((1 + tmp1) * (1 + tmp2))
-        CL = (1 - sigma) * (QP.C_L_0 + QP.C_L_alpha * self._alpha) \
+        sigma = (1.0 + tmp1 + tmp2) / ((1.0 + tmp1) * (1.0 + tmp2))
+        CL = (1.0 - sigma) * (QP.C_L_0 + QP.C_L_alpha * self._alpha) \
              + sigma * 2 * np.sign(self._alpha) * sa**2 * ca
         CD = QP.C_D_p + ((QP.C_L_0 + QP.C_L_alpha * self._alpha)**2)/(np.pi * QP.e * QP.AR)
         # compute Lift and Drag Forces

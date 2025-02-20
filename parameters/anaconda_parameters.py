@@ -10,12 +10,12 @@ from message_types.msg_delta import MsgDelta
                 #Initial Conditions
 ######################################################################################
 #initial conditions for the QUADPLANE
-pn0 = 0.  # initial north position
-pd0 = 0.  # initial down position
-pn_dot0 = 20.  # initial velocity along inertial x-axis
-pd_dot0 = 0.  # initial velocity along inertial z-axis
-theta0 = 0.  # initial pitch angle
-q0 = 0.  # initial pitch rate
+pn0 = 0.0  # initial north position
+pd0 = 0.0  # initial down position
+pn_dot0 = 20.0  # initial velocity along inertial x-axis
+pd_dot0 = 0.0  # initial velocity along inertial z-axis
+theta0 = 0.0  # initial pitch angle
+q0 = 0.0  # initial pitch rate
 Va0 = np.sqrt(pn_dot0**2+pd_dot0**2)
 
 ######################################################################################
@@ -124,16 +124,3 @@ trimDelta = MsgDelta(elevator=trim_elevator,
                 throttle_thrust=trim_forwardThrottle,
                 throttle_front=0.0,
                 throttle_rear=0.0)
-
-
-
-######################################################################################
-                #  Stall parameters
-######################################################################################
-
-
-#sets minimum and maximum for the stall conditions
-minimumAlpha = np.radians(-20)
-maximumAlpha = np.radians(20)
-
-alphaRange = [minimumAlpha, maximumAlpha]

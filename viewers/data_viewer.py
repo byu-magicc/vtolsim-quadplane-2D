@@ -47,20 +47,20 @@ class DataViewer:
         self._plotter.create_data_set(plot_id="pitch", data_label="pitch_e", data_color=estimate_color)
         self._plotter.create_data_set(plot_id="pitch", data_label="pitch_c", data_color=command_color)
         #----------------------------------Second Row--------------------------------------------------
-        self._plotter.create_plot_widget(plot_id='u', xlabel='Time (s)', ylabel='u (m/s)',
+        self._plotter.create_plot_widget(plot_id='v_n', xlabel='Time (s)', ylabel='v_n (m/s)',
                                        window_length=self._data_window_length)
-        self._plotter.create_plot_widget(plot_id='w', xlabel='Time (s)', ylabel='w (m/s)',
+        self._plotter.create_plot_widget(plot_id='v_d', xlabel='Time (s)', ylabel='v_d (m/s)',
                                        window_length=self._data_window_length)
         self._plotter.create_plot_widget(plot_id='q', xlabel='Time (s)', ylabel='q (deg/s)',
                                        window_length=self._data_window_length)
         #u data sets
-        self._plotter.create_data_set(plot_id="u", data_label="u", data_color=truth_color)
-        self._plotter.create_data_set(plot_id="u", data_label="u_e", data_color=estimate_color)
-        self._plotter.create_data_set(plot_id="u", data_label="u_c", data_color=command_color)
+        self._plotter.create_data_set(plot_id="v_n", data_label="v_n", data_color=truth_color)
+        self._plotter.create_data_set(plot_id="v_n", data_label="v_n_e", data_color=estimate_color)
+        self._plotter.create_data_set(plot_id="v_n", data_label="v_n_c", data_color=command_color)
         #w portion
-        self._plotter.create_data_set(plot_id="w", data_label="w", data_color=truth_color)
-        self._plotter.create_data_set(plot_id="w", data_label="w_e", data_color=estimate_color)
-        self._plotter.create_data_set(plot_id="w", data_label="w_c", data_color=command_color)
+        self._plotter.create_data_set(plot_id="v_d", data_label="v_d", data_color=truth_color)
+        self._plotter.create_data_set(plot_id="v_d", data_label="v_d_e", data_color=estimate_color)
+        self._plotter.create_data_set(plot_id="v_d", data_label="v_d_c", data_color=command_color)
         #q portion
         self._plotter.create_data_set(plot_id="q", data_label="q", data_color=truth_color)
         self._plotter.create_data_set(plot_id="q", data_label="q_e", data_color=estimate_color)
@@ -115,8 +115,8 @@ class DataViewer:
             self._plotter.add_data_point(plot_id='north', data_label='north', xvalue=currentTime, yvalue=true_state.pos[0,0])
             self._plotter.add_data_point(plot_id='altitude', data_label='altitude', xvalue=currentTime, yvalue=-true_state.pos[2,0])
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='u', data_label='u', xvalue=currentTime, yvalue=true_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='w', data_label='w', xvalue=currentTime, yvalue=true_state.vel[2,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n', xvalue=currentTime, yvalue=true_state.vel[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d', xvalue=currentTime, yvalue=true_state.vel[2,0])
             #adds the pitchw
             self._plotter.add_data_point(plot_id='pitch', data_label='pitch', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q
@@ -135,34 +135,34 @@ class DataViewer:
         if estimated_state != None:
             phi, theta, psi = rotation_to_euler(estimated_state.R)
             #adds the actual positions
-            self._plotter.add_data_point(plot_id='north', data_label='north', xvalue=currentTime, yvalue=estimated_state.pos[0,0])
-            self._plotter.add_data_point(plot_id='altitude', data_label='altitude', xvalue=currentTime, yvalue=-estimated_state.pos[2,0])
+            self._plotter.add_data_point(plot_id='north', data_label='north_e', xvalue=currentTime, yvalue=estimated_state.pos[0,0])
+            self._plotter.add_data_point(plot_id='altitude', data_label='altitude_e', xvalue=currentTime, yvalue=-estimated_state.pos[2,0])
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='u', data_label='u', xvalue=currentTime, yvalue=estimated_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='w', data_label='w', xvalue=currentTime, yvalue=estimated_state.vel[2,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_e', xvalue=currentTime, yvalue=estimated_state.vel[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_e', xvalue=currentTime, yvalue=estimated_state.vel[2,0])
             #adds the pitchw
-            self._plotter.add_data_point(plot_id='pitch', data_label='pitch', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
+            self._plotter.add_data_point(plot_id='pitch', data_label='pitch_e', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q
-            self._plotter.add_data_point(plot_id='q', data_label='q', xvalue=currentTime, yvalue=self.__rad_to_deg(estimated_state.omega[1,0]))
+            self._plotter.add_data_point(plot_id='q', data_label='q_e', xvalue=currentTime, yvalue=self.__rad_to_deg(estimated_state.omega[1,0]))
             #adds the Airspeed, alpha
-            self._plotter.add_data_point(plot_id='Va', data_label='Va', xvalue=currentTime, yvalue=estimated_state.Va)
-            self._plotter.add_data_point(plot_id='alpha', data_label='alpha', xvalue=currentTime, yvalue=estimated_state.alpha)
+            self._plotter.add_data_point(plot_id='Va', data_label='Va_e', xvalue=currentTime, yvalue=estimated_state.Va)
+            self._plotter.add_data_point(plot_id='alpha', data_label='alpha_e', xvalue=currentTime, yvalue=estimated_state.alpha)
 
         #add the commanded state data
         if commanded_state != None:
             phi, theta, psi = rotation_to_euler(commanded_state.R)
             #adds the actual positions
-            self._plotter.add_data_point(plot_id='north', data_label='north', xvalue=currentTime, yvalue=commanded_state.pos[0,0])
-            self._plotter.add_data_point(plot_id='altitude', data_label='altitude', xvalue=currentTime, yvalue=-commanded_state.pos[2,0])
+            self._plotter.add_data_point(plot_id='north', data_label='north_c', xvalue=currentTime, yvalue=commanded_state.pos[0,0])
+            self._plotter.add_data_point(plot_id='altitude', data_label='altitude_c', xvalue=currentTime, yvalue=-commanded_state.pos[2,0])
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='u', data_label='u', xvalue=currentTime, yvalue=commanded_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='w', data_label='w', xvalue=currentTime, yvalue=commanded_state.vel[2,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_c', xvalue=currentTime, yvalue=commanded_state.vel[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_c', xvalue=currentTime, yvalue=commanded_state.vel[2,0])
             #adds the pitchw
-            self._plotter.add_data_point(plot_id='pitch', data_label='pitch', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
+            self._plotter.add_data_point(plot_id='pitch', data_label='pitch_c', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q
-            self._plotter.add_data_point(plot_id='q', data_label='q', xvalue=currentTime, yvalue=self.__rad_to_deg(commanded_state.omega[1,0]))
+            self._plotter.add_data_point(plot_id='q', data_label='q_c', xvalue=currentTime, yvalue=self.__rad_to_deg(commanded_state.omega[1,0]))
             #adds the Airspeed, alpha
-            self._plotter.add_data_point(plot_id='Va', data_label='Va', xvalue=currentTime, yvalue=commanded_state.Va)
+            self._plotter.add_data_point(plot_id='Va', data_label='Va_c', xvalue=currentTime, yvalue=commanded_state.Va)
 
     def process_app(self):
         self._plotter.process_app(0)
