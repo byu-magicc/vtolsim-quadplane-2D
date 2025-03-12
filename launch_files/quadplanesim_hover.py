@@ -3,6 +3,7 @@ quadplanesim_hover
     - hover control using LQR and trimmed over model
     - Update history:
         1/23/2025 - RWB
+        2/19/2025 - RWB
 """
 
 import os, sys
