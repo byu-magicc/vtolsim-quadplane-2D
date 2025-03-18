@@ -12,14 +12,19 @@ import parameters.simulation_parameters as SIM
 from message_types.msg_state import MsgState
 from message_types.msg_sensors import MsgSensors
 from message_types.msg_delta import MsgDelta
+import numpy as np
 
 class ViewManager:
+
+    #arguments:
+    #1. 
     def __init__(self, 
                  video: bool=False, 
                  data: bool=False, 
                  sensors: bool=False, 
                  animation: bool=False,
                  save_plots: bool=False,
+                 draw_trajectory: bool=False,
                  video_name: str=[]):
         self.video_flag = video
         self.data_plot_flag = data
@@ -39,7 +44,8 @@ class ViewManager:
             if self.animation_flag:
                 self.quadplane_view = QuadplaneViewer(app=self.app, 
                                             dt=SIM.ts_simulation,
-                                            plot_period=SIM.ts_plot_refresh)
+                                            plot_period=SIM.ts_plot_refresh,
+                                            grid_on=False)
             if self.data_plot_flag: 
                 self.data_view = DataViewer(
                     app=self.app,
@@ -87,4 +93,12 @@ class ViewManager:
                 self.sensor_view.save_plot_image(sensorplot_name)
         if self.video_flag: 
             self.video.close()
+
+    #creates the function to  draw a trajectory
+    def drawTrajectory(self, 
+                       points: np.ndarray,
+                       width: float = 2):
+        #calls the add Trajectory function 
+        self.quadplane_view.addTrajectory(points=points,
+                                          width=width)
 

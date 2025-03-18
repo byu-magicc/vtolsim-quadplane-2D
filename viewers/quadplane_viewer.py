@@ -16,7 +16,10 @@ from time import time
 class QuadplaneViewer():
     def __init__(self, app, dt = 0.01,
                  plot_period = 0.2, 
-                 ts_refresh=1./30.): # time interval between a plot update
+                 ts_refresh=1./30.,# time interval between a plot update
+                 grid_on: bool = True,#toggles whether or not the grid is on
+                 axes_on: bool = False, #toggles whether or not the x and z axes stay on with the airplane to show the orientation
+                 alpha_axis_on: bool = False): #toggles whether or not the axis in the direction of velocity is on (visualizing alpha)
         # initialize Qt gui application and window
         self._dt = dt
         self._time = 0
@@ -28,9 +31,13 @@ class QuadplaneViewer():
         self.window.setGeometry(0, 0, 500, 500)  # args: upper_left_x, upper_right_y, width, height
         grid = gl.GLGridItem() # make a grid to represent the ground
         grid.scale(20, 20, 20) # set the size of the grid (distance between each line)
-        self.window.addItem(grid) # add grid to viewer
+        
+        #if the grid is on, then we add the grid as an item to the window
+        if grid_on:
+            self.window.addItem(grid) # add grid to viewer
+        
         self.window.setCameraPosition(distance=20) # distance from center of plot to camera
-        self.window.setBackgroundColor('k')  # set background color to black
+        self.window.setBackgroundColor(0.25)  # set background color to black
         self.window.show()  # display configured window
         self.window.raise_() # bring window to the front
         self.plot_initialized = False # has the mav been plotted yet?
@@ -72,6 +79,13 @@ class QuadplaneViewer():
     def close(self):
         self.window.close()
 
-    def addTrajectory(self, points):
-        blue = np.array([[30, 144, 255, 255]])/255.
-        self.trajectory = DrawTrajectory(points, blue, self.window)
+    def addTrajectory(self, 
+                      points,
+                      width: float = 2):
+        #defines the color blue for the trajectory
+        blue_color = np.array([[30, 144, 255, 255]])/255.
+        #creates an instance of the drawtrajectory class
+        self.trajectory = DrawTrajectory(points, 
+                                         blue_color, 
+                                         self.window,
+                                         width=width)

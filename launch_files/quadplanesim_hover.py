@@ -16,6 +16,7 @@ from message_types.msg_trajectory import MsgTrajectory
 from controllers.trajectory_tracker import TrajectoryTracker
 from controllers.control_allocator import ControlAllocator
 from viewers.view_manager import ViewManager
+from hello_package.hello import sayhello
 
 # initialize elements of the architecture
 quadplane = QuadplaneDynamics(SIM.ts_simulation, pn_dot0=0.0, pd_dot0=0.0)

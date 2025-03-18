@@ -12,7 +12,11 @@ import pyqtgraph.opengl as gl
 
 
 class DrawTrajectory:
-    def __init__(self, points, color, window):
+    def __init__(self, 
+                 points, 
+                 color, 
+                 window,
+                 width: float):
         R = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
         points = R @ np.copy(points)
         
@@ -21,7 +25,7 @@ class DrawTrajectory:
         path_color = np.tile(color, (points.shape[0], 1))
         self.path_plot_object =  gl.GLLinePlotItem(pos=points,
                                                    color=path_color,
-                                                   width=2,
+                                                   width=width,
                                                    antialias=True,
                                                    mode='line_strip')
         window.addItem(self.path_plot_object)
@@ -30,3 +34,6 @@ class DrawTrajectory:
         R = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
         points = R @ np.copy(points)
         self.path_plot_object.setData(pos=points)
+
+
+

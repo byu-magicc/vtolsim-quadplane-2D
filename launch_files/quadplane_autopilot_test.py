@@ -9,7 +9,7 @@ np.errstate(overflow="ignore")
 from copy import deepcopy
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as QP
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.quadplane_dynamics_old_thrust import QuadplaneDynamics
 from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from controllers.autopilot_fixedWing import Autopilot
 from viewers.view_manager import ViewManager
@@ -35,7 +35,7 @@ autopilot_commands = MsgAutopilot_FixedWing()
 
 #sets the autopilot commands
 autopilot_commands.airspeed_command = 25
-autopilot_commands.altitude_command = 110
+autopilot_commands.altitude_command = 0.0
 
 
 
