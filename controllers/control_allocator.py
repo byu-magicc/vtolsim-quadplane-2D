@@ -30,6 +30,7 @@ class ControlAllocator:
         Va = np.linalg.norm(state.vel)
         alpha = np.arctan2(state.vel.item(2), state.vel.item(0))
         q = state.omega.item(1)
+        #These are the Forces desired from the thrusters solely, and not the airframe
         F_des_x = wrench_des.item(0)
         F_des_z = wrench_des.item(1)
         M_des = wrench_des.item(2)

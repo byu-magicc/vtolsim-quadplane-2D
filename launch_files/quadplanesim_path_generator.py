@@ -122,13 +122,9 @@ viewers.drawTrajectory(points=bspline_points_3d,
 sim_time = SIM.start_time
 end_time = SIM.end_time
 
-#array for the positional error
-positionErrors = []
-positionsActual = []
-
-
-#creates the array to store all the states
-allStates = []
+#list to store the commanded wrenches
+commandedWrenches = []
+#
 
 counter = 0
 
@@ -138,9 +134,6 @@ while sim_time < end_time and counter < numPoints:
 
     #sets the estimated state
     estimated_state = quadplane.true_state
-
-    #stores the true state in the all states vector
-    allStates.append(quadplane.true_state)
 
     #updates the trajectory position and velocity
     desiredPosition = pos_data[:,counter].reshape((2,1))
@@ -155,6 +148,7 @@ while sim_time < end_time and counter < numPoints:
     # trajectory velocity, acceleration, pitch, and pitch rate all default to zero
     # -------controller-------------
     estimated_state = quadplane.true_state  # uses true states in the control
+    #This is commanded wrench to be obtained from the propellers
     commanded_wrench, commanded_state = tracker.update(trajectory, estimated_state)
     delta = allocator.update(commanded_wrench, estimated_state)
     #-------update physical system-------------
@@ -170,14 +164,17 @@ while sim_time < end_time and counter < numPoints:
         None,  # measurements
     )
 
+
+    #appends the commanded wrench
+    commandedWrenches.append(commanded_wrench)
+
     #gets the positional error 
     actual_pos_3d = quadplane.true_state.pos
     #reduces it down to 2d
     actual_pos_2d = np.array([[actual_pos_3d.item(0)],
                               [actual_pos_3d.item(2)]])
 
-    #saves the actual positions of the aircraft
-    positionsActual.append(actual_pos_2d)
+
 
     time.sleep(0.01)
 
@@ -187,40 +184,18 @@ while sim_time < end_time and counter < numPoints:
     sim_time += SIM.ts_simulation
 
 
+#at the end, we parse through the commanded wrenches data
+commandedWrenches = np.array(commandedWrenches)[:,:,0].T
+
+plt.figure(0)
+plt.plot(commandedWrenches[0,:])
+plt.title("Commanded X Force")
+plt.show()
+
+plt.figure(1)
+plt.plot(commandedWrenches[1,:])
+plt.title("Commanded Z Force")
+plt.show()
 
 
-#This section parses the actual state data and puts it into useable forms
-
-#creates the position array
-posList = []
-#creates the velocity array
-velList = []
-#creates the rotation list
-rotationList = []
-#creates the list of the angle of attacks 
-alphaList = []
-
-for particularState in allStates:
-    #appends the respective information here
-    posList.append(particularState.pos)
-    velList.append(particularState.vel)
-    rotationList.append(particularState.R)
-    alphaList.append(particularState.alpha)
-
-#converts all of these to the respective arrays
-posList = np.array(posList)[:,:,0].T
-velList = np.array(velList)[:,:,0].T
-rotationList = np.array(rotationList)
-alphaList = np.array(alphaList)
-
-
-#'''
-#converts the positional data
-positionsActual = np.array(positionsActual)[:,:,0].T
-
-#plots it out comparing with the actual position and with the error
-plotSplinePositionerror_2d(bspline_data=pos_data, 
-                           position_data=positionsActual,
-                           waypoints=waypointData)
-
-
+potato = 0
