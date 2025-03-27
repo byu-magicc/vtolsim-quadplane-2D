@@ -70,10 +70,13 @@ x1 = C_end[0,:]
 y1 = C_end[1,:]
 
 print(C_init)
+print(C_end)
 plt.figure()
 plt.scatter(x=C_init[0,:],y=-C_init[1,:], label='initial conditions')
-#plt.scatter(x=C_end[0,:], y=-C_end[1,:], label='test')
+plt.scatter(x=C_end[0,:], y=-C_end[1,:], label='test')
 plt.legend()
+plt.xlabel('x')
+plt.ylabel('altitude')
 plt.show()
 
 
