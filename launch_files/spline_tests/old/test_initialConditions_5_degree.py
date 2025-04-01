@@ -20,7 +20,7 @@ cruise_altitude = -10.0
 cruise_velocity = 25.0
 
 #defines the End conditions for the takeoff
-E = np.array([[transition_distance, cruise_velocity, 0.0, 0, 0],
+E = np.array([[transition_distance, cruise_velocity, 0, 0, 0],
               [cruise_altitude,     0,               0, 0, 0]])
 
 

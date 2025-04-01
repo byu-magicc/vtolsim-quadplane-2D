@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 accel_init = -9.8
 
 
-S = np.array([[0, 25, 0],
-              [-10.0, 0, 0]])
+S = np.array([[0,        25,  0],
+              [-10.0,    0,   0]])
 
 
 #sets the distance covered during the transition
@@ -27,8 +27,8 @@ cruise_altitude = -10.0
 cruise_velocity = 25.0
 
 #defines the End conditions for the takeoff
-E = np.array([[100.0, 0, 0],
-              [0, 0, 4.0]])
+E = np.array([[100.0, 0,  0],
+              [0,     0,  4.0]])
 
 
 #defines the M to be 9
