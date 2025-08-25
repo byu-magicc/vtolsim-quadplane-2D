@@ -43,7 +43,7 @@ waypoint_0 = Waypoint(location=np.array([[0.0],[0.0]]),
 #gets the intermediate waypoints
 intermediateWaypoints = np.array([[30.0, -5.0]]).T
 
-waypoint_4 = Waypoint(location=np.array([[300.0],[-50.0]]),
+waypoint_4 = Waypoint(location=np.array([[300.0],[-10.0]]),
                       velocity=np.array([[25.0],[-5.0]]),
                       acceleration=np.array([[0.0],[0.0]]))
 
@@ -128,12 +128,12 @@ commandedWrenches = []
 
 counter = 0
 
+
 #creates the main simulation loop
 print("Press CTRL-C to exit...")
 while sim_time < end_time and counter < numPoints:
 
-    #sets the estimated state
-    estimated_state = quadplane.true_state
+
 
     #updates the trajectory position and velocity
     desiredPosition = pos_data[:,counter].reshape((2,1))
@@ -175,6 +175,13 @@ while sim_time < end_time and counter < numPoints:
                               [actual_pos_3d.item(2)]])
 
 
+
+
+    #creates a delay for my setup
+    if sim_time == SIM.start_time:
+        time.sleep(10.0)
+    #sets the estimated state
+    estimated_state = quadplane.true_state
 
     time.sleep(0.01)
 

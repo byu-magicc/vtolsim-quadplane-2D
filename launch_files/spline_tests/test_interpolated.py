@@ -5,7 +5,7 @@ import numpy as np
 from eVTOL_BSplines.path_generation_helpers.matrix_helpers import B_hat_B_hat_inv, uniform_knot_point_generator
 from eVTOL_BSplines.path_generation_helpers.matrix_helpers import initializeControlPoints
 from eVTOL_BSplines.eVTOL_pathGeneration import eVTOL_PathGen
-from eVTOL_BSplines.path_generation_helpers.conditions_helpers import conditions_d5
+from eVTOL_BSplines.path_generation_helpers.conditions_helpers import conditions
 from bsplinegenerator.bsplines import BsplineEvaluation
 from bsplinegenerator.bspline_plotter import plot_bspline
 from IPython.display import display
@@ -55,11 +55,21 @@ takeoff_accel_init = np.array([[0],[-5.0]])
 takeoff_jerk_init = np.array([[0],[0]])
 takeoff_snap_init = np.array([[0],[0]])
 
-takeoff_init_conditions = conditions_d5(pos=takeoff_pos_init,
+takeoff_init_conditions = conditions(pos=takeoff_pos_init,
                                         vel=takeoff_vel_init,
                                         accel=takeoff_accel_init,
                                         jerk=takeoff_jerk_init,
                                         snap=takeoff_snap_init)
+
+
+takeoff_init_conditions = conditions(numDerivatives=(degree-1),
+                                     dimension=dimension,
+                                     time=0.0)
+takeoff_init_conditions.setPosition(pos=takeoff_pos_init)
+takeoff_init_conditions.setVelocity(vel=takeoff_vel_init)
+takeoff_init_conditions.setAccel(accel=takeoff_accel_init)
+takeoff_init_conditions.setJerk(jerk=takeoff_jerk_init)
+takeoff_init_conditions.setSnap(snap=takeoff_snap_init)                                        
 
 #calls the function to use the initial conditions to creates some control points
 pathGenerator.setControlPoints_conditions(time=0.0,
@@ -68,7 +78,7 @@ pathGenerator.setControlPoints_conditions(time=0.0,
 
 
 
-takeoff_final_conditions = conditions_d5(pos=np.array([[takeoffDistance],[cruisingAltitude]]),
+takeoff_final_conditions = conditions(pos=np.array([[takeoffDistance],[cruisingAltitude]]),
                                          vel=np.array([[cruisingSpeed],[0.0]]),
                                          accel=np.array([[0],[0]]),
                                          jerk=np.array([[0],[0]]),
@@ -94,7 +104,7 @@ descent_end_x = descent_start_x + descent_distance
 
 
 #defines the landing initial conditions
-landing_init_conditions = conditions_d5(pos=np.array([[descent_start_x],[cruisingAltitude]]),
+landing_init_conditions = conditions(pos=np.array([[descent_start_x],[cruisingAltitude]]),
                                         vel=np.array([[cruisingSpeed],[0]]),
                                         accel=np.array([[0],[0]]),
                                         jerk=np.array([[0],[0]]),
@@ -102,7 +112,7 @@ landing_init_conditions = conditions_d5(pos=np.array([[descent_start_x],[cruisin
 pathGenerator.setControlPoints_conditions(time=M_landing_start,
                                           conditions=landing_init_conditions)
 
-landing_final_conditions = conditions_d5(pos=np.array([[descent_end_x],[0.0]]),
+landing_final_conditions = conditions(pos=np.array([[descent_end_x],[0.0]]),
                                          vel=np.array([[0.0],[0.1]]),
                                          accel=np.array([[0],[0]]),
                                          jerk=np.array([[0],[0]]),
@@ -136,6 +146,66 @@ bspline = BsplineEvaluation(control_points=controlPoints,
 
 bspline.plot_spline(num_data_points_per_interval=20)
 
+
+#gets the bspline data as a function of time
+bspline_data = bspline.get_spline_data(num_data_points_per_interval=100)
+
+
+import os, sys
+from pathlib import Path
+sys.path.insert(0,os.fspath(Path(__file__).parents[2]))
+
+
+import parameters.simulation_parameters as SIM
+from tools.signal_generator import SignalGenerator
+from models.quadplane_dynamics import QuadplaneDynamics
+from message_types.msg_trajectory import MsgTrajectory
+from controllers.trajectory_tracker import TrajectoryTracker
+from controllers.control_allocator import ControlAllocator
+from viewers.view_manager import ViewManager
+
+# initialize elements of the architecture
+quadplane = QuadplaneDynamics(SIM.ts_simulation, pn_dot0=0.0, pd_dot0=0.0)
+tracker = TrajectoryTracker(SIM.ts_simulation)
+allocator = ControlAllocator(SIM.ts_simulation)
+trajectory = MsgTrajectory()
+viewers = ViewManager(animation=True, data=True)
+
+
+
+# initialize the simulation time
+sim_time = SIM.start_time
+end_time = 100.
+
+counter = 0
+# main simulation loop
+print("Press Command-Q to exit...")
+while sim_time < end_time:
+    #-------estimator-------------
+    estimated_state = quadplane.true_state  
+    #-------trajectory generator-------------
+    trajectory.pos = bspline_data[:,counter]
+    # trajectory velocity, acceleration, pitch, and pitch rate all default to zero
+    # -------controller-------------
+    estimated_state = quadplane.true_state  # uses true states in the control
+    commanded_wrench, commanded_state = tracker.update(trajectory, estimated_state)
+    delta = allocator.update(commanded_wrench, estimated_state)
+    #-------update physical system-------------
+    current_wind = np.zeros((4, 1))
+    quadplane.update(delta, current_wind)  
+    #-------update viewers-------------
+    viewers.update(
+        sim_time,
+        quadplane.true_state,  # true states
+        estimated_state,  # estimated states
+        commanded_state,  # commanded states
+        delta,  # inputs to aircraft
+        None,  # measurements
+    )    
+    #-------increment time-------------
+    sim_time += SIM.ts_simulation
+
+    counter += 1
 
 
 potato = 0
