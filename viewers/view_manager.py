@@ -12,6 +12,8 @@ import parameters.simulation_parameters as SIM
 from message_types.msg_state import MsgState
 from message_types.msg_sensors import MsgSensors
 from message_types.msg_delta import MsgDelta
+from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
+from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
 import numpy as np
 
 class ViewManager:
@@ -25,7 +27,8 @@ class ViewManager:
                  animation: bool=False,
                  save_plots: bool=False,
                  draw_trajectory: bool=False,
-                 video_name: str=[]):
+                 video_name: str=[],
+                 world_map: MsgWorldMap = None):
         self.video_flag = video
         self.data_plot_flag = data
         self.sensor_plot_flag = sensors
@@ -45,7 +48,8 @@ class ViewManager:
                 self.quadplane_view = QuadplaneViewer(app=self.app, 
                                             dt=SIM.ts_simulation,
                                             plot_period=SIM.ts_plot_refresh,
-                                            grid_on=False)
+                                            grid_on=False,
+                                            worldMap=world_map)
             if self.data_plot_flag: 
                 self.data_view = DataViewer(
                     app=self.app,
@@ -84,6 +88,15 @@ class ViewManager:
         if self.video_flag is True: 
             self.video.update(sim_time)
     
+    def drawWaypoints(self,
+                      waypoints: MsgWaypoints_SFC,
+                      n_hat: np.ndarray = None,
+                      p0: np.ndarray = None):
+
+        self.quadplane_view.drawWaypoints(waypoints=waypoints,
+                                          n_hat=n_hat,
+                                          p0=p0)
+
     def close(self, dataplot_name: str=[], sensorplot_name: str=[]):
         # Save an Image of the Plot
         if self.save_plots_flag:

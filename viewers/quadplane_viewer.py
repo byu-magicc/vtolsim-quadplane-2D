@@ -11,6 +11,19 @@ from viewers.draw_quadplane import DrawQuadplane
 import numpy as np
 from viewers.draw_trajectory import DrawTrajectory
 from time import time
+from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
+from rrt_mavsim.viewers.draw_map import DrawMap
+from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
+from rrt_mavsim.viewers.draw_waypoints import DrawWaypoints
+
+
+
+red = np.array([[204, 0, 0],
+                [204, 0, 0]])/255.
+
+
+purple = np.array([[170, 0, 255],
+                   [170, 0, 255]])/255
 
 
 class QuadplaneViewer():
@@ -19,18 +32,31 @@ class QuadplaneViewer():
                  ts_refresh=1./30.,# time interval between a plot update
                  grid_on: bool = True,#toggles whether or not the grid is on
                  axes_on: bool = False, #toggles whether or not the x and z axes stay on with the airplane to show the orientation
-                 alpha_axis_on: bool = False): #toggles whether or not the axis in the direction of velocity is on (visualizing alpha)
+                 alpha_axis_on: bool = False, #toggles whether or not the axis in the direction of velocity is on (visualizing alpha)
+                 worldMap: MsgWorldMap = None):
         # initialize Qt gui application and window
         self._dt = dt
         self._time = 0
         self._plot_period = plot_period
         self._plot_delay = 0
+        self.scale = 2500
         self.app = app  # initialize QT, external so that only one QT process is running
         self.window = gl.GLViewWidget()  # initialize the view object
         self.window.setWindowTitle('Quadplane Viewer')
-        self.window.setGeometry(0, 0, 500, 500)  # args: upper_left_x, upper_right_y, width, height
+        self.window.setGeometry(500, 0, 500, 500)  # args: upper_left_x, upper_right_y, width, height
+        
+        center = self.window.cameraPosition()
+        center.setX(1000)
+        center.setY(1000)
+        center.setZ(0)
+        self.window.setCameraPosition(pos=center,
+                                      distance=self.scale,
+                                      elevation=50,
+                                      azimuth=0)
+        #TODO. Make sure this actually works
+        self.window.setBackgroundColor('k')
         grid = gl.GLGridItem() # make a grid to represent the ground
-        grid.scale(20, 20, 20) # set the size of the grid (distance between each line)
+        grid.scale(self.scale/20, self.scale/20, self.scale/20) # set the size of the grid (distance between each line)
         
         #if the grid is on, then we add the grid as an item to the window
         if grid_on:
@@ -38,15 +64,37 @@ class QuadplaneViewer():
         
         self.window.setCameraPosition(distance=20) # distance from center of plot to camera
         self.window.setBackgroundColor(0.25)  # set background color to black
+        
+        #draws the map
+        DrawMap(map=worldMap,
+                window=self.window)   
+        
         self.window.show()  # display configured window
         self.window.raise_() # bring window to the front
         self.plot_initialized = False # has the mav been plotted yet?
         self.quadplane_plot = []
         self.ts_refresh = ts_refresh
         self.t = time()
-        self.t_next = self.t          
+        self.t_next = self.t  
 
-    def update(self, state):
+    def drawWaypoints(self,
+                      waypoints: MsgWaypoints_SFC,
+                      lineColor: np.ndarray = red,
+                      n_hat: np.ndarray = None,
+                      p0: np.ndarray = None):
+        
+        DrawWaypoints(waypoints=waypoints,
+                      window=self.window,
+                      lineColor=lineColor,
+                      n_hat=n_hat,
+                      p0=p0)
+
+
+
+
+    def update(self,
+               state,
+               ):
         # initialize the drawing the first time update() is called
         if not self.plot_initialized:
             self.quadplane_plot = DrawQuadplane(state, self.window)
