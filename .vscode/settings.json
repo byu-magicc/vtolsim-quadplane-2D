@@ -1,7 +1,5 @@
 {
     "cmake.sourceDirectory": "C:/Users/dben1/Documents/001_School/Masters/vtolsim/planners/trajectorygenerator",
-    "python.languageServer": "Jedi",
-    "editor.semanticHighlighting.enabled": true,
     "ros.distro": "humble",
     "python.analysis.extraPaths": [
         "${workspaceFolder}",
