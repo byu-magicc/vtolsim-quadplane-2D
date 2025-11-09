@@ -91,11 +91,13 @@ class ViewManager:
     def drawWaypoints(self,
                       waypoints: MsgWaypoints_SFC,
                       n_hat: np.ndarray = None,
-                      p0: np.ndarray = None):
+                      p0: np.ndarray = None,
+                      color = 'r'):
 
         self.quadplane_view.drawWaypoints(waypoints=waypoints,
                                           n_hat=n_hat,
-                                          p0=p0)
+                                          p0=p0,
+                                          lineColor=color)
 
     def close(self, dataplot_name: str=[], sensorplot_name: str=[]):
         # Save an Image of the Plot

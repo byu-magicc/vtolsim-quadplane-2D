@@ -2,7 +2,6 @@
 import os, sys
 from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
-
 import numpy as np
 from rrt_mavsim.message_types.msg_world_map import MsgWorldMap, PlanarVTOLParams, MapTypes
 from rrt_mavsim.viewers.view_manager import ViewManager
@@ -11,7 +10,22 @@ import rrt_mavsim.parameters.planner_parameters as PLAN
 import rrt_mavsim.parameters.flightCorridor_parameters as FLIGHT_PLAN
 import rrt_mavsim.parameters.planarVTOL_map_parameters as VTOL_PARAM
 from viewers.view_manager import ViewManager
+from rrt_mavsim.tools.smoothingTools import flight_corridors_smooth_path
+from rrt_mavsim.tools.waypointsTools import getNumCntPts_list
 
+#current file path
+currentFilePath = Path(__file__).resolve()
+mainDirectoryFilePath = currentFilePath.parents[1]
+#sets the subfolder
+lookupDirectory = mainDirectoryFilePath / 'lookupTables'
+
+mapFileName = 'worldMap.npz'
+waypointsSmoothFileName = 'waypointsSmooth.npz'
+waypointsNotSmoothFileName = 'waypointsNotSmooth.npz'
+
+mapDirectory = lookupDirectory / mapFileName
+waypointsSmoothDirectory = lookupDirectory / waypointsSmoothFileName
+waypointsNotSmoothDirectory = lookupDirectory / waypointsNotSmoothFileName
 
 numDimensions = 2
 
@@ -56,9 +70,30 @@ planner.generatePaths(startPosition_3D=startPosition,
 #gets the not smooth waypoints
 waypointsNotSmooth = planner.getWaypointsNotSmooth()
 
-viewer.drawWaypoints(waypoints=waypointsNotSmooth,
+#gets the smooth waypoints
+waypoints_smooth = flight_corridors_smooth_path(waypoints_not_smooth=waypointsNotSmooth,
+                                                world_map=worldMap,
+                                                angle_max=np.pi/2)
+
+viewer.drawWaypoints(waypoints=waypoints_smooth,
                      n_hat=n_hat,
                      p0=mapOrigin_3D)
+
+
+
+
+#for testing, I would like to not have to compute everything out again every time.
+#I am going to save everything to an npz file
+
+
+
+np.savez(mapDirectory, model=worldMap)
+np.savez(waypointsSmoothDirectory, model=waypoints_smooth)
+np.savez(waypointsNotSmoothDirectory, model=waypointsNotSmooth)
+
+
+#gets the list of number of control points
+
 
 
 potato = 0
