@@ -6,6 +6,7 @@ import numpy as np
 from rrt_mavsim.message_types.msg_world_map import MsgWorldMap, PlanarVTOLParams, MapTypes
 from rrt_mavsim.viewers.view_manager import ViewManager
 from rrt_mavsim.planners.rrt_sfc_bspline import RRT_SFC_BSpline
+from rrt_mavsim.planners.bspline_generator import BSplineGenerator
 import rrt_mavsim.parameters.planner_parameters as PLAN
 import rrt_mavsim.parameters.flightCorridor_parameters as FLIGHT_PLAN
 import rrt_mavsim.parameters.planarVTOL_map_parameters as VTOL_PARAM
@@ -57,22 +58,17 @@ viewer.drawWaypoints(waypoints=waypoints_smooth,
                      p0=mapOrigin_3D,
                      color='r')
 
-d = 3
-M = 10
-segmentLength = 250
-
-numPointsPerUnit = (d + M) / segmentLength
 
 
-numCntPts_list = getNumCntPts_list(waypoints=waypoints_smooth,
-                                     numPointsPerUnit=numPointsPerUnit)
+
+#calls the function to create the B-Spline Path
+bspline_gen = BSplineGenerator(numDimensions=worldMap.numDimensions_algorithm,
+                               degree=FLIGHT_PLAN.degree,
+                               M=FLIGHT_PLAN.M)
 
 
-initialControlPoints, endControlPoints =\
-    getInitialFinalControlPoints(corridorWaypoints=waypoints_smooth,
-                                 Va=25,
-                                 degree=3,
-                                 M=10)
+bspline_gen.generatePath(waypoints=waypoints_smooth,
+                         numPointsPerUnit=FLIGHT_PLAN.numPoints_perUnit)
 
 
 potato = 0
