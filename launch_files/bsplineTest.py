@@ -13,6 +13,8 @@ import rrt_mavsim.parameters.planarVTOL_map_parameters as VTOL_PARAM
 from viewers.view_manager import ViewManager
 from rrt_mavsim.tools.smoothingTools import flight_corridors_smooth_path
 from rrt_mavsim.tools.waypointsTools import getNumCntPts_list, getInitialFinalControlPoints
+from rrt_mavsim.tools.plane_projections import map_2D_to_3D
+from bsplinegenerator.bsplines import BsplineEvaluation
 
 #current file path
 currentFilePath = Path(__file__).resolve()
@@ -59,6 +61,9 @@ viewer.drawWaypoints(waypoints=waypoints_smooth,
                      color='r')
 
 
+purple = np.array([[170, 0, 255],
+                   [170, 0, 255]])/255
+
 
 
 #calls the function to create the B-Spline Path
@@ -66,9 +71,31 @@ bspline_gen = BSplineGenerator(numDimensions=worldMap.numDimensions_algorithm,
                                degree=FLIGHT_PLAN.degree,
                                M=FLIGHT_PLAN.M)
 
+#gets the path of control points through the SFCs based on the SFCs
+outputControlPoints_2D = bspline_gen.generatePath(waypoints=waypoints_smooth,
+                                               numPointsPerUnit=FLIGHT_PLAN.numPoints_perUnit)
 
-bspline_gen.generatePath(waypoints=waypoints_smooth,
-                         numPointsPerUnit=FLIGHT_PLAN.numPoints_perUnit)
+
+#gets the same ouptut control points in 3D
+outputControlPoints_3D = map_2D_to_3D(pos_2D=outputControlPoints_2D,
+                                      n_hat=n_hat,
+                                      p0=mapOrigin_3D)
+
+#gets the spline object
+bspline_object = BsplineEvaluation(control_points=outputControlPoints_3D,
+                                   order=FLIGHT_PLAN.degree,
+                                   start_time=0.0)
+
+#draws the sampled points
+bspline_sampledPoints, bspline_timeData = bspline_object.get_spline_data(num_data_points_per_interval=100)
+
+viewer.drawTrajectory(controlPoints=outputControlPoints_3D,
+                      sampledPoints_spline=bspline_sampledPoints,
+                      lineColor=purple,
+                      lineWidth=2.0,
+                      pointWidth=4.0)
+
+#TODO make colors reference package
 
 
 potato = 0

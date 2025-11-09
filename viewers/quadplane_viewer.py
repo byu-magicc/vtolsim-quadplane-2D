@@ -15,6 +15,7 @@ from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
 from rrt_mavsim.viewers.draw_map import DrawMap
 from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
 from rrt_mavsim.viewers.draw_waypoints import DrawWaypoints
+from rrt_mavsim.viewers.draw_trajectory import DrawTrajectory
 from scipy.spatial.transform import Rotation as R
 
 
@@ -94,6 +95,19 @@ class QuadplaneViewer():
                       n_hat=n_hat,
                       p0=p0)
 
+    def drawTrajectory(self,
+                       controlPoints: np.ndarray,
+                       sampledPoints_spline: np.ndarray,
+                       lineColor,
+                       lineWidth: float,
+                       pointWidth: float):
+        
+        DrawTrajectory(controlPoints=controlPoints,
+                       sampledPoints_spline=sampledPoints_spline,
+                       window=self.window,
+                       lineColor=lineColor,
+                       lineWidth=lineWidth,
+                       pointWidth=pointWidth)
 
 
 
