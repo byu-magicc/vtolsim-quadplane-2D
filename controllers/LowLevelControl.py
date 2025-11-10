@@ -16,7 +16,8 @@ from message_types.msg_state import MsgState
 
 import parameters.anaconda_parameters as QP
 
-from controllers.pid_control import PControl
+from controllers.p_control import PControl
+
 
 from tools.rotations import *
 
@@ -56,9 +57,13 @@ class LowLevelControl:
         
         # control gains: q-channel
         q_kp = 0.08
+
+        #maximum torque control
+        tau_max = 5.0
         
         #creates the proportional control to go from q desired to tau desired
-        self.q_ctrl = PControl(kp=q_kp, Ts=SIM.ts_simulation)
+        self.q_ctrl = PControl(kp=q_kp,
+                               limit=tau_max)
         
         #saves the torque control vector
         self.torqueControl = torqueControl

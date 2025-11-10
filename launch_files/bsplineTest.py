@@ -96,6 +96,7 @@ viewer.drawTrajectory(controlPoints=outputControlPoints_3D,
                       pointWidth=4.0)
 
 #TODO make colors reference package
+#TODO make altitude frame Rotation in a parameters file too
 
 
 potato = 0

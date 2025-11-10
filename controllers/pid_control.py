@@ -9,14 +9,28 @@ import numpy as np
 
 
 class PIDControl:
-    def __init__(self, kp=0.0, ki=0.0, kd=0.0, Ts=0.01, sigma=0.05, limit=1.0):
+    def __init__(self,
+                 kp: float = 0.0, 
+                 ki: float = 0.0, 
+                 kd: float = 0.0, 
+                 Ts: float = 0.01, 
+                 sigma: float = 0.05, 
+                 limit: float = 1.0):
+        
+        #proportional gain
         self.kp = kp
+        #integrator gain
         self.ki = ki
+        #derivative gain
         self.kd = kd
+        #time sampling constant
         self.Ts = Ts
         self.limit = limit
+        #the value of the integrator
         self.integrator = 0.0
+        #the derivative of the error
         self.error_dot = 0.0
+        #the previous error sample
         self.error_delay_1 = 0.0
         self.y_dot = 0.0
         self.y_delay_1 = 0.0
@@ -24,7 +38,11 @@ class PIDControl:
         self.a1 = (2.0 * sigma - Ts) / (2.0 * sigma + Ts)
         self.a2 = 2.0 / (2.0 * sigma + Ts)
 
-    def update(self, y_ref, y, reset_flag=False):
+
+    def update(self, 
+               y_ref: float, 
+               y: float, 
+               reset_flag: bool = False):
         if reset_flag is True:
             self.integrator = 0.0
             self.error_dot = 0.0
@@ -107,3 +125,6 @@ class PIDControl:
         else:
             u_sat = u
         return u_sat
+    
+
+

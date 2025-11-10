@@ -17,12 +17,8 @@ class wrenchCalculator:
         #creates a counter
         self.counter = 0
 
-    
-
     #creates the forces moments and the Jacobian for it
     def forces_moments_derivatives(self, delta: MsgDelta, state: MsgState):
-
-        temp = 0
 
         #gets the forces and moments achieved
         wrenchAchieved = self.forces_moments_achieved(delta=delta, state=state)
