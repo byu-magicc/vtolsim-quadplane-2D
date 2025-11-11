@@ -158,20 +158,20 @@ class QuadplaneDynamics:
         theta = self._state.item(4)
 
         #gets the rotation matrix from the body to the inertial
-        R_body2Inertial = theta_to_rotation_2d(theta=theta)
+        R_body2Inertial_2D = theta_to_rotation_2d(theta=theta)
         #gets the rotation matrix from the inertial to the body
-        R_inertial2Body = np.transpose(R_body2Inertial)
+        R_inertial2Body_2D = np.transpose(R_body2Inertial_2D)
 
 
         # pitch rate
         q = self._state.item(5)
         #gets the force of gravity in the inertial frame
-        fg_inertial = QP.mass * QP.gravity_accel_inertial
+        fg_inertial_2D = QP.mass * QP.gravity_accel_inertial_2D
         # gravitational force in body frame
-        f_g_body = R_inertial2Body @ fg_inertial
+        f_g_body_2D = R_inertial2Body_2D @ fg_inertial_2D
         # gets each portion of the gravitational force, and creates the fx and fz body components
-        fx_body = f_g_body.item(0)
-        fz_body = f_g_body.item(1)
+        fx_body = f_g_body_2D.item(0)
+        fz_body = f_g_body_2D.item(1)
         #intermediate variables
         qbar = 0.5 * QP.rho * self._Va**2
         ca = np.cos(self._alpha)

@@ -4,7 +4,6 @@ various tools to be used in mavPySim
 import numpy as np
 import scipy.linalg as linalg
 from numpy import pi
-from numpy import pi
 
 def quaternion_to_euler(quaternion):
     """
@@ -68,6 +67,8 @@ def euler_to_rotation(phi, theta, psi):
 
 
 #creates the 2d euler to rotation
+#NOTE: because we are dealing with the y = 0, the orientation is reversed, so that's why 
+#the negative sine is bottom left, instead of top right
 def theta_to_rotation_2d(theta: float):
     c_theta = np.cos(theta)
     s_theta = np.sin(theta)

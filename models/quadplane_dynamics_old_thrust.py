@@ -166,7 +166,7 @@ class QuadplaneDynamics:
         # pitch rate
         q = self._state.item(5)
         #gets the force of gravity in the inertial frame
-        fg_inertial = QP.mass * QP.gravity_accel_inertial
+        fg_inertial = QP.mass * QP.gravity_accel_inertial_2D
         # gravitational force in body frame
         f_g_body = R_inertial2Body @ fg_inertial
         # gets each portion of the gravitational force, and creates the fx and fz body components
