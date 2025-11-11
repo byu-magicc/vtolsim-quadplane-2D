@@ -19,6 +19,7 @@ msgState
 """
 import numpy as np
 from tools.rotations import rotation_to_euler, euler_to_rotation
+import scipy as scp
 
 class MsgState:
     def __init__(self, 
