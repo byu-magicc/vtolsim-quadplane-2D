@@ -6,6 +6,8 @@
     "configurations": [
 
 
+
+
         {
             "name": "Obstacle Test",
             "type": "debugpy",
@@ -31,6 +33,26 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/launch_files/quadplane_autopilot_test.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Feedforward Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/feedforward_test.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Low Level Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/lowLevelControl_test.py",
             "env": {
               "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
             },
