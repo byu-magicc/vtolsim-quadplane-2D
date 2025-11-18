@@ -124,3 +124,13 @@ trimDelta = MsgDelta(elevator=trim_elevator,
                 throttle_thrust=trim_forwardThrottle,
                 throttle_front=0.0,
                 throttle_rear=0.0)
+
+
+######################################################################################
+                #  Control Surface parameters
+######################################################################################
+
+#sets the elevator's max (and likewise min angle)
+elevator_bound_rad = np.radians(30.0)
+#sets the 
+

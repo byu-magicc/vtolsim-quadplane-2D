@@ -135,8 +135,6 @@ class LowLevelControl:
         deltaOutput = MsgDelta()
         deltaOutput.from_array(deltaArray)
 
-
-
         ##########################################################################################
         #section to test the analytical jacobian versus the numerical jacobian
         objective, objectiveGradient = self.objectiveFunctionGradient(deltaArray=deltaArray,

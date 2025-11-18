@@ -186,8 +186,8 @@ while sim_time < end_time:
                           vel=vel_desired,
                           accel=accel_desired)
 
-
-    high_level_controller.update(trajectory_ref=trajectory_ref,
+    #gets the forces and moments desired in the body frame of the aircraft
+    F_des_b, M_des_b = high_level_controller.update(trajectory_ref=trajectory_ref,
                                  state=quadplane.true_state)
 
 

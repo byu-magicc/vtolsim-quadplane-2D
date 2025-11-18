@@ -58,6 +58,12 @@ class highLevelControl:
                                                 Ts=Ts)
 
 
+    #Arguments:
+    #1. trajectory reference
+    #2. state of aircraft
+    #Returns:
+    #1. Force Desired Body Frame
+    #2. Moment Desired Body Frame
     def update(self,
                trajectory_ref: MsgTrajectory,
                state: MsgState):
@@ -99,13 +105,13 @@ class highLevelControl:
         q = state.q
 
         #with the theta desired, we call the pitch controller to get the M desired
-        M_des = self.pitchController.update(state=theta,
+        M_des_b = self.pitchController.update(state=theta,
                                     state_dot=q,
                                     state_ref=theta_ref)
         
         #gets the force desired in the body frame
         F_des_b = theta_to_rotation_2d(theta=theta)
 
-        
+        #returns these two things to go to the low level control
+        return F_des_b, M_des_b
 
-        potatoes = 0

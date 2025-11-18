@@ -19,134 +19,105 @@ from controllers.wrenchCalculation import wrenchCalculator
 from models.quadplane_dynamics import QuadplaneDynamics
 import parameters.simulation_parameters as SIM
 import parameters.control_allocation_parameters as CAP
-
+from controllers.momentsCalculator import momentsCalculator
 
 
 
 #creates the low level control class
 class LowLevelControl:
 
-    #creates the init function
-    def __init__(self,
-                 Ts: float = SIM.ts_simulation,
-                 directTorqueControl: bool = False):
-        
 
-        #saves the time seperation
-        self.Ts = Ts
-        #saves the bool to set whether we are performing direct torque control or controlling 
-        #using a desired omega
-        self.directTorqueControl = directTorqueControl
+    def __init__(self):
 
-        #creates an instance of the wrench calculator class
-        self.wrenchCalculator = wrenchCalculator()
+        #instantiates the moments calculator
+        self.momentsCalculator = momentsCalculator()
 
-        self.state = MsgState()
+        pass
 
-        self.delta_prev = np.array([0.0, 0.0, 0.0, 0.0])
-
-        self.state = MsgState()
-
-    #creates the update function
     #Arguments:
-    #1. F_des_i: the desired force input to the system, in the inertial frame
-    #2. state: the current state of the system
+    #1. the current state
+    #2. the desired force on the aircraft in the body frame
+    #3. the desired moment exerted on the aircraft in the body frame
     def update(self,
-               F_des_i: np.ndarray = np.array([[0.0], [0.0]]),
-               state: MsgState = MsgState()):
+               state: MsgState,
+               F_des_b: np.ndarray,
+               M_des_b: float):
+        
 
-        self.state = state
+        #gets the elvator delta from the state and the desired M
 
-        #gets the desired force in the body frame
 
-        return 0
+
+
+        pass
+
+
+    #gets the delta_e saturated, which allows for the maximum possible moment control
+    #which may end up being enough to generate a particular moment desired
+    def getElevatorThrusters(self,
+                         state: MsgState,
+                         M_des_b: float):
+        
+        Va = state.Va
+        alpha = state.alpha
+        #gets the q nondim
+        if Va > 1:
+            q_nondim = state.q * CONDA.c / (2 * Va)
+        else:
+            q_nondim = 0.0
+
+        #gets the four parts of the Moments
+        M_0, M_alpha, M_q, M_delta_e = \
+              self.momentsCalculator.getAerodynamicMomentsCoefficients(currentState=state)
+        
+        #from these four parts, get the delta_e unsaturated
+        delta_e_unsat = (M_des_b - M_0 - M_alpha*alpha - M_q*q_nondim) / (M_delta_e)
+
+        #saturates so that it stays within 30 degrees (but in radians of course so like +-0.5ish radians)
+        delta_e = saturate_delta_e(delta_e_unsat=delta_e_unsat,
+                                             bound=CONDA.elevator_bound_rad)
+
+        #with the delta_e, we get the Moment achieved without the thrusters
+        M_noThrusters = M_0 + M_alpha*alpha + M_q*q_nondim + M_delta_e*delta_e
+
+        #with these calculations 
+
+        
+        #returns the saturated delta_e
+        return delta_e
+
+
+
+
+
+#saturates the delta_e
+def saturate_delta_e(delta_e_unsat: float,
+                     bound: float = CONDA.elevator_bound_rad)->float:
     
+    #min bound is minus bound
+    #max bound is bound
+    minBound = -bound
+    maxBound = bound
 
+    #case delta_e is lower than the min Bound
+    if delta_e_unsat < minBound:
 
-    def computeOptimization(self,
-                            wrenchDesired: np.ndarray):
-        
-        #sets the x0 initial guess for the optimization function
-        x0_delta = self.delta_prev
+        #sets it as the min bound
+        delta_e_sat = minBound
 
-        #obtains the delta result for the delta result for the minimization function
-        delta_result = minimize(fun=self.objectiveFunctionGradient,
-                                x0=x0_delta,
-                                args=(wrenchDesired),
-                                bounds=CAP.actuatorBounds,
-                                jac=True,
-                                options={'maxiter': CAP.max_iter})
-        
-        #gets the delta array  from the result
-        deltaArray = delta_result.x
+    #cae delta_e is greater than the max bound
+    elif delta_e_unsat > maxBound:
 
-        #saves the previous solution
-        self.delta_prev = deltaArray
-
-        #converts to the output delta message
-        deltaOutput = MsgDelta()
-        deltaOutput.from_array(deltaArray)
-
-        return deltaOutput
-
-    #creates the objective function for the optimizer without the gradient
-    def objectiveFunction(self, deltaArray: np.ndarray, wrenchDesired: np.ndarray):
-        #converts from the deltaArray to a delta Message
-        deltaMessage = MsgDelta()
-        deltaMessage.from_array(delta_array=deltaArray)
-
-        #saves the mixing matrix for the wrenches
-        K_Wrench = CAP.K_Wrench
-
-        #gets the wrench actual and the wrench actual Jacobian
-        wrenchActual, wrenchActualJacobian = self.wrenchCalculator.forces_moments_derivatives(delta=deltaMessage,
-                                                                                              state=self.state)
-        
-        #gets the wrench error
-        wrenchError = wrenchActual - wrenchDesired
-
-        #creates the objective
-        objective = 0.5*wrenchError.T @ K_Wrench @ wrenchError
-
-
-        #saves the actual wrench
-        self.wrenchActual = wrenchActual
-
-        #returns the objective and the objective gradient
-        return objective[0]
-
-
-    #creates the objective function for optimizer with the gradient
-    def objectiveFunctionGradient(self, 
-                                  deltaArray: np.ndarray, 
-                                  wrenchDesired: np.ndarray):
-
-        #converts from the deltaArray to a delta Message
-        deltaMessage = MsgDelta()
-        deltaMessage.from_array(delta_array=deltaArray)
-
-        #saves the mixing matrix for the wrenches
-        K_Wrench = CAP.K_Wrench
-
-        #gets the wrench actual and the wrench actual Jacobian
-        wrenchActual, wrenchActualJacobian = self.wrenchCalculator.forces_moments_derivatives(delta=deltaMessage,
-                                                                                              state=self.state)
-        
-        #gets the wrench error
-        wrenchError = wrenchActual - wrenchDesired
-
-        #creates the objective
-        objective = 0.5*wrenchError.T @ K_Wrench @ wrenchError
-
-
-        #saves the actual wrench
-        self.wrenchActual = wrenchActual
-
-
-        #creates the objective gradient
-        objective_gradient = wrenchActualJacobian @ K_Wrench @ wrenchError
-
-
-        #returns the objective and the objective gradient
-        return objective, objective_gradient
+        #sets it as the max bound
+        delta_e_sat = maxBound
     
+    #else, it stays itself
+    else:
+
+        delta_e_sat = delta_e_unsat
+
+    #returns the saturated delta_e
+    return delta_e_sat
+
+
+
