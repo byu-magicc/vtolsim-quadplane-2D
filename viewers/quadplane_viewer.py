@@ -11,12 +11,15 @@ from viewers.draw_quadplane import DrawQuadplane
 import numpy as np
 from viewers.draw_trajectory import DrawTrajectory
 from time import time
+from message_types.msg_plane import MsgPlane
+from message_types.msg_state import MsgState
 from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
 from rrt_mavsim.viewers.draw_map import DrawMap
 from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
 from rrt_mavsim.viewers.draw_waypoints import DrawWaypoints
 from rrt_mavsim.viewers.draw_trajectory import DrawTrajectory
 from scipy.spatial.transform import Rotation as R
+from rrt_mavsim.tools.plane_projections import *
 
 
 red = np.array([[204, 0, 0],
@@ -41,13 +44,15 @@ class QuadplaneViewer():
                  grid_on: bool = True,#toggles whether or not the grid is on
                  axes_on: bool = False, #toggles whether or not the x and z axes stay on with the airplane to show the orientation
                  alpha_axis_on: bool = False, #toggles whether or not the axis in the direction of velocity is on (visualizing alpha)
-                 worldMap: MsgWorldMap = None):
+                 worldMap: MsgWorldMap = None,
+                 msg_plane: MsgPlane = None):
         # initialize Qt gui application and window
         self._dt = dt
         self._time = 0
         self._plot_period = plot_period
         self._plot_delay = 0
         self.scale = 2500
+        self.msg_plane = msg_plane
         self.app = app  # initialize QT, external so that only one QT process is running
         self.window = gl.GLViewWidget()  # initialize the view object
         self.window.setWindowTitle('Quadplane Viewer')
@@ -112,14 +117,23 @@ class QuadplaneViewer():
 
 
     def update(self,
-               state,
-               ):
+               state: MsgState):
+        
+        #gets the position in 3D
+        pos_2D = state.pos
+        n_hat = self.msg_plane.n_hat
+        mapOrigin_3D = self.msg_plane.origin_3D
+        pos_3D = map_2D_to_3D(pos_2D=pos_2D,
+                              n_hat=n_hat,
+                              p0=mapOrigin_3D)
         # initialize the drawing the first time update() is called
         if not self.plot_initialized:
-            self.quadplane_plot = DrawQuadplane(state, self.window)
+            self.quadplane_plot = DrawQuadplane(state=state,
+                                                msg_plane=self.msg_plane,
+                                                window=self.window)
             # update the center of the camera view to the quadrotor location
             # defined in ENU coordinates
-            view_location = Vector(state.pos.item(1), state.pos.item(0), -state.pos.item(2))
+            view_location = Vector(pos_3D.item(1), pos_3D.item(0), -pos_3D.item(2))
             self.window.opts['center'] = view_location
             # redraw
             self.app.processEvents()
@@ -131,7 +145,9 @@ class QuadplaneViewer():
                 self.quadplane_plot.update(state)
                 self.t = t
                 self.t_next = t + self.ts_refresh
-            view_location = Vector(state.pos.item(1), state.pos.item(0), -state.pos.item(2))
+
+            
+            view_location = Vector(pos_3D.item(1), pos_3D.item(0), -pos_3D.item(2))
             self.window.opts['center'] = view_location
             self.app.processEvents()
             self._plot_delay += self._dt

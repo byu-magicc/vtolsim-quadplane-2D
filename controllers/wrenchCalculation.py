@@ -35,7 +35,7 @@ class wrenchCalculator:
     #creates the function to get the actual force and torque acheived, WITHOUT gravity
     def forces_moments_achieved(self, delta: MsgDelta, state: MsgState):
         #gets the theta from the state 
-        phi, theta, psi = rotation_to_euler(R=state.R)
+        theta = state.theta
 
         #gets the rotation matrix from the body to the inertial
         R_body2Inertial = theta_to_rotation_2d(theta=theta)
@@ -43,7 +43,7 @@ class wrenchCalculator:
         R_inertial2Body = np.transpose(R_body2Inertial)
 
         # pitch rate
-        q = state.omega.item(0)
+        q = state.q
 
         #gets the alpha
         alpha = state.alpha

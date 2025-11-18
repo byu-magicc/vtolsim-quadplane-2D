@@ -12,6 +12,7 @@ import parameters.simulation_parameters as SIM
 from message_types.msg_state import MsgState
 from message_types.msg_sensors import MsgSensors
 from message_types.msg_delta import MsgDelta
+from message_types.msg_plane import MsgPlane
 from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
 from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
 import numpy as np
@@ -28,12 +29,15 @@ class ViewManager:
                  save_plots: bool=False,
                  draw_trajectory: bool=False,
                  video_name: str=[],
-                 world_map: MsgWorldMap = None):
+                 world_map: MsgWorldMap = None,
+                 msg_plane: MsgPlane = None):
         self.video_flag = video
         self.data_plot_flag = data
         self.sensor_plot_flag = sensors
         self.animation_flag = animation
         self.save_plots_flag = save_plots
+        self.world_map = world_map
+        self.msg_plane = msg_plane
         # initialize video 
         if self.video_flag is True:
             from viewers.video_writer import videoWriter
@@ -49,7 +53,8 @@ class ViewManager:
                                             dt=SIM.ts_simulation,
                                             plot_period=SIM.ts_plot_refresh,
                                             grid_on=False,
-                                            worldMap=world_map)
+                                            worldMap=world_map,
+                                            msg_plane=msg_plane)
             if self.data_plot_flag: 
                 self.data_view = DataViewer(
                     app=self.app,

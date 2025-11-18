@@ -7,6 +7,7 @@
 """
 import numpy as np
 
+#this is the desired  trajectory. the desired state
 
 class MsgTrajectory:
     '''
@@ -20,6 +21,22 @@ class MsgTrajectory:
                  pitch_rate: float=0.,
                  pitch_accel: float=0.,
                  ):
+
+        self.update(pos=pos,
+                    vel=vel,
+                    accel=accel,
+                    pitch=pitch,
+                    pitch_rate=pitch_rate,
+                    pitch_accel=pitch_accel)
+
+    def update(self,
+               pos: np.ndarray=np.array([[0.], [0.]]),
+               vel: np.ndarray=np.array([[0.], [0.]]),
+               accel: np.ndarray=np.array([[0.], [0.]]),
+               pitch: float=0.,
+               pitch_rate: float=0.,
+               pitch_accel: float=0.,):
+        
         self.pos = pos
         self.vel = vel
         self.accel = accel

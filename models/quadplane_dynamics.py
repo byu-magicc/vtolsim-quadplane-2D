@@ -7,6 +7,8 @@ from tools.rotations import *
 from tools.quaternions import *
 from message_types.msg_state import MsgState
 from message_types.msg_delta import MsgDelta
+from tools.rotations import rotation_to_euler, rotation_to_theta_2d, theta_to_rotation_2d
+
 
 
 #creates the QuadplaneDynamics class
@@ -289,19 +291,10 @@ class QuadplaneDynamics:
         #gets the pitch rate
         q = self._state.item(5)
 
-        #saves them all to the respective variables
-        self.true_state.pos = np.array([[pn],
-                                        [0.0],
-                                        [pd]])
-        self.true_state.vel = np.array([[pn_dot],
-                                        [0.0], 
-                                        [pd_dot]])
-        self.true_state.R = theta_to_rotation_3d(theta=theta)
-        self.true_state.omega = np.array([[0.0],
-                                          [q],
-                                          [0.0]])
-        #updates the airspeed magnitude and the angle of attack
+        self.true_state.pos = np.array([[pn],[pd]])
+        self.true_state.vel = np.array([[pn_dot],[pd_dot]])
+        self.true_state.theta = theta
+        self.true_state.q = q
         self.true_state.Va = self._Va
         self.true_state.alpha = self._alpha
-        #updates the airspeed vector
-        self.true_state.v_air = self.v_air_body
+        self.true_state.R = theta_to_rotation_2d(theta=theta)

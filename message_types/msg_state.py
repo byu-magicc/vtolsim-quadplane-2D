@@ -1,62 +1,52 @@
-"""
-msgState 
-    - messages type for state, that will be passed between blocks in the architecture
-    - Update history:  
-        5/3/2021 - RWB
-        6/8/2021 - RWB
-        4/20/2022 - RWB
-        11/16/2023 - RWB
-"""
 
-"""
-msgState 
-    - messages type for state, that will be passed between blocks in the architecture
-    - Update history:  
-        5/3/2021 - RWB
-        6/8/2021 - RWB
-        4/20/2022 - RWB
-        11/16/2023 - RWB
-"""
+
+
 import numpy as np
-from tools.rotations import rotation_to_euler, euler_to_rotation
-import scipy as scp
+from tools.rotations import rotation_to_euler, rotation_to_theta_2d, theta_to_rotation_2d
+import scipy as sp
 
+
+#NOTE: Notice that this message class is all based in a 2D environment. In a 2d world, this is where it operates. 
+#Everything for 3D is done outside of this space.
 class MsgState:
-    def __init__(self, 
-                 pos: np.ndarray=np.array([[0.], [0.], [0.]]), #inertial position. east term is always zero
-                 vel: np.ndarray=np.array([[0.], [0.], [0.]]), #inertial velocities. east term is always zero
-                 R: np.ndarray=np.identity(3), 
-                 omega: np.ndarray=np.array([[0.], [0.], [0.]]), 
-                 gyro_bias: np.ndarray=np.array([[0.], [0.], [0.]]), 
-                 motor_angle: np.ndarray=np.array([[0.], [0.]]),  
-                 Va: float=0.,
-                 v_air: np.ndarray=np.array([[0.0], [0.0]]), #saves the airspeed vector 
-                 alpha: float=0.,  
-                 beta: float=0.,  
-                 Vg: float = 0,
-                 chi: float = 0
-                 ):
-            self.pos = pos  
-            self.vel = vel  
-            self.R = R  
-            self.omega = omega  
-            self.gyro_bias = gyro_bias
-            self.motor_angle = motor_angle
-            self.Va = Va
-            self.v_air = v_air
-            self.alpha = alpha
-            self.beta = beta
-            self.v_air = v_air
-            self.Vg = Vg
-            self.chi = chi
 
-    def add_to_position(self, n=0, e=0, d=0):
-        self.pos = self.pos + np.array([[n], [e], [d]])
-
-    def euler_angles(self)->tuple[float, float, float]:
-        phi, theta, psi = rotation_to_euler(self.R)
-        return phi, theta, psi
+    def __init__(self,
+                 pos: np.ndarray=np.array([[0.],[0.]]),
+                 vel: np.ndarray=np.array([[0.],[0.]]),
+                 theta: float = 0.0,
+                 q: float = 0.0,
+                 v_air: np.ndarray = np.array([[0.0],[0.0]]),
+                 Va: float = 25.0,
+                 alpha: float = 0.0):
+        
+        #calls the update function
+        self.update(pos=pos,
+                    vel=vel,
+                    theta=theta,
+                    q=q,
+                    v_air=v_air,
+                    Va=Va,
+                    alpha=alpha)
 
 
+    def update(self,
+               pos: np.ndarray=np.array([[0.],[0.]]),
+               vel: np.ndarray=np.array([[0.],[0.]]),
+               theta: float = 0.0,
+               q: float = 0.0,
+               v_air: np.ndarray = np.array([[0.0],[0.0]]),
+               Va: float = 25.0,
+               alpha: float = 0.0):
 
-    
+        self.pos = pos
+        self.vel = vel
+
+        self.theta = theta
+        self.q = q
+
+        self.v_air = v_air
+
+        self.Va = Va
+        self.alpha = alpha
+
+        self.R = theta_to_rotation_2d(theta=theta)
