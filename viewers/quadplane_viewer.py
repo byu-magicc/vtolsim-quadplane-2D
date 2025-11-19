@@ -36,6 +36,11 @@ cameraRotationMatrix = np.array([[1.0, 0.0, 0.0],
 rot = R.from_matrix(cameraRotationMatrix)
 eulers = rot.as_euler('xyz', degrees=True)
 
+#gets the R matrix
+Rot = np.array([[0, 1, 0], 
+              [1, 0, 0], 
+              [0, 0, -1]])
+
 
 class QuadplaneViewer():
     def __init__(self, app, dt = 0.01,

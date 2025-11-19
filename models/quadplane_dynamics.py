@@ -30,8 +30,8 @@ class QuadplaneDynamics:
         self._state = np.array([
             [pn0],    # [0]  north position inertial
             [pd0],    # [1]  down position inertial
-            [pn_dot0],     # [2]  velocity along body x-axis
-            [pd_dot0],     # [3]  velocity along body z-axis
+            [pn_dot0],# [2]  velocity along body x-axis
+            [pd_dot0],# [3]  velocity along body z-axis
             [theta0], # [4] initial pitch angle
             [q0],     # [5]  pitch rate
         ])
@@ -61,7 +61,7 @@ class QuadplaneDynamics:
         k2 = self._f(self._state + time_step/2.*k1, forces_moments)
         k3 = self._f(self._state + time_step/2.*k2, forces_moments)
         k4 = self._f(self._state + time_step*k3, forces_moments)
-        self._state += time_step/6 * (k1 + 2*k2 + 2*k3 + k4)
+        self._state = self._state + time_step/6 * (k1 + 2*k2 + 2*k3 + k4)
         # update the airspeed and angle of attack using new state
         self._update_velocity_data(wind)
         # update the message class for the true state
@@ -220,9 +220,10 @@ class QuadplaneDynamics:
         Thrust_rear = self._motor_thrust_torque_simplified(delta_t=delta.throttle_rear)
         Thrust_forward = self._motor_thrust_torque_simplified(delta_t=delta.throttle_thrust)
         # add propeller forces and torques to body
-        fx_body += Thrust_forward
-        fz_body += -Thrust_front - Thrust_rear
-        My += QP.ell_f * Thrust_front - QP.ell_r * Thrust_rear
+        #TODO: uncomment these
+        #fx_body += Thrust_forward
+        #fz_body += -Thrust_front - Thrust_rear
+        #My += QP.ell_f * Thrust_front - QP.ell_r * Thrust_rear
         #returns the forces
         return np.array([[fx_body, fz_body, My]]).T
     

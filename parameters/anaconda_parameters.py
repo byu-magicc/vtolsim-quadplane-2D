@@ -13,7 +13,7 @@ from message_types.msg_delta import MsgDelta
 pn0 = 0.0  # initial north position
 pd0 = 0.0  # initial down position
 pn_dot0 = 20.0  # initial velocity along inertial x-axis
-pd_dot0 = 0.0  # initial velocity along inertial z-axis
+pd_dot0 = 5.0  # initial velocity along inertial z-axis
 theta0 = 0.0  # initial pitch angle
 q0 = 0.0  # initial pitch rate
 Va0 = np.sqrt(pn_dot0**2+pd_dot0**2)
