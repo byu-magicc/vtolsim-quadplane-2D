@@ -44,19 +44,51 @@ class LowLevelControl:
                M_des_b: float):
         
 
-        #gets the elvator delta from the state and the desired M
+        #gets the elvator delta and Moment needed from the Thrusters
+        delta_e, M_thrusters_des = self.getElevatorThrusters(state=state,
+                                                             M_des_b=M_des_b)
 
+        #gets the Force desired in the x and z directions
+        F_des_b_x = F_des_b.item(0)
+        F_des_b_z = F_des_b.item(1)
 
+        #the Thrust desired for the forward throttle is equal to the F_des_b in the x direction
+        T_t_des = F_des_b_x
 
+        #creates the desired forces and moments vector 
+        forcesMoments_des = np.array([[F_des_b_z],[M_thrusters_des]])
 
-        pass
+        #gets the Thrust desired from the vertical 
+        verticalThrusts_des = CONDA.individualThrustUnmixer @ forcesMoments_des
+
+        #gets the front and rear vertical thrusts desired
+        T_f_des = verticalThrusts_des.item(0)
+        T_r_des = verticalThrusts_des.item(1)
+
+        #gets the front Thruster delta
+        delta_t_front = inverse_motor_thrust_simplified(Thrust_des=T_f_des)
+        #the rear thruster delta
+        delta_t_rear = inverse_motor_thrust_simplified(Thrust_des=T_r_des)
+        #the forward thruster delta
+        delta_t_forward = inverse_motor_thrust_simplified(Thrust_des=T_t_des)
+
+        #creates the delta message class
+        deltaOutput = MsgDelta(elevator=delta_e,
+                               throttle_front=delta_t_front,
+                               throttle_rear=delta_t_rear,
+                               throttle_thrust=delta_t_forward)
+
+        return deltaOutput
 
 
     #gets the delta_e saturated, which allows for the maximum possible moment control
     #which may end up being enough to generate a particular moment desired
+    #Returns:
+    #1. delta_e: the elevator saturated control in radians of deflection
+    #2. M_thrusters: the Moment remainder needed to be gotten from the thrusters
     def getElevatorThrusters(self,
                          state: MsgState,
-                         M_des_b: float):
+                         M_des_b: float)->tuple[float, float]:
         
         Va = state.Va
         alpha = state.alpha
@@ -80,11 +112,13 @@ class LowLevelControl:
         #with the delta_e, we get the Moment achieved without the thrusters
         M_noThrusters = M_0 + M_alpha*alpha + M_q*q_nondim + M_delta_e*delta_e
 
-        #with these calculations 
+        #with these calculations, we obtain the difference between the M_desired and the M without thrusters
+        #that deficit will need to be provided by the difference in thrusters
+        M_thrusters_des = M_des_b - M_noThrusters
 
         
         #returns the saturated delta_e
-        return delta_e
+        return delta_e, M_thrusters_des
 
 
 
@@ -118,6 +152,16 @@ def saturate_delta_e(delta_e_unsat: float,
 
     #returns the saturated delta_e
     return delta_e_sat
+
+
+#defines the inverse motor thrust torque function
+#input the desired thrust, get the necessary delta_t
+def inverse_motor_thrust_simplified(Thrust_des: float):
+
+    delta_t = Thrust_des / CONDA.MaxThrust
+    return delta_t
+
+
 
 
 

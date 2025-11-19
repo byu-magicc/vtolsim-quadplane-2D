@@ -153,6 +153,9 @@ viewers.drawTrajectory(controlPoints=outputControlPoints_3D,
 #creates the controller
 high_level_controller = highLevelControl(state=quadplane.true_state)
 
+#creates the low level controller
+low_level_controller = LowLevelControl()
+
 #creates the instance for the reference state class
 trajectory_ref = MsgTrajectory()
 
@@ -190,6 +193,10 @@ while sim_time < end_time:
     F_des_b, M_des_b = high_level_controller.update(trajectory_ref=trajectory_ref,
                                  state=quadplane.true_state)
 
+    #calls the low level controller
+    low_level_controller.update(state=quadplane.true_state,
+                                F_des_b=F_des_b,
+                                M_des_b=M_des_b)
 
 
     #creates the dummy delta 

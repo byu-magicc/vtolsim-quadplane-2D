@@ -47,7 +47,7 @@ ell_r = 0.5
 
 
 #mixes individual thrusts to get the net thrust and torque
-individualThrustMixer = np.array([[1, 1],
+individualThrustMixer = np.array([[-1, -1],
                                   [ell_f, -ell_r]])
 
 #creates the mapping from total Thrust and Torque to front and rear thrusts

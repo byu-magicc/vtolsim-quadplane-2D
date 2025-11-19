@@ -56,9 +56,9 @@ class PitchOptimization:
                                 options={'maxiter': PITCH.max_iter})
 
         #gets the theta from the theta result
-        theta = theta_result.x
+        theta = (theta_result.x).item(0)
 
-        #returns the theta
+        #returns the theta item 0
         return theta
 
     #gets the flight path angle gamma

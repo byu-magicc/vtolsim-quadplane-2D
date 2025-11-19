@@ -110,7 +110,7 @@ class highLevelControl:
                                     state_ref=theta_ref)
         
         #gets the force desired in the body frame
-        F_des_b = theta_to_rotation_2d(theta=theta)
+        F_des_b = theta_to_rotation_2d(theta=theta) @ F_des_i
 
         #returns these two things to go to the low level control
         return F_des_b, M_des_b
