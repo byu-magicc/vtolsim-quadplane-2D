@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
 # import view manager
 from viewers.view_manager import ViewManager
-from tools.rotations import euler_to_rotation
+from tools.old.rotations import euler_to_rotation
 import parameters.simulation_parameters as SIM
 from message_types.msg_state import MsgState
 

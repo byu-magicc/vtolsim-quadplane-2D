@@ -10,7 +10,7 @@ import parameters.highLevelControl_parameters as HLC
 
 from controllers.feedforwardControl import feedForwardControl
 from controllers.pitch_optimization import PitchOptimization
-from tools.rotations import *
+from tools.old.rotations import *
 
 import numpy as np
 

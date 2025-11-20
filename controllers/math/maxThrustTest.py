@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[2]))
 import numpy as np
 
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 import parameters.simulation_parameters as SIM
 
 import matplotlib.pyplot as plt

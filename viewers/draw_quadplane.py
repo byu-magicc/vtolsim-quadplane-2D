@@ -2,7 +2,7 @@
 
 import numpy as np
 import pyqtgraph.opengl as gl
-from tools.rotations import euler_to_rotation, pitch_2d_to_3d
+from tools.old.rotations import euler_to_rotation, pitch_2d_to_3d
 from message_types.msg_state import MsgState
 from message_types.msg_plane import MsgPlane
 import pyqtgraph.opengl as gl

@@ -8,7 +8,7 @@ from scipy.optimize import minimize
 import parameters.anaconda_parameters as QP
 from message_types.msg_delta import MsgDelta
 
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 from message_types.msg_state import MsgState
 from tools.saturate import saturate
 
@@ -64,7 +64,8 @@ class ControlAllocator:
         self.delta.throttle_rear = invert_motor_simplified(T_r_des, V_r)
         self.delta.throttle_thrust = invert_motor_simplified(T_t_des, V_t)
         return self.delta
-    
+
+
 
 def invert_motor_simplified(T_des: float, Vp: float)->float:
     # Simplified model is Thurst = QP.MaxThurst * delta, or return delta = T_des/QP.MaxThrust

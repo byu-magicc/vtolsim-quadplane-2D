@@ -6,7 +6,7 @@
 import numpy as np 
 from scipy.linalg import solve_continuous_are, inv
 from scipy.optimize import minimize
-from tools.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d
+from tools.old.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d
 from tools.filters import BetaFilter
 import parameters.anaconda_parameters as QP
 #from controllers.integrator import Integrator

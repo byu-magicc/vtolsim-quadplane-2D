@@ -158,7 +158,7 @@ sys.path.insert(0,os.fspath(Path(__file__).parents[2]))
 
 import parameters.simulation_parameters as SIM
 from tools.signal_generator import SignalGenerator
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 from message_types.msg_trajectory import MsgTrajectory
 from controllers.trajectory_tracker import TrajectoryTracker
 from controllers.control_allocator import ControlAllocator

@@ -3,9 +3,9 @@
 from scipy.optimize import minimize
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
-from controllers.forceCalculator import ForceCalculator
+from controllers.old.forceCalculator import ForceCalculator
 import parameters.pitchOptimizationParameters as PITCH
-from tools.rotations import theta_to_rotation_2d
+from tools.old.rotations import theta_to_rotation_2d
 import numpy as np
 
 class PitchOptimization:

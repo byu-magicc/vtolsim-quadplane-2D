@@ -77,6 +77,16 @@
               "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
             },
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Dynamics Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/dynamicsTest.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
         }
     ]
 }

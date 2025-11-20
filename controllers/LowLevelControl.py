@@ -9,14 +9,14 @@ from controllers.feedforwardControl import feedForwardControl
 from message_types.msg_delta import MsgDelta
 from message_types.msg_state import MsgState
 import parameters.anaconda_parameters as CONDA
-from tools.rotations import *
+from tools.old.rotations import *
 
 import scipy.optimize as spo
 from copy import copy
 from scipy.optimize import minimize
 
 from controllers.wrenchCalculation import wrenchCalculator
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 import parameters.simulation_parameters as SIM
 import parameters.control_allocation_parameters as CAP
 from controllers.momentsCalculator import momentsCalculator

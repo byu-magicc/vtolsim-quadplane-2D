@@ -8,7 +8,7 @@ compute_trim
 import numpy as np
 from scipy.optimize import minimize
 from message_types.msg_delta import MsgDelta
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 
 
 def compute_trim(quadplane: QuadplaneDynamics, 

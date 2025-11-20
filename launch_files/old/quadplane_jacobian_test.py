@@ -8,7 +8,7 @@ np.errstate(overflow="ignore")
 from copy import deepcopy
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as QP
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from controllers.autopilot_fixedWing import Autopilot
 from viewers.view_manager import ViewManager
@@ -17,7 +17,7 @@ from message_types.msg_autopilot import MsgAutopilot_FixedWing
 from message_types.msg_sensors import MsgSensors
 from controllers.wrenchCalculation import wrenchCalculator
 import time
-from tools.rotations import *
+from tools.old.rotations import *
 import scipy.optimize as spo
 import matplotlib.pyplot as plt
 

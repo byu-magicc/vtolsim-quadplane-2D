@@ -12,7 +12,7 @@ import numpy as np
 import parameters.anaconda_parameters as QP
 from parameters.anaconda_parameters import trimDelta
 
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 import parameters.simulation_parameters as SIM
 from viewers.view_manager import ViewManager
 from message_types.msg_sensors import MsgSensors

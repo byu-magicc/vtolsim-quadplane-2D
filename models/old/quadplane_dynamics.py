@@ -3,11 +3,11 @@
 #uses unit quaternion for the attitude state
 import numpy as np
 import parameters.anaconda_parameters as QP
-from tools.rotations import *
+from tools.old.rotations import *
 from tools.quaternions import *
 from message_types.msg_state import MsgState
 from message_types.msg_delta import MsgDelta
-from tools.rotations import rotation_to_euler, rotation_to_theta_2d, theta_to_rotation_2d
+from tools.old.rotations import rotation_to_euler, rotation_to_theta_2d, theta_to_rotation_2d
 
 
 
@@ -163,7 +163,6 @@ class QuadplaneDynamics:
         R_body2Inertial_2D = theta_to_rotation_2d(theta=theta)
         #gets the rotation matrix from the inertial to the body
         R_inertial2Body_2D = np.transpose(R_body2Inertial_2D)
-
 
         # pitch rate
         q = self._state.item(5)

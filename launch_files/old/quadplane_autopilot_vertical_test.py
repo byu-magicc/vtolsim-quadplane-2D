@@ -7,7 +7,7 @@ import numpy as np
 import pyqtgraph as pg
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as QP
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from controllers.autopilot_quadrotors import Autopilot
 from viewers.view_manager import ViewManager

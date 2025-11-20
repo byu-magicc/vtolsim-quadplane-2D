@@ -6,9 +6,8 @@ import numpy as np
 from copy import deepcopy
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as ANP
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 from viewers.view_manager import ViewManager
-from controllers.autopilot_quadrotors import Autopilot
 
 #controllers import section
 from controllers.highLevelControl import highLevelControl
@@ -32,6 +31,8 @@ from rrt_mavsim.tools.waypointsTools import getNumCntPts_list
 from rrt_mavsim.planners.bspline_generator import BSplineGenerator
 from rrt_mavsim.tools.plane_projections import *
 from rrt_mavsim.parameters.colors import *
+
+from rrt_mavsim.tools.plane_projections import *
 
 from bsplinegenerator.bsplines import BsplineEvaluation
 
@@ -68,6 +69,9 @@ numDimensions = 2
 #initializes the MsgPlane
 msg_plane = MsgPlane(n_hat=n_hat,
                      origin_3D=mapOrigin_3D)
+
+#gets the plane basis
+Q = getPlaneBasis(n_hat=n_hat)
 
 
 #creates the planar vtol params

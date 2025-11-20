@@ -5,7 +5,7 @@ sys.path.insert(0,os.fspath(Path(__file__).parents[2]))
 
 import numpy as np
 import parameters.anaconda_parameters as QP
-from tools.rotations import *
+from tools.old.rotations import *
 from scipy.optimize import minimize
 
 

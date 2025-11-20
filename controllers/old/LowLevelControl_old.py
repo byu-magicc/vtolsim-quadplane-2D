@@ -19,7 +19,7 @@ import parameters.anaconda_parameters as QP
 from controllers.p_control import PControl
 
 
-from tools.rotations import *
+from tools.old.rotations import *
 
 import scipy.optimize as spo
 from copy import copy
@@ -27,7 +27,7 @@ from scipy.optimize import minimize
 
 from controllers.wrenchCalculation import wrenchCalculator
 
-from models.quadplane_dynamics import QuadplaneDynamics
+from models.old.quadplane_dynamics import QuadplaneDynamics
 
 import parameters.simulation_parameters as SIM
 

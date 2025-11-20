@@ -3,7 +3,7 @@
 #the wrench calculator to make things work much more easily
 
 from controllers.wrenchCalculation import wrenchCalculator
-from tools.rotations import theta_to_rotation_2d
+from tools.old.rotations import theta_to_rotation_2d
 from message_types.msg_delta import MsgDelta
 from message_types.msg_state import MsgState
 from copy import deepcopy

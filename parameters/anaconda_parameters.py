@@ -2,7 +2,7 @@
 
 
 import numpy as np
-from tools.rotations import euler_to_quaternion
+from tools.old.rotations import euler_to_quaternion
 from message_types.msg_delta import MsgDelta
 
 
@@ -19,6 +19,22 @@ q0 = 0.0  # initial pitch rate
 Va0 = np.sqrt(pn_dot0**2+pd_dot0**2)
 
 ######################################################################################
+                #Standard Vectors
+######################################################################################
+
+Basis_3D = np.eye(3)
+
+e1_3D = Basis_3D[:,0:1]
+e2_3D = Basis_3D[:,1:2]
+e3_3D = Basis_3D[:,2:3]
+
+Basis_2D = np.eye(2)
+
+e1_2D = Basis_2D[:,0:1]
+e2_2D = Basis_2D[:,1:2]
+
+
+######################################################################################
                 #Physical Parameters
 ######################################################################################
 mass = 11.0 #kg
@@ -33,11 +49,8 @@ e = 0.9
 AR = (b**2) / S_wing # aspect ratio
 gravity = 9.81
 
-#creates the gravity acceleration vector in the inertial frame
-gravity_accel_inertial_2D = np.array([[0.0],[gravity]])
-
-#creates the gravity acceleration vector in the inertial frame
-gravity_accel_inertial_2D = np.array([[0.0],[gravity]])
+#gets the 3D gravity vector
+gravityAccel_3D = gravity * e3_3D
 
 
 #sets the physical positions of the props. That is, where their bases are located.
@@ -134,3 +147,6 @@ trimDelta = MsgDelta(elevator=trim_elevator,
 elevator_bound_rad = np.radians(30.0)
 #sets the 
 
+
+
+#
