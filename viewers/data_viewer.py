@@ -121,11 +121,11 @@ class DataViewer:
         if true_state != None:
 
             #adds the actual positions
-            self._plotter.add_data_point(plot_id='north', data_label='north', xvalue=currentTime, yvalue=true_state.pos[0,0])
-            self._plotter.add_data_point(plot_id='altitude', data_label='altitude', xvalue=currentTime, yvalue=-true_state.pos[1,0])
+            self._plotter.add_data_point(plot_id='north', data_label='north', xvalue=currentTime, yvalue=true_state.pos_2D[0,0])
+            self._plotter.add_data_point(plot_id='altitude', data_label='altitude', xvalue=currentTime, yvalue=-true_state.pos_2D[1,0])
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='v_n', data_label='v_n', xvalue=currentTime, yvalue=true_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='v_d', data_label='v_d', xvalue=currentTime, yvalue=true_state.vel[1,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n', xvalue=currentTime, yvalue=true_state.vel_2D[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d', xvalue=currentTime, yvalue=true_state.vel_2D[1,0])
             #adds the pitchw
             self._plotter.add_data_point(plot_id='pitch', data_label='pitch', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q
@@ -144,11 +144,11 @@ class DataViewer:
         if estimated_state != None:
 
             #adds the actual positions
-            self._plotter.add_data_point(plot_id='north', data_label='north_e', xvalue=currentTime, yvalue=estimated_state.pos[0,0])
-            self._plotter.add_data_point(plot_id='altitude', data_label='altitude_e', xvalue=currentTime, yvalue=-estimated_state.pos[1,0])
+            self._plotter.add_data_point(plot_id='north', data_label='north_e', xvalue=currentTime, yvalue=estimated_state.pos_2D[0,0])
+            self._plotter.add_data_point(plot_id='altitude', data_label='altitude_e', xvalue=currentTime, yvalue=-estimated_state.pos_2D[1,0])
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_e', xvalue=currentTime, yvalue=estimated_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_e', xvalue=currentTime, yvalue=estimated_state.vel[1,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_e', xvalue=currentTime, yvalue=estimated_state.vel_2D[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_e', xvalue=currentTime, yvalue=estimated_state.vel_2D[1,0])
             #adds the pitchw
             self._plotter.add_data_point(plot_id='pitch', data_label='pitch_e', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q
@@ -160,11 +160,11 @@ class DataViewer:
         #add the commanded state data
         if commanded_state != None:
             #adds the actual positions
-            self._plotter.add_data_point(plot_id='north', data_label='north_c', xvalue=currentTime, yvalue=commanded_state.pos[0,0])
+            self._plotter.add_data_point(plot_id='north', data_label='north_c', xvalue=currentTime, yvalue=commanded_state.pos_2D[0,0])
             self._plotter.add_data_point(plot_id='altitude', data_label='altitude_c', xvalue=currentTime, yvalue=-commanded_state.q)
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_c', xvalue=currentTime, yvalue=commanded_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_c', xvalue=currentTime, yvalue=commanded_state.vel[1,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_c', xvalue=currentTime, yvalue=commanded_state.vel_2D[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_c', xvalue=currentTime, yvalue=commanded_state.vel_2D[1,0])
             #adds the pitchw
             self._plotter.add_data_point(plot_id='pitch', data_label='pitch_c', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q

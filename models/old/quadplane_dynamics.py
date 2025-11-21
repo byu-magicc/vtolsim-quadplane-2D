@@ -19,9 +19,9 @@ class QuadplaneDynamics:
     def __init__(self, 
                  ts: float,
                  pn0: float=QP.pn0,
-                 pd0: float=QP.pd0,
+                 pd0: float=QP.pu0,
                  pn_dot0: float=QP.pn_dot0,
-                 pd_dot0: float=QP.pd_dot0,
+                 pd_dot0: float=QP.pu_dot0,
                  theta0: float=QP.theta0,
                  q0: float=QP.q0,
                  ):
@@ -45,9 +45,9 @@ class QuadplaneDynamics:
         #it is the velocity of the aircraft with respect to the airmass
         #in which it is travelling through. 
         self.v_air_inertial = np.array([[QP.pn_dot0],
-                                        [QP.pd_dot0]])
+                                        [QP.pu_dot0]])
         self.v_air_body = np.array([[QP.pn_dot0],
-                                    [QP.pd_dot0]])
+                                    [QP.pu_dot0]])
         
         potato = 0
 
@@ -291,8 +291,8 @@ class QuadplaneDynamics:
         #gets the pitch rate
         q = self._state.item(5)
 
-        self.true_state.pos = np.array([[pn],[pd]])
-        self.true_state.vel = np.array([[pn_dot],[pd_dot]])
+        self.true_state.pos_2D = np.array([[pn],[pd]])
+        self.true_state.vel_2D = np.array([[pn_dot],[pd_dot]])
         self.true_state.theta = theta
         self.true_state.q = q
         self.true_state.Va = self._Va

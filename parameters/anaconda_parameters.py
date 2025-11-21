@@ -11,12 +11,12 @@ from message_types.msg_delta import MsgDelta
 ######################################################################################
 #initial conditions for the QUADPLANE
 pn0 = 0.0  # initial north position
-pd0 = 0.0  # initial down position
+pu0 = 0.0  # initial down position
 pn_dot0 = 20.0  # initial velocity along inertial x-axis
-pd_dot0 = 5.0  # initial velocity along inertial z-axis
+pu_dot0 = 5.0  # initial velocity along inertial z-axis
 theta0 = 0.0  # initial pitch angle
 q0 = 0.0  # initial pitch rate
-Va0 = np.sqrt(pn_dot0**2+pd_dot0**2)
+Va0 = np.sqrt(pn_dot0**2+pu_dot0**2)
 
 ######################################################################################
                 #Standard Vectors
@@ -70,22 +70,22 @@ individualThrustUnmixer = np.linalg.inv(individualThrustMixer)
 
 #######################################################################################
 # Aerodynamic Coefficients
-C_L_0 = 0.23#
-C_D_0 = 0.043#
+C_L_0 = 0.23
+C_D_0 = 0.0424
 C_m_0 = 0.0135
-C_L_alpha = 5.61#
-C_D_alpha = 0.03#
+C_L_alpha = 5.61
+C_D_alpha = 0.132
 C_m_alpha = -2.74
-C_L_q = 7.95#
-C_D_q = 0.0#
+C_L_q = 7.95
+C_D_q = 0.0
 C_m_q = -38.21
-C_L_delta_e = -0.13#
-C_D_delta_e = 0.0135#
+C_L_delta_e = 0.13
+C_D_delta_e = 0.0135
 C_m_delta_e = -0.99
 M = 50.0
-alpha0 = np.deg2rad(15)
+alpha0 = 0.47
 epsilon = 0.16
-C_D_p = 0.0
+C_D_p = 0.043 
 
 ######################################################################################
                 #  Propeller parameters

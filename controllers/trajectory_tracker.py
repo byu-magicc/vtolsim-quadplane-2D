@@ -58,10 +58,10 @@ class TrajectoryTracker:
         roll, pitch, yaw = rotation_to_euler(state.R)
         q = state.omega.item(1)
         x_err = np.array([
-            [state.pos.item(0) - trajectory.pos.item(0)],
-            [state.pos.item(2) - trajectory.pos.item(1)],
-            [state.vel.item(0) - trajectory.vel.item(0)],
-            [state.vel.item(2) - trajectory.vel.item(1)],
+            [state.pos_2D.item(0) - trajectory.pos.item(0)],
+            [state.pos_2D.item(2) - trajectory.pos.item(1)],
+            [state.vel_2D.item(0) - trajectory.vel.item(0)],
+            [state.vel_2D.item(2) - trajectory.vel.item(1)],
             ])       
         R = theta_to_rotation_2d(theta=pitch)
         
@@ -84,10 +84,10 @@ class TrajectoryTracker:
         W_des = np.concatenate((F_prop_des_b, np.array([[M_des]])))
         # update delayed variables
         # construct control outputs and commanded states
-        self.commanded_state.pos = np.array([[trajectory.pos.item(0)], 
+        self.commanded_state.pos_2D = np.array([[trajectory.pos.item(0)], 
                                              [0.], 
                                              [trajectory.pos.item(1)]])
-        self.commanded_state.vel = np.array([[trajectory.vel.item(0)], 
+        self.commanded_state.vel_2D = np.array([[trajectory.vel.item(0)], 
                                              [0.], 
                                              [trajectory.vel.item(1)]])
         self.commanded_state.R = euler_to_rotation(0., self.theta_star, 0.)

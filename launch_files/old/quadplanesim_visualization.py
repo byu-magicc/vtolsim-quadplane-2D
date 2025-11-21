@@ -28,11 +28,11 @@ end_time = 4000
 while sim_time < end_time:
     # -------vary states to check viewer-------------
     if sim_time < end_time/8:
-        state.pos[0] += 10*SIM.ts_simulation
+        state.pos_2D[0] += 10*SIM.ts_simulation
     elif sim_time < 2*end_time/8:
-        state.pos[1] += 10*SIM.ts_simulation
+        state.pos_2D[1] += 10*SIM.ts_simulation
     elif sim_time < 3*end_time/8:
-        state.pos[2] -= 10*SIM.ts_simulation
+        state.pos_2D[2] -= 10*SIM.ts_simulation
     elif sim_time < 4*end_time/8:
         psi += 0.01*SIM.ts_simulation
     elif sim_time < 5*end_time/8:

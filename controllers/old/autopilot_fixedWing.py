@@ -50,7 +50,7 @@ class Autopilot:
         #creates the lateral autopilot
 
         #gets the actual altitude, which is the minus of the down position
-        altitude = -state.pos.item(2)
+        altitude = -state.pos_2D.item(2)
         
         #gets the rotation matrix
         R_body2inertial = state.R

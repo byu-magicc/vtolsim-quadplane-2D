@@ -58,13 +58,13 @@ class Autopilot:
 
         #creates the autopilot for the north
         u_n = self.north_ctrl.update_with_ff(y_ref=pos_cmd.item(0),#north position command
-                                             y=state.pos.item(0),#north actual position
+                                             y=state.pos_2D.item(0),#north actual position
                                              y_ref_dot=vel_cmd.item(0),#north dot velocity command
                                              feedforward=accel_cmd.item(0))#north double dot accel command
         
         #creates the autopilot for the down position
         u_d = self.down_ctrl.update_with_ff(y_ref=pos_cmd.item(2),#down position command
-                                            y=state.pos.item(2),#down actual position
+                                            y=state.pos_2D.item(2),#down actual position
                                             y_ref_dot=vel_cmd.item(2),#down dot velocity  command
                                             feedforward=accel_cmd.item(2))#down double dot accel command
         
@@ -108,8 +108,8 @@ class Autopilot:
         
 
         #updates the commanded state
-        self.commanded_state.pos = command.position_cmd
-        self.commanded_state.vel = command.velocity_cmd
+        self.commanded_state.pos_2D = command.position_cmd
+        self.commanded_state.vel_2D = command.velocity_cmd
         self.commanded_state.R = R
 
         #returns the delta message and the commanded state

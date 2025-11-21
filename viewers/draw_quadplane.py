@@ -4,7 +4,7 @@ import numpy as np
 import pyqtgraph.opengl as gl
 from tools.old.rotations import euler_to_rotation, pitch_2d_to_3d
 from message_types.msg_state import MsgState
-from message_types.msg_plane import MsgPlane
+from rrt_mavsim.message_types.msg_plane import MsgPlane
 import pyqtgraph.opengl as gl
 from rrt_mavsim.tools.plane_projections import *
 
@@ -20,14 +20,14 @@ class DrawQuadplane():
         self.unit_length = scale
         self.msg_plane = msg_plane
         #gets the position of the vtol
-        quad_position_2D = state.pos
+        quad_position_2D = state.pos_2D
 
         #gets the n_hat and Map Origin 3D vectors
         self.n_hat = msg_plane.n_hat
         self.origin_3D = msg_plane.origin_3D
 
         #with the n_hat and the origin_3D, we get the 3D position of the quadplane
-        quad_position_3D = map_2D_to_3D(pos_2D=quad_position_2D,
+        quad_position_3D = map_2D_to_3D(vec_2D=quad_position_2D,
                                         n_hat=self.n_hat,
                                         p0=self.origin_3D)
 
@@ -308,10 +308,10 @@ class DrawQuadplane():
                state: MsgState):
 
         #gets the North, East, Down position of the aircraft
-        quad_position_2D = state.pos
+        quad_position_2D = state.pos_2D
 
         #gets the function to convert between 2D and 3D quadplane position
-        quad_position_3D = map_2D_to_3D(pos_2D=quad_position_2D,
+        quad_position_3D = map_2D_to_3D(vec_2D=quad_position_2D,
                                         n_hat=self.n_hat,
                                         p0=self.origin_3D)
 

@@ -71,9 +71,9 @@ class highLevelControl:
         
 
         #gets the position
-        position = state.pos
+        position = state.pos_2D
         #and the velocity
-        velocity = state.vel
+        velocity = state.vel_2D
 
         #gets the position error
         position_error = position - trajectory_ref.pos

@@ -169,7 +169,7 @@ while sim_time < end_time and counter < numPoints:
     commandedWrenches.append(commanded_wrench)
 
     #gets the positional error 
-    actual_pos_3d = quadplane.true_state.pos
+    actual_pos_3d = quadplane.true_state.pos_2D
     #reduces it down to 2d
     actual_pos_2d = np.array([[actual_pos_3d.item(0)],
                               [actual_pos_3d.item(2)]])

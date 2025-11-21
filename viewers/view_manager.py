@@ -12,7 +12,7 @@ import parameters.simulation_parameters as SIM
 from message_types.msg_state import MsgState
 from message_types.msg_sensors import MsgSensors
 from message_types.msg_delta import MsgDelta
-from message_types.msg_plane import MsgPlane
+from rrt_mavsim.message_types.msg_plane import MsgPlane
 from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
 from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
 import numpy as np

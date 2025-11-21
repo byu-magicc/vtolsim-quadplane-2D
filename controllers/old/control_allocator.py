@@ -27,8 +27,8 @@ class ControlAllocator:
                wrench_des: np.ndarray, 
                state: MsgState,
                ):
-        Va = np.linalg.norm(state.vel)
-        alpha = np.arctan2(state.vel.item(2), state.vel.item(0))
+        Va = np.linalg.norm(state.vel_2D)
+        alpha = np.arctan2(state.vel_2D.item(2), state.vel_2D.item(0))
         q = state.omega.item(1)
         #These are the Forces desired from the thrusters solely, and not the airframe
         F_des_x = wrench_des.item(0)
@@ -55,7 +55,7 @@ class ControlAllocator:
         # compute rotor commands
         # velocity in world frame
         # compute velocity in the body frame
-        v_b = state.R.T @ state.vel
+        v_b = state.R.T @ state.vel_2D
         # compute airspeed through each propeller
         V_f = -v_b.item(2)
         V_r = -v_b.item(2)

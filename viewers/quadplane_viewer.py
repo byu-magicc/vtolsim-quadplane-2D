@@ -11,7 +11,7 @@ from viewers.draw_quadplane import DrawQuadplane
 import numpy as np
 from viewers.draw_trajectory import DrawTrajectory
 from time import time
-from message_types.msg_plane import MsgPlane
+from rrt_mavsim.message_types.msg_plane import MsgPlane
 from message_types.msg_state import MsgState
 from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
 from rrt_mavsim.viewers.draw_map import DrawMap
@@ -125,10 +125,10 @@ class QuadplaneViewer():
                state: MsgState):
         
         #gets the position in 3D
-        pos_2D = state.pos
+        pos_2D = state.pos_2D
         n_hat = self.msg_plane.n_hat
         mapOrigin_3D = self.msg_plane.origin_3D
-        pos_3D = map_2D_to_3D(pos_2D=pos_2D,
+        pos_3D = map_2D_to_3D(vec_2D=pos_2D,
                               n_hat=n_hat,
                               p0=mapOrigin_3D)
         # initialize the drawing the first time update() is called
