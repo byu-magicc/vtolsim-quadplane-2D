@@ -43,9 +43,9 @@ waypoints_not_smooth = waypointsNotSmoothData['model'].item()
 quadplane = QuadplaneDynamics(plane_msg=PLANE.plane_msg,
                               ts=SIM.ts_simulation,
                               pn0_3D=100.,
-                              pu0_3D=0.,
+                              pd0_3D=0.,
                               pn_dot0_3D=100.,
-                              pu_dot0_3D=0.,
+                              pd_dot0_3D=0.,
                               theta0=np.radians(20.0),
                               q0=0.)
 

@@ -22,9 +22,9 @@ class QuadplaneDynamics:
                  plane_msg: MsgPlane,
                  ts: float = SIM.ts_simulation,
                  pn0_3D: float=CONDA.pn0,
-                 pu0_3D: float=CONDA.pu0,
+                 pd0_3D: float=CONDA.pd0,
                  pn_dot0_3D: float=CONDA.pn_dot0,
-                 pu_dot0_3D: float=CONDA.pu_dot0,
+                 pd_dot0_3D: float=CONDA.pd_dot0,
                  theta0: float=CONDA.theta0,
                  q0: float=CONDA.q0):
         
@@ -36,11 +36,11 @@ class QuadplaneDynamics:
         self.ts = ts
 
         #gets the 3D position and Projects it onto the respective plane
-        pos_3D_init = np.array([[pn0_3D],[0.0],[pu0_3D]])
+        pos_3D_init = np.array([[pn0_3D],[0.0],[pd0_3D]])
         pos_2D_init = map_3D_to_2D_planeMsg(vec_3D=pos_3D_init,
                                             plane_msg=plane_msg)
         
-        vel_3D_init = np.array([[pn_dot0_3D],[0.0],[pu_dot0_3D]])
+        vel_3D_init = np.array([[pn_dot0_3D],[0.0],[pd_dot0_3D]])
         vel_2D_init = map_3D_to_2D_planeMsg(vec_3D=vel_3D_init,
                                             plane_msg=plane_msg)
 

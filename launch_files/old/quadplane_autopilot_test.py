@@ -8,7 +8,7 @@ import numpy as np
 np.errstate(overflow="ignore")
 from copy import deepcopy
 import parameters.simulation_parameters as SIM
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 from models.old.quadplane_dynamics_old_thrust import QuadplaneDynamics
 from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from controllers.autopilot_fixedWing import Autopilot

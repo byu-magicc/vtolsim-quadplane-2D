@@ -6,6 +6,7 @@ from message_types.msg_trajectory import MsgTrajectory
 from controllers.old.forceCalculator import ForceCalculator
 import parameters.pitchOptimizationParameters as PITCH
 from tools.old.rotations import theta_to_rotation_2d
+from tools.gamma import *
 import numpy as np
 
 class PitchOptimization:
@@ -26,6 +27,10 @@ class PitchOptimization:
         #creates the previous theta sample. initializes it to the state's theta
         self.theta_prev = np.array([state.theta])
 
+
+        #sets the minimium value to take into account a vector
+        self.minValue = 0.001
+
     #Arguments:
     #state: the current state of the aircraft
     #state_ref: the desired trajectory of the aircraft
@@ -36,12 +41,13 @@ class PitchOptimization:
                F_des_i: np.ndarray):
         
         #gets the flight path angle gamma
-        gamma = self.getGamma(state_ref=state_ref)
+        gamma = getGamma(state_ref=state_ref)
 
         #gets the theta constraints
         theta_constraints = self.createConstraints(gamma=gamma,
                                                    theta_prev_array=self.theta_prev,
                                                    Ts=self.Ts)
+        
 
         #creates the arguments for the args
         objective_args = (F_des_i,
@@ -60,22 +66,7 @@ class PitchOptimization:
 
         #returns the theta item 0
         return theta
-
-    #gets the flight path angle gamma
-    def getGamma(self,
-                 state_ref: MsgTrajectory):
-        
-        vel_ref = state_ref.vel
-        
-        #gets the z component of the velocity
-        vel_ref_x = vel_ref.item(0)
-        vel_ref_z = vel_ref.item(1)
-
-        #gets the flight path angle gamma
-        gamma = np.arctan2(-vel_ref_z, vel_ref_x)
-
-        return gamma
-    
+   
 
 
     #creates the optimization's objective function

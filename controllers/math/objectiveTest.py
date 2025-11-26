@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[2]))
 
 import numpy as np
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 from tools.old.rotations import *
 from scipy.optimize import minimize
 
@@ -12,7 +12,7 @@ from scipy.optimize import minimize
 
 #creates the Force Desired objective
 Force_desired_inertial = np.array([[0.0],
-                                   [-QP.mass*QP.gravity]])
+                                   [-CONDA.mass*CONDA.gravity]])
 
 Va = 20.0
 
@@ -29,9 +29,9 @@ def objective(theta: float):
 
     #gets the error vector
     errorVector = R_inertial2body @ Force_desired_inertial - \
-            0.5*QP.rho*QP.S_wing*(Va**2)*\
-            R_wind2body @ np.array([[QP.C_D_0 + theta*QP.C_D_alpha],
-                                    [QP.C_L_0 + theta*QP.C_L_alpha]])
+            0.5*CONDA.rho*CONDA.S_wing*(Va**2)*\
+            R_wind2body @ np.array([[CONDA.C_D_0 + theta*CONDA.C_D_alpha],
+                                    [CONDA.C_L_0 + theta*CONDA.C_L_alpha]])
     
     #gets the objective
     J = np.abs(errorVector.item(0)) + np.abs(errorVector.item(1))

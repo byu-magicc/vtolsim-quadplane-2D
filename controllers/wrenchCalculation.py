@@ -5,7 +5,7 @@ from message_types.msg_state import MsgState
 
 from tools.old.rotations import *
 
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 
 #This iteration will NOT take into account gravity. This will only take
 #into account the aerodynamic and actuator forces on the aircraft, in 2 Dimensions
@@ -55,39 +55,39 @@ class wrenchCalculator:
         v_air = state.v_air
 
         #intermediate variables
-        qbar = 0.5 * QP.rho * Va**2
+        qbar = 0.5 * CONDA.rho * Va**2
         #gets the cosine of alpha
         ca = np.cos(alpha)
         sa = np.sin(alpha)
 
         if Va > 1:
-            q_nondim = q * QP.c / (2 * Va)
+            q_nondim = q * CONDA.c / (2 * Va)
         else:
             q_nondim = 0.0
 
 
         # compute Lift and Drag coefficients
-        tmp1 = np.exp(-QP.M * (alpha - QP.alpha0))
-        tmp2 = np.exp(QP.M * (alpha + QP.alpha0))
+        tmp1 = np.exp(-CONDA.M * (alpha - CONDA.alpha0))
+        tmp2 = np.exp(CONDA.M * (alpha + CONDA.alpha0))
         sigma = (1 + tmp1 + tmp2) / ((1 + tmp1) * (1 + tmp2))
-        CL = (1 - sigma) * (QP.C_L_0 + QP.C_L_alpha * alpha) \
+        CL = (1 - sigma) * (CONDA.C_L_0 + CONDA.C_L_alpha * alpha) \
              + sigma * 2 * np.sign(alpha) * sa**2 * ca
-        CD = QP.C_D_p + ((QP.C_L_0 + QP.C_L_alpha * alpha)**2)/(np.pi * QP.e * QP.AR)
+        CD = CONDA.C_D_p + ((CONDA.C_L_0 + CONDA.C_L_alpha * alpha)**2)/(np.pi * CONDA.e * CONDA.AR)
 
         # compute Lift and Drag Forces
-        F_lift = qbar * QP.S_wing * (CL + QP.C_L_q * q_nondim + QP.C_L_delta_e * delta.elevator)
-        F_drag = qbar * QP.S_wing * (CD + QP.C_D_q * q_nondim + QP.C_D_delta_e * delta.elevator)
+        F_lift = qbar * CONDA.S_wing * (CL + CONDA.C_L_q * q_nondim + CONDA.C_L_delta_e * delta.elevator)
+        F_drag = qbar * CONDA.S_wing * (CD + CONDA.C_D_q * q_nondim + CONDA.C_D_delta_e * delta.elevator)
 
         #gets the forces in the body frame
         f_body = alphaToRotation(alpha=alpha) @ np.array([[F_drag],
                                                           [F_lift]])
         
         # compute pitching moment 
-        My = qbar * QP.S_wing * QP.c * (
-                QP.C_m_0
-                + QP.C_m_alpha * alpha
-                + QP.C_m_q * q_nondim
-                + QP.C_m_delta_e * delta.elevator
+        My = qbar * CONDA.S_wing * CONDA.c * (
+                CONDA.C_m_0
+                + CONDA.C_m_alpha * alpha
+                + CONDA.C_m_q * q_nondim
+                + CONDA.C_m_delta_e * delta.elevator
         )
 
         #the front vertically oriented prop
@@ -106,7 +106,7 @@ class wrenchCalculator:
         # add propeller forces and torques to body
         f_body[0][0] += Thrust_forward
         f_body[1][0] += -Thrust_front - Thrust_rear
-        My += QP.ell_f * Thrust_front - QP.ell_r * Thrust_rear
+        My += CONDA.ell_f * Thrust_front - CONDA.ell_r * Thrust_rear
 
         #returns the body frame forces and moments
         return np.array([[f_body.item(0)],
@@ -118,7 +118,7 @@ class wrenchCalculator:
     #gets the wrench Jacobian
     def wrench_Jacobian(self, delta: MsgDelta, state: MsgState):
         #gets the gamma variable
-        Gamma = (1/2)*QP.rho*((state.Va)**2)*QP.S_wing
+        Gamma = (1/2)*CONDA.rho*((state.Va)**2)*CONDA.S_wing
         #gets the alpha variable
         alpha = state.alpha
 
@@ -126,8 +126,8 @@ class wrenchCalculator:
         alpha_rotation = alphaToRotation(alpha=alpha)
 
         #creates the vector of the partials of the Lift and Drag Forces
-        partial_F_drag = Gamma*QP.C_D_delta_e
-        partial_F_lift = Gamma*QP.C_L_delta_e
+        partial_F_drag = Gamma*CONDA.C_D_delta_e
+        partial_F_lift = Gamma*CONDA.C_L_delta_e
 
         liftDragPartials = np.array([[partial_F_drag],
                                      [partial_F_lift]])
@@ -138,7 +138,7 @@ class wrenchCalculator:
         partial_fx_delta_e = rotatedPartials.item(0)
         partial_fz_delta_e = rotatedPartials.item(1)
         #gets the partial of My with respect to delta_e
-        partial_My_delta_e = Gamma*QP.c*QP.C_m_delta_e
+        partial_My_delta_e = Gamma*CONDA.c*CONDA.C_m_delta_e
 
 
         #gets the rotor forces, moments, and their derivitives lists
@@ -164,8 +164,8 @@ class wrenchCalculator:
                        0]
         
         My_gradient = [partial_My_delta_e,
-                       QP.ell_f*partial_T_delta_t1,
-                       -QP.ell_r*partial_T_delta_t2,
+                       CONDA.ell_f*partial_T_delta_t1,
+                       -CONDA.ell_r*partial_T_delta_t2,
                        0]
         
 
@@ -176,22 +176,22 @@ class wrenchCalculator:
 
     #function to calculate the motor thrust and aerodynamic torque or moment
     def _motor_thrust_torque(self, Va: float, delta_t: float)->tuple[float, float]:
-        C_Q0 = QP.C_Q0
-        C_Q1 = QP.C_Q1
-        C_T0 = QP.C_T0
-        C_Q2 = QP.C_Q2
-        C_T1 = QP.C_T1
-        C_T2 = QP.C_T2
-        D_prop = QP.D_prop
-        KQ = QP.KQ
-        R_motor = QP.R_motor
-        i0 = QP.i0
+        C_Q0 = CONDA.C_Q0
+        C_Q1 = CONDA.C_Q1
+        C_T0 = CONDA.C_T0
+        C_Q2 = CONDA.C_Q2
+        C_T1 = CONDA.C_T1
+        C_T2 = CONDA.C_T2
+        D_prop = CONDA.D_prop
+        KQ = CONDA.KQ
+        R_motor = CONDA.R_motor
+        i0 = CONDA.i0
         #gets the voltage in, based on the delta_t
-        V_in = QP.V_max * delta_t
+        V_in = CONDA.V_max * delta_t
         # Quadratic formula to solve for motor speed
-        a = C_Q0 * QP.rho * np.power(D_prop, 5)/((2.*np.pi)**2)
-        b = (C_Q1 * QP.rho * np.power(D_prop, 4)/ (2.*np.pi)) * Va + KQ**2/R_motor
-        c = C_Q2 * QP.rho * np.power(D_prop, 3)* Va**2 - (KQ / R_motor) * V_in + KQ * i0        
+        a = C_Q0 * CONDA.rho * np.power(D_prop, 5)/((2.*np.pi)**2)
+        b = (C_Q1 * CONDA.rho * np.power(D_prop, 4)/ (2.*np.pi)) * Va + KQ**2/R_motor
+        c = C_Q2 * CONDA.rho * np.power(D_prop, 3)* Va**2 - (KQ / R_motor) * V_in + KQ * i0        
         # Consider only positive root
         Omega_op = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
         # compute advance ratio
@@ -201,8 +201,8 @@ class wrenchCalculator:
         C_Q = C_Q2 * J_op**2 + C_Q1 * J_op + C_Q0
         # add thrust and torque due to propeller
         n = Omega_op / (2 * np.pi)
-        T_p = QP.rho * n**2 * np.power(D_prop, 4) * C_T
-        Q_p = QP.rho * n**2 * np.power(D_prop, 5) * C_Q
+        T_p = CONDA.rho * n**2 * np.power(D_prop, 4) * C_T
+        Q_p = CONDA.rho * n**2 * np.power(D_prop, 5) * C_Q
         return T_p, Q_p   
     
 
@@ -240,29 +240,29 @@ class wrenchCalculator:
         #iterates through the three props
         for i in range(numProps):
             #saves the coefficients of aerodynamics for the propeller model
-            C_Q0 = QP.C_Q0
-            C_Q1 = QP.C_Q1
-            C_T0 = QP.C_T0
-            C_Q2 = QP.C_Q2
-            C_T1 = QP.C_T1
-            C_T2 = QP.C_T2
+            C_Q0 = CONDA.C_Q0
+            C_Q1 = CONDA.C_Q1
+            C_T0 = CONDA.C_T0
+            C_Q2 = CONDA.C_Q2
+            C_T1 = CONDA.C_T1
+            C_T2 = CONDA.C_T2
 
             #sets the diameter of the propeller
-            D_prop = QP.D_prop
-            KQ = QP.KQ
-            R_motor = QP.R_motor
-            i0 = QP.i0
+            D_prop = CONDA.D_prop
+            KQ = CONDA.KQ
+            R_motor = CONDA.R_motor
+            i0 = CONDA.i0
 
             # map delta_t throttle command(0 to 1) into motor input voltage
-            V_in = QP.V_max * delta_throttles[i]
-            V_in_der = QP.V_max
+            V_in = CONDA.V_max * delta_throttles[i]
+            V_in_der = CONDA.V_max
 
             # Quadratic formula to solve for motor speed
-            a = C_Q0 * QP.rho * np.power(D_prop, 5) \
+            a = C_Q0 * CONDA.rho * np.power(D_prop, 5) \
                 / ((2.*np.pi)**2)
-            b = (C_Q1 * QP.rho * np.power(D_prop, 4)
+            b = (C_Q1 * CONDA.rho * np.power(D_prop, 4)
                 / (2.*np.pi)) * airmass_velocity_rotors[i] + KQ**2/R_motor
-            c = C_Q2 * QP.rho * np.power(D_prop, 3) \
+            c = C_Q2 * CONDA.rho * np.power(D_prop, 3) \
                 * (airmass_velocity_rotors[i])**2 - (KQ / R_motor) * V_in + KQ * i0
             c_der = (KQ / R_motor) * V_in_der
 
@@ -282,15 +282,15 @@ class wrenchCalculator:
 
             # add thrust and torque due to propeller
             n = Omega_op / (2 * np.pi)
-            T_p = QP.rho * n**2 * np.power(D_prop, 4) * C_T
-            Q_p = QP.rho * n**2 * np.power(D_prop, 5) * C_Q
-            T_p_der = QP.rho * Omega_op * Omega_op_der * np.power(D_prop, 4) * C_T / (2 * np.pi**2) + \
-                QP.rho * Omega_op**2 * np.power(D_prop, 4) * C_T_der / (2 * np.pi)**2
-            Q_p_der = QP.rho * Omega_op * Omega_op_der * np.power(D_prop, 5) * C_Q / (2 * np.pi**2) + \
-                QP.rho * Omega_op**2 * np.power(D_prop, 5) * C_Q_der / (2 * np.pi)**2
+            T_p = CONDA.rho * n**2 * np.power(D_prop, 4) * C_T
+            Q_p = CONDA.rho * n**2 * np.power(D_prop, 5) * C_Q
+            T_p_der = CONDA.rho * Omega_op * Omega_op_der * np.power(D_prop, 4) * C_T / (2 * np.pi**2) + \
+                CONDA.rho * Omega_op**2 * np.power(D_prop, 4) * C_T_der / (2 * np.pi)**2
+            Q_p_der = CONDA.rho * Omega_op * Omega_op_der * np.power(D_prop, 5) * C_Q / (2 * np.pi**2) + \
+                CONDA.rho * Omega_op**2 * np.power(D_prop, 5) * C_Q_der / (2 * np.pi)**2
             
             #changes the direction
-            Q_p = (QP.propDirections)[i]*Q_p
+            Q_p = (CONDA.propDirections)[i]*Q_p
 
             #appends to the lists
             thrusts.append(T_p)

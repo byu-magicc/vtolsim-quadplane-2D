@@ -6,7 +6,7 @@ import numpy as np
 from controllers.LowLevelControl import LowLevelControl
 from models.old.quadplane_dynamics import QuadplaneDynamics
 import parameters.simulation_parameters as SIM
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 import parameters.control_allocation_parameters as CAP
 from viewers.view_manager import ViewManager
 from message_types.msg_delta import MsgDelta

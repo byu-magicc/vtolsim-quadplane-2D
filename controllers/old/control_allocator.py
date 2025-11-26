@@ -5,7 +5,7 @@
 """
 import numpy as np 
 from scipy.optimize import minimize
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 from message_types.msg_delta import MsgDelta
 
 from models.old.quadplane_dynamics import QuadplaneDynamics
@@ -37,20 +37,20 @@ class ControlAllocator:
         #print('F_des=', F_des_x, ', ', F_des_z)
         #print('M_des=', M_des)
         if Va > 0.1:
-            q_nondim = q * QP.c / (2 * Va)  
+            q_nondim = q * CONDA.c / (2 * Va)  
         else:
             q_nondim = 0.0
-        qbar = 0.5 * QP.rho * Va**2  
-        M_0 = qbar * QP.S_wing * QP.c * (QP.C_m_0 + QP.C_m_alpha * alpha)
-        M_q = qbar * QP.S_wing * QP.c * QP.C_m_q
-        M_delta_e = qbar * QP.S_wing * QP.c * QP.C_m_delta_e
+        qbar = 0.5 * CONDA.rho * Va**2  
+        M_0 = qbar * CONDA.S_wing * CONDA.c * (CONDA.C_m_0 + CONDA.C_m_alpha * alpha)
+        M_q = qbar * CONDA.S_wing * CONDA.c * CONDA.C_m_q
+        M_delta_e = qbar * CONDA.S_wing * CONDA.c * CONDA.C_m_delta_e
         # use elevator to get as much torque as possible
         self.delta.elevator = saturate((M_des - M_0 - M_q * q_nondim) / (M_delta_e+0.00001), 
                                   -1, 1)
         M_unachieved = M_des - M_0 - M_q * q_nondim - M_delta_e * self.delta.elevator
         # compute desired thrust for each rotor
-        T_f_des = -QP.ell_r/(QP.ell_r+QP.ell_f) * F_des_z + 1/(QP.ell_r+QP.ell_f) * M_unachieved
-        T_r_des = -QP.ell_f/(QP.ell_r+QP.ell_f) * F_des_z - 1/(QP.ell_r+QP.ell_f) * M_unachieved
+        T_f_des = -CONDA.ell_r/(CONDA.ell_r+CONDA.ell_f) * F_des_z + 1/(CONDA.ell_r+CONDA.ell_f) * M_unachieved
+        T_r_des = -CONDA.ell_f/(CONDA.ell_r+CONDA.ell_f) * F_des_z - 1/(CONDA.ell_r+CONDA.ell_f) * M_unachieved
         T_t_des = F_des_x
         # compute rotor commands
         # velocity in world frame
@@ -69,7 +69,7 @@ class ControlAllocator:
 
 def invert_motor_simplified(T_des: float, Vp: float)->float:
     # Simplified model is Thurst = QP.MaxThurst * delta, or return delta = T_des/QP.MaxThrust
-    delta_unsat = T_des/QP.MaxThrust
+    delta_unsat = T_des/CONDA.MaxThrust
     delta = saturate(delta_unsat, 0.0, 1.0)
     return delta
 
@@ -104,19 +104,19 @@ def objective_motor(delta, T_des, Vp):
     return J
 
 def motor_thrust(Vp: float, delta_t: float)->float:
-    C_Q0 = QP.C_Q0
-    C_Q1 = QP.C_Q1
-    C_T0 = QP.C_T0
-    C_Q2 = QP.C_Q2
-    C_T1 = QP.C_T1
-    C_T2 = QP.C_T2
-    D_prop = QP.D_prop
-    KQ = QP.KQ
-    R_motor = QP.R_motor
-    i0 = QP.i0
-    rho = QP.rho
+    C_Q0 = CONDA.C_Q0
+    C_Q1 = CONDA.C_Q1
+    C_T0 = CONDA.C_T0
+    C_Q2 = CONDA.C_Q2
+    C_T1 = CONDA.C_T1
+    C_T2 = CONDA.C_T2
+    D_prop = CONDA.D_prop
+    KQ = CONDA.KQ
+    R_motor = CONDA.R_motor
+    i0 = CONDA.i0
+    rho = CONDA.rho
     #gets the voltage in, based on the delta_t
-    V_in = QP.V_max * delta_t
+    V_in = CONDA.V_max * delta_t
     # Quadratic formula to solve for motor speed
     a = C_Q0 * rho * np.power(D_prop, 5)/((2.*np.pi)**2)
     b = (C_Q1 * rho * np.power(D_prop, 4)/ (2.*np.pi)) * Vp + KQ**2/R_motor

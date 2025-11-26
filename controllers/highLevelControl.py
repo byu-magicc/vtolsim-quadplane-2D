@@ -2,6 +2,7 @@
 
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
+from message_types.msg_integrator import MsgIntegrator
 
 import parameters.simulation_parameters as SIM
 import parameters.control_allocation_parameters as CAP
@@ -14,8 +15,9 @@ from tools.old.rotations import *
 
 import numpy as np
 
-e_down = np.array([[0.0],
-                   [1.0]])
+e_up = np.array([[0.0],
+                 [1.0]])
+
 
 
 class highLevelControl:
@@ -57,6 +59,18 @@ class highLevelControl:
         self.pitchOptimizer = PitchOptimization(state=state,
                                                 Ts=Ts)
 
+        #creates the integrator for just the position error (velocity error is not super important)
+        self.integrator_posError = np.zeros((2,1))
+
+        #sets the max error derivative for the integrator to integrate for antiwindup purposes
+        self.max_error_derivative_antiwindup = HLC.max_error_derivative_antiwindup
+
+        #the delayed by 1 sample of the error
+        self.pos_error_d1 = np.zeros((2,1))
+
+        self.integrator_msg = MsgIntegrator()
+
+
 
     #Arguments:
     #1. trajectory reference
@@ -76,25 +90,38 @@ class highLevelControl:
         velocity = state.vel_2D
 
         #gets the position error
-        position_error = position - trajectory_ref.pos
+        position_error = trajectory_ref.pos - position
         #the velocity error
-        velocity_error = velocity - trajectory_ref.vel
+        velocity_error = trajectory_ref.vel - velocity
+
+        #updates the integral
+        self.update_integral(pos_error=position_error,
+                             vel_error=velocity_error)
 
         #gets the error state vector
         errorState = np.concatenate((position_error, velocity_error), axis=0)
 
         #TODO get rid of these three. They're just for testing right now
-        accelTerm = CONDA.mass * trajectory_ref.accel
-        gravityTerm = -CONDA.mass*CONDA.gravity*e_down
-        errorStateTerm = -CONDA.mass*HLC.K @ errorState
+        accelTerm_accel = trajectory_ref.accel
+        gravityTerm_accel = CONDA.gravity*e_up
+        errorStateTerm_accel = HLC.K @ errorState
+        integratorTerm_accel = HLC.Ki @ position_error
+
+        accelTerm_Force = CONDA.mass * accelTerm_accel
+        gravityTerm_Force = CONDA.mass * gravityTerm_accel
+        errorStateTerm_Force = CONDA.mass * errorStateTerm_accel
+        integratorTerm_Force = CONDA.mass * integratorTerm_accel
+         
 
         #given these terms, we create the simple trajectory following control law
         #gets the desired force on the aircraft in the inertial frame.
         # Equal to mass times the desired acceleration due to the trajectory B-Spline
         #plus gravity (negated because of the positive d vector pointing down, and we want a force to oppose that)
         #plus State-Feedback matrix K times error state 
-        F_des_i = CONDA.mass * (trajectory_ref.accel - CONDA.gravity*e_down - HLC.K @ errorState)
-        
+        #TODO make gravity generalized-planable
+        accel_des_i = trajectory_ref.accel + CONDA.gravity*e_up + HLC.K @ errorState + HLC.Ki @ position_error
+        F_des_i = CONDA.mass * accel_des_i
+
         #given the Force desired, we call the pitch optimization function to get the optimal theta
         theta_ref = self.pitchOptimizer.update(state=state,
                                            state_ref=trajectory_ref,
@@ -112,6 +139,43 @@ class highLevelControl:
         #gets the force desired in the body frame
         F_des_b = theta_to_rotation_2d(theta=theta) @ F_des_i
 
+        #saves the current position error as delayed by 1
+        self.pos_error_d1 = position_error
+
         #returns these two things to go to the low level control
         return F_des_b, M_des_b
+    
+
+    #defines the update integral function
+    def update_integral(self,
+                        pos_error: np.ndarray,
+                        vel_error: np.ndarray):
+        
+
+        #gets the number of bins to operate on
+        numVelSlots = np.size(vel_error)
+
+        for i in range(numVelSlots):
+            #gets the velocity error delayed by 1
+            vel_error_temp = vel_error.item(i)
+            #if the value of the velocity error is less than the threshold, we integrate
+            if np.abs(vel_error_temp) < self.max_error_derivative_antiwindup:
+                #gets the position error at this point
+                pos_error_temp = pos_error.item(i)
+                #gets the position error delayed by 1
+                pos_error_temp_d1 = self.pos_error_d1.item(i)
+
+                #adds to the integration variable
+                self.integrator_posError[i,:] = self.integrator_posError[i,:] +\
+                                                (self.Ts/2.0) * (pos_error_temp + pos_error_temp_d1)
+            #otherwise, we pass and do nothing.
+            else:
+                pass
+            potato = 0
+
+        self.integrator_msg.setIntegrator(integratorValue=self.integrator_posError)
+
+
+    def getIntegrator(self):
+        return self.integrator_msg.getIntegrator()
 

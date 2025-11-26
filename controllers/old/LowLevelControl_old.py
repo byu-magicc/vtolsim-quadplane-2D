@@ -14,7 +14,7 @@ from message_types.msg_delta import MsgDelta
 #imports the state message
 from message_types.msg_state import MsgState
 
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 
 from controllers.p_control import PControl
 

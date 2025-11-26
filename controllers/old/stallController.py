@@ -4,7 +4,7 @@ import os, sys
 from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
 
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 import numpy as np
 
 #creates the function to get whether we are within stall conditions
@@ -16,12 +16,12 @@ def withinStallConditions(alpha_degrees: float)->tuple[bool, float]:
     inConditions = False
     #creates the variable for the error
     attackError = 0
-    if alpha > QP.maximumAlpha:
+    if alpha > CONDA.maximumAlpha:
         inConditions = False
-        attackError = alpha - QP.maximumAlpha
-    elif alpha < QP.minimumAlpha:
+        attackError = alpha - CONDA.maximumAlpha
+    elif alpha < CONDA.minimumAlpha:
         inConditions = False
-        attackError = alpha - QP.maximumAlpha
+        attackError = alpha - CONDA.maximumAlpha
     else:
         inConditions = True
 

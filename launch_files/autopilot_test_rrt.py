@@ -6,8 +6,11 @@ import numpy as np
 from copy import deepcopy
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as ANP
-from models.old.quadplane_dynamics import QuadplaneDynamics
+import parameters.plane_parameters as PLANE
+
+from models.quadplaneDynamics import QuadplaneDynamics
 from viewers.view_manager import ViewManager
+
 
 #controllers import section
 from controllers.highLevelControl import highLevelControl
@@ -18,7 +21,7 @@ from controllers.feedforwardControl import feedForwardControl
 from message_types.msg_delta import MsgDelta
 from message_types.msg_state import MsgState
 from message_types.msg_sensors import MsgSensors
-from message_types.msg_plane import MsgPlane
+from rrt_mavsim.message_types.msg_plane import MsgPlane
 from message_types.msg_trajectory import MsgTrajectory
 
 from rrt_mavsim.message_types.msg_world_map import MsgWorldMap, PlanarVTOLParams, MapTypes
@@ -85,7 +88,10 @@ endPosition = params.endPosition
 
 
 #instantiates the quadplane
-quadplane = QuadplaneDynamics(ts=SIM.ts_simulation)
+quadplane = QuadplaneDynamics(ts=SIM.ts_simulation,
+                              plane_msg=PLANE.plane_msg,
+                              pn0_3D=0.0,
+                              pd0_3D=100.0)
 viewers = ViewManager(animation=True, 
                       data=True,
                       world_map=worldMap,
@@ -128,7 +134,7 @@ bspline_sampledAcceleration_2d, _ = bspline_object_2D.get_spline_derivative_data
 
 
 #gets the same ouptut control points in 3D
-outputControlPoints_3D = map_2D_to_3D(pos_2D=outputControlPoints_2D,
+outputControlPoints_3D = map_2D_to_3D(vec_2D=outputControlPoints_2D,
                                       n_hat=n_hat,
                                       p0=mapOrigin_3D)
 
@@ -196,31 +202,25 @@ while sim_time < end_time:
     #gets the forces and moments desired in the body frame of the aircraft
     F_des_b, M_des_b = high_level_controller.update(trajectory_ref=trajectory_ref,
                                  state=quadplane.true_state)
+    
+    integrator = high_level_controller.getIntegrator()
 
     #calls the low level controller
-    low_level_controller.update(state=quadplane.true_state,
+    delta = low_level_controller.update(state=quadplane.true_state,
                                 F_des_b=F_des_b,
                                 M_des_b=M_des_b)
-
-
-    #creates the dummy delta 
-    delta_temp = MsgDelta(elevator=0.0,
-                          throttle_front=0.0,
-                          throttle_rear=0.0,
-                          throttle_thrust=0.0)
-    
+   
     
     #updates the quadplane dynamic simulation based on the delta input
-    quadplane.update(delta=delta_temp,
+    quadplane.update(delta=delta,
                      wind=wind)
     
-
-
+    
     viewers.update(sim_time=sim_time,
                    true_state=quadplane.true_state,
                    estimated_state=quadplane.true_state,
                    commanded_state=quadplane.true_state,
-                   delta=delta_temp,
+                   delta=delta,
                    measurements=MsgSensors())
 
     sim_time += SIM.ts_simulation

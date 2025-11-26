@@ -2,7 +2,9 @@
 #-this file implements the dynamic equations of motion for the quad plane
 #uses unit quaternion for the attitude state
 import numpy as np
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
+import parameters.control_allocation_parameters as CAP
+import parameters.plane_parameters as PLANE
 from tools.old.rotations import *
 from tools.quaternions import *
 from message_types.msg_state import MsgState
@@ -18,12 +20,12 @@ class QuadplaneDynamics:
     #bool to enable whether the quadrotors will be enabled or disabled in the dynamics
     def __init__(self, 
                  ts: float,
-                 pn0: float=QP.pn0,
-                 pd0: float=QP.pu0,
-                 pn_dot0: float=QP.pn_dot0,
-                 pd_dot0: float=QP.pu_dot0,
-                 theta0: float=QP.theta0,
-                 q0: float=QP.q0,
+                 pn0: float=CONDA.pn0,
+                 pd0: float=CONDA.pd0,
+                 pn_dot0: float=CONDA.pn_dot0,
+                 pd_dot0: float=CONDA.pd_dot0,
+                 theta0: float=CONDA.theta0,
+                 q0: float=CONDA.q0,
                  ):
         self._ts = ts
         #creates the state array and initializes them to the original positions
@@ -35,7 +37,7 @@ class QuadplaneDynamics:
             [theta0], # [4] initial pitch angle
             [q0],     # [5]  pitch rate
         ])
-        self.true_state = MsgState()
+        self.true_state = MsgState(plane_msg=PLANE.plane_msg)
         self._update_velocity_data()
         self._forces_moments(delta=MsgDelta())
         # update the message class for the true state
@@ -44,10 +46,10 @@ class QuadplaneDynamics:
         #creates the v_air vector, which is an airspeed vector, in the body frame.
         #it is the velocity of the aircraft with respect to the airmass
         #in which it is travelling through. 
-        self.v_air_inertial = np.array([[QP.pn_dot0],
-                                        [QP.pu_dot0]])
-        self.v_air_body = np.array([[QP.pn_dot0],
-                                    [QP.pu_dot0]])
+        self.v_air_inertial = np.array([[CONDA.pn_dot0],
+                                        [CONDA.pd_dot0]])
+        self.v_air_body = np.array([[CONDA.pn_dot0],
+                                    [CONDA.pd_dot0]])
         
         potato = 0
 
@@ -102,14 +104,14 @@ class QuadplaneDynamics:
 
         #
         # position dynamics
-        pn_ddot = (1/QP.mass)*f_inertial.item(0)
-        pd_ddot = (1/QP.mass)*f_inertial.item(1)
+        pn_ddot = (1/CONDA.mass)*f_inertial.item(0)
+        pd_ddot = (1/CONDA.mass)*f_inertial.item(1)
         #print('F=', f_inertial.item(0), ', ', f_inertial.item(1))
         #print('M=', My)
         # rotational kinematics
         theta_dot = q
         # rotatonal dynamics
-        q_dot = My/QP.Jy
+        q_dot = My/CONDA.Jy
         # collect the derivative of the states
         x_dot = np.array([[pn_dot, pd_dot, pn_ddot, pd_ddot, theta_dot, q_dot]]).T
         return x_dot
@@ -166,41 +168,41 @@ class QuadplaneDynamics:
 
         # pitch rate
         q = self._state.item(5)
-        #gets the force of gravity in the inertial frame
-        fg_inertial_2D = QP.mass * QP.gravity_accel_inertial_2D
+        #gets the force of gravity in the inertial frame TODO
+        fg_inertial_2D = CONDA.mass * CONDA.gravity_accel_inertial_2D
         # gravitational force in body frame
         f_g_body_2D = R_inertial2Body_2D @ fg_inertial_2D
         # gets each portion of the gravitational force, and creates the fx and fz body components
         fx_body = f_g_body_2D.item(0)
         fz_body = f_g_body_2D.item(1)
         #intermediate variables
-        qbar = 0.5 * QP.rho * self._Va**2
+        qbar = 0.5 * CONDA.rho * self._Va**2
         ca = np.cos(self._alpha)
         sa = np.sin(self._alpha)
         # nondimensionalize q
         if self._Va > 1:
-            q_nondim = q * QP.c / (2 * self._Va)
+            q_nondim = q * CONDA.c / (2 * self._Va)
         else:
             q_nondim = 0.0
         # compute Lift and Drag coefficients
-        tmp1 = np.exp(-QP.M * (self._alpha - QP.alpha0))
-        tmp2 = np.exp(QP.M * (self._alpha + QP.alpha0))
+        tmp1 = np.exp(-CONDA.M * (self._alpha - CONDA.alpha0))
+        tmp2 = np.exp(CONDA.M * (self._alpha + CONDA.alpha0))
         sigma = (1.0 + tmp1 + tmp2) / ((1.0 + tmp1) * (1.0 + tmp2))
-        CL = (1.0 - sigma) * (QP.C_L_0 + QP.C_L_alpha * self._alpha) \
+        CL = (1.0 - sigma) * (CONDA.C_L_0 + CONDA.C_L_alpha * self._alpha) \
              + sigma * 2 * np.sign(self._alpha) * sa**2 * ca
-        CD = QP.C_D_p + ((QP.C_L_0 + QP.C_L_alpha * self._alpha)**2)/(np.pi * QP.e * QP.AR)
+        CD = CONDA.C_D_p + ((CONDA.C_L_0 + CONDA.C_L_alpha * self._alpha)**2)/(np.pi * CONDA.e * CONDA.AR)
         # compute Lift and Drag Forces
-        F_lift = qbar * QP.S_wing * (CL + QP.C_L_q * q_nondim + QP.C_L_delta_e * delta.elevator)
-        F_drag = qbar * QP.S_wing * (CD + QP.C_D_q * q_nondim + QP.C_D_delta_e * delta.elevator)
+        F_lift = qbar * CONDA.S_wing * (CL + CONDA.C_L_q * q_nondim + CONDA.C_L_delta_e * delta.elevator)
+        F_drag = qbar * CONDA.S_wing * (CD + CONDA.C_D_q * q_nondim + CONDA.C_D_delta_e * delta.elevator)
         # compute longitudinal forces in body frame
         fx_body += - ca * F_drag + sa * F_lift
         fz_body += - sa * F_drag - ca * F_lift
         # compute pitching moment 
-        My = qbar * QP.S_wing * QP.c * (
-                QP.C_m_0
-                + QP.C_m_alpha * self._alpha
-                + QP.C_m_q * q_nondim
-                + QP.C_m_delta_e * delta.elevator)
+        My = qbar * CONDA.S_wing * CONDA.c * (
+                CONDA.C_m_0
+                + CONDA.C_m_alpha * self._alpha
+                + CONDA.C_m_q * q_nondim
+                + CONDA.C_m_delta_e * delta.elevator)
         
         #gets the airspeed through the 
         # compute airspeed through each propeller
@@ -243,26 +245,26 @@ class QuadplaneDynamics:
     #but is better for our simpler modelling and figuring everything out
     def _motor_thrust_torque_simplified(self, delta_t: float):
         #returns the delta_t times the max thrust
-        return delta_t*QP.MaxThrust
+        return delta_t*CONDA.MaxThrust
 
 
     def _motor_thrust_torque_advanced(self, Va: float, delta_t: float)->tuple[float, float]:
-        C_Q0 = QP.C_Q0
-        C_Q1 = QP.C_Q1
-        C_T0 = QP.C_T0
-        C_Q2 = QP.C_Q2
-        C_T1 = QP.C_T1
-        C_T2 = QP.C_T2
-        D_prop = QP.D_prop
-        KQ = QP.KQ
-        R_motor = QP.R_motor
-        i0 = QP.i0
+        C_Q0 = CONDA.C_Q0
+        C_Q1 = CONDA.C_Q1
+        C_T0 = CONDA.C_T0
+        C_Q2 = CONDA.C_Q2
+        C_T1 = CONDA.C_T1
+        C_T2 = CONDA.C_T2
+        D_prop = CONDA.D_prop
+        KQ = CONDA.KQ
+        R_motor = CONDA.R_motor
+        i0 = CONDA.i0
         #gets the voltage in, based on the delta_t
-        V_in = QP.V_max * delta_t
+        V_in = CONDA.V_max * delta_t
         # Quadratic formula to solve for motor speed
-        a = C_Q0 * QP.rho * np.power(D_prop, 5)/((2.*np.pi)**2)
-        b = (C_Q1 * QP.rho * np.power(D_prop, 4)/ (2.*np.pi)) * Va + KQ**2/R_motor
-        c = C_Q2 * QP.rho * np.power(D_prop, 3)* Va**2 - (KQ / R_motor) * V_in + KQ * i0        
+        a = C_Q0 * CONDA.rho * np.power(D_prop, 5)/((2.*np.pi)**2)
+        b = (C_Q1 * CONDA.rho * np.power(D_prop, 4)/ (2.*np.pi)) * Va + KQ**2/R_motor
+        c = C_Q2 * CONDA.rho * np.power(D_prop, 3)* Va**2 - (KQ / R_motor) * V_in + KQ * i0        
         # Consider only positive root
         Omega_op = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
         # compute advance ratio
@@ -272,8 +274,8 @@ class QuadplaneDynamics:
         C_Q = C_Q2 * J_op**2 + C_Q1 * J_op + C_Q0
         # add thrust and torque due to propeller
         n = Omega_op / (2 * np.pi)
-        T_p = QP.rho * n**2 * np.power(D_prop, 4) * C_T
-        Q_p = QP.rho * n**2 * np.power(D_prop, 5) * C_Q
+        T_p = CONDA.rho * n**2 * np.power(D_prop, 4) * C_T
+        Q_p = CONDA.rho * n**2 * np.power(D_prop, 5) * C_Q
         return T_p, Q_p
 
     #function to update the true state

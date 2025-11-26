@@ -9,7 +9,7 @@ sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
 
 
 import numpy as np
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 from parameters.anaconda_parameters import trimDelta
 
 from models.old.quadplane_dynamics import QuadplaneDynamics

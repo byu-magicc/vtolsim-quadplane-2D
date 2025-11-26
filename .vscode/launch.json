@@ -8,6 +8,8 @@
 
 
 
+
+
         {
             "name": "Obstacle Test",
             "type": "debugpy",
@@ -83,6 +85,26 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/launch_files/dynamicsTest.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Takeoff Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/takeoffTest.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Static Path Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/autopilot_test_staticPath.py",
             "env": {
               "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
             },

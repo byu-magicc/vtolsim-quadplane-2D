@@ -6,7 +6,7 @@ sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
 import numpy as np
 import pyqtgraph as pg
 import parameters.simulation_parameters as SIM
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 from models.old.quadplane_dynamics import QuadplaneDynamics
 from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from controllers.autopilot_quadrotors import Autopilot

@@ -163,7 +163,7 @@ class DataViewer:
             self._plotter.add_data_point(plot_id='north', data_label='north_c', xvalue=currentTime, yvalue=commanded_state.pos_2D[0,0])
             self._plotter.add_data_point(plot_id='altitude', data_label='altitude_c', xvalue=currentTime, yvalue=-commanded_state.q)
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_c', xvalue=currentTime, yvalue=commanded_state.vel_2D[0,0])
+            self._plotter.add_data_ptrue_stateoint(plot_id='v_n', data_label='v_n_c', xvalue=currentTime, yvalue=commanded_state.vel_2D[0,0])
             self._plotter.add_data_point(plot_id='v_d', data_label='v_d_c', xvalue=currentTime, yvalue=commanded_state.vel_2D[1,0])
             #adds the pitchw
             self._plotter.add_data_point(plot_id='pitch', data_label='pitch_c', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))

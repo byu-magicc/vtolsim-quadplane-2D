@@ -8,7 +8,7 @@ from scipy.linalg import solve_continuous_are, inv
 from scipy.optimize import minimize
 from tools.old.rotations import rotation_to_euler, euler_to_rotation, theta_to_rotation_2d
 from tools.filters import BetaFilter
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 #from controllers.integrator import Integrator
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
@@ -66,7 +66,7 @@ class TrajectoryTracker:
         R = theta_to_rotation_2d(theta=pitch)
         
         e_z = np.array([[0.], [1.]])
-        F_des_i = QP.mass * (trajectory.accel - QP.gravity * e_z - self.K @ x_err)
+        F_des_i = CONDA.mass * (trajectory.accel - CONDA.gravity * e_z - self.K @ x_err)
         # compute optima pitch and associated desired propeller force in body frame
         self.theta_star, F_prop_des_b = optimize_pitch(F_des_i, trajectory, self.theta_star, self.Ts)
         # differentiate theta_star using beta-filter
@@ -75,7 +75,7 @@ class TrajectoryTracker:
         # desired moment
         phi, theta, psi = rotation_to_euler(state.R)
         q = state.omega.item(1)
-        M_des = QP.Jy * (theta_star_ddot \
+        M_des = CONDA.Jy * (theta_star_ddot \
                          - self.kd_theta * (q - theta_star_dot) \
                             - self.kp_theta * (theta-self.theta_star))
         # M_des = QP.Jy * (- self.kd_theta * q \
@@ -166,10 +166,10 @@ def F_0(Va, alpha):
     # sigma = (1.0 + tmp1 + tmp2) / ((1.0 + tmp1) * (1.0 + tmp2))
     # CL = (1 - sigma) * (QP.C_L_0 + QP.C_L_alpha * alpha) \
     #     + sigma * 2 * np.sign(alpha) * np.sin(alpha)**2 * np.cos(alpha)
-    if abs(alpha)<QP.alpha0:
-        CL = (QP.C_L_0 + QP.C_L_alpha * alpha)
+    if abs(alpha)<CONDA.alpha0:
+        CL = (CONDA.C_L_0 + CONDA.C_L_alpha * alpha)
     else:
         CL = 0.0
-    CD = QP.C_D_p + ((QP.C_L_0 + QP.C_L_alpha * alpha)**2)/(np.pi * QP.e * QP.AR)
-    F = 0.5 * QP.rho * Va**2 * QP.S_wing * R @ np.array([[-CD], [-CL]])
+    CD = CONDA.C_D_p + ((CONDA.C_L_0 + CONDA.C_L_alpha * alpha)**2)/(np.pi * CONDA.e * CONDA.AR)
+    F = 0.5 * CONDA.rho * Va**2 * CONDA.S_wing * R @ np.array([[-CD], [-CL]])
     return F

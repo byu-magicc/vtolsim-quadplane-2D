@@ -13,7 +13,7 @@ import numpy as np
 np.errstate(overflow="ignore")
 from copy import deepcopy
 import parameters.simulation_parameters as SIM
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 from models.old.quadplane_dynamics import QuadplaneDynamics
 from tools.trim import compute_trim, compute_ss_model, print_ss_model
 from viewers.view_manager import ViewManager
@@ -38,7 +38,7 @@ viewers = ViewManager(animation=True, data=True)
 Va = 20.
 trim_state, trim_delta = compute_trim(quadplane, Va)
 quadplane._state = trim_state  # set the initial state of the vtol to the trim state
-delta = QP.trimDelta # set input to constant constant trim input
+delta = CONDA.trimDelta # set input to constant constant trim input
 #TODO temporarily sets the delta to just zeros, and sees what happens
 '''
 delta = MsgDelta(elevator=0.0,

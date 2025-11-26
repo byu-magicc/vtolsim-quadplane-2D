@@ -7,14 +7,19 @@ mavsim: manage_viewers
 import pyqtgraph as pg
 from viewers.quadplane_viewer import QuadplaneViewer
 from viewers.data_viewer import DataViewer
+from viewers.autopilot_data_viewer import AutopilotDataViewer
 #from viewers.sensor_viewer import SensorViewer
 import parameters.simulation_parameters as SIM
 from message_types.msg_state import MsgState
 from message_types.msg_sensors import MsgSensors
 from message_types.msg_delta import MsgDelta
+from message_types.msg_integrator import MsgIntegrator
+from message_types.msg_trajectory import MsgTrajectory
+
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
 from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
+
 import numpy as np
 
 class ViewManager:
@@ -62,6 +67,14 @@ class ViewManager:
                     plot_period=SIM.ts_plot_refresh, 
                     data_recording_period=SIM.ts_plot_record_data, 
                     time_window_length=30)
+                self.autopilotDataView = AutopilotDataViewer(
+                    app=self.app,
+                    Ts=SIM.ts_simulation,
+                    time_window_length=30,
+                    plot_period=SIM.ts_plot_refresh,
+                    data_recording_period=SIM.ts_plot_record_data,
+                    plots_per_row=4
+                )
 
             if self.sensor_plot_flag: 
                 self.sensor_view = SensorViewer(
@@ -77,7 +90,9 @@ class ViewManager:
                estimated_state: MsgState, 
                commanded_state: MsgState, 
                delta: MsgDelta,
-               measurements: MsgSensors):
+               measurements: MsgSensors,
+               integrator: MsgIntegrator = None,
+               trajectory: MsgTrajectory = None):
         if self.animation_flag: 
             self.quadplane_view.update(true_state) 
         if self.data_plot_flag:
@@ -86,6 +101,10 @@ class ViewManager:
                 estimated_state,  # estimated states
                 commanded_state,  # commanded states
                 delta)  # inputs to aircraft
+            self.autopilotDataView.update_data(
+                true_state=true_state,
+                trajectory=trajectory,
+                integrator=integrator)
         if self.sensor_plot_flag: 
             self.sensor_view.update(measurements)
         if self.animation_flag or self.data_plot_flag or self.sensor_plot_flag: 

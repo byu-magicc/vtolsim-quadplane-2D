@@ -81,9 +81,10 @@ class QuadplaneViewer():
                                       azimuth=0.0) # distance from center of plot to camera
         self.window.setBackgroundColor('k')  # set background color to black
         
-        #draws the map
-        DrawMap(map=worldMap,
-                window=self.window)   
+        if worldMap is not None:
+            #draws the map
+            DrawMap(map=worldMap,
+                    window=self.window)   
         
         self.window.show()  # display configured window
         self.window.raise_() # bring window to the front

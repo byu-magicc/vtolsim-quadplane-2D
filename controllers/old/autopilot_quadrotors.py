@@ -1,6 +1,6 @@
 import numpy as np
 import parameters.control_parameters_quadcopter as AP
-import parameters.anaconda_parameters as QP
+import parameters.anaconda_parameters as CONDA
 from tools.old.rotations import euler_to_rotation, rotation_to_euler
 from tools.wrap import wrap
 from controllers.pid_control import PIDControl
@@ -81,7 +81,7 @@ class Autopilot:
                                                             ydot=q) #the pitch rate of the aircraft
         
         #gets the individual thrusts desired
-        individualThrusts = QP.individualThrustUnmixer @ np.array([[thrust_total_desired],
+        individualThrusts = CONDA.individualThrustUnmixer @ np.array([[thrust_total_desired],
                                                                    [torque_y_desired]])
 
         #gets the front and rear thrusts desired
@@ -164,19 +164,19 @@ class Autopilot:
 
 
     def motor_thrust(self, Va: float, delta_t: float)->float:
-        C_Q0 = QP.C_Q0
-        C_Q1 = QP.C_Q1
-        C_T0 = QP.C_T0
-        C_Q2 = QP.C_Q2
-        C_T1 = QP.C_T1
-        C_T2 = QP.C_T2
-        D_prop = QP.D_prop
-        KQ = QP.KQ
-        R_motor = QP.R_motor
-        i0 = QP.i0
-        rho = QP.rho
+        C_Q0 = CONDA.C_Q0
+        C_Q1 = CONDA.C_Q1
+        C_T0 = CONDA.C_T0
+        C_Q2 = CONDA.C_Q2
+        C_T1 = CONDA.C_T1
+        C_T2 = CONDA.C_T2
+        D_prop = CONDA.D_prop
+        KQ = CONDA.KQ
+        R_motor = CONDA.R_motor
+        i0 = CONDA.i0
+        rho = CONDA.rho
         #gets the voltage in, based on the delta_t
-        V_in = QP.V_max * delta_t
+        V_in = CONDA.V_max * delta_t
         # Quadratic formula to solve for motor speed
         a = C_Q0 * rho * np.power(D_prop, 5)/((2.*np.pi)**2)
         b = (C_Q1 * rho * np.power(D_prop, 4)/ (2.*np.pi)) * Va + KQ**2/R_motor
