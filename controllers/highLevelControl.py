@@ -119,7 +119,7 @@ class highLevelControl:
         #plus gravity (negated because of the positive d vector pointing down, and we want a force to oppose that)
         #plus State-Feedback matrix K times error state 
         #TODO make gravity generalized-planable
-        accel_des_i = trajectory_ref.accel + CONDA.gravity*e_up + HLC.K @ errorState + HLC.Ki @ position_error
+        accel_des_i = trajectory_ref.accel + CONDA.gravity*e_up + HLC.K @ errorState
         F_des_i = CONDA.mass * accel_des_i
 
         #given the Force desired, we call the pitch optimization function to get the optimal theta
@@ -177,5 +177,5 @@ class highLevelControl:
 
 
     def getIntegrator(self):
-        return self.integrator_msg.getIntegrator()
+        return self.integrator_msg
 

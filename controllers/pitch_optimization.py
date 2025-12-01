@@ -112,9 +112,7 @@ class PitchOptimization:
         #because scipy only allows one set of bounds for each variable,
         #we have to mind the minimum max bound and the maximum min bound
         
-        #gets the upper and lower bounds with respect to alpha
-        alpha_lower = PITCH.alpha_min + gamma
-        alpha_upper = PITCH.alpha_max + gamma
+
 
         #gets the upper and lower bounds with respect to total theta
         theta_lower = PITCH.theta_min
@@ -125,9 +123,9 @@ class PitchOptimization:
         previous_upper = theta_prev_array.item(0) + Ts*PITCH.q_max
 
         #gets the maximum of the min bounds
-        minBound = max(alpha_lower, theta_lower, previous_lower)
+        minBound = max(theta_lower, previous_lower)
         #gets the minimum of the max bounds
-        maxBound = min(alpha_upper, theta_upper, previous_upper)
+        maxBound = min(theta_upper, previous_upper)
 
 
         #creates the bounds for the device

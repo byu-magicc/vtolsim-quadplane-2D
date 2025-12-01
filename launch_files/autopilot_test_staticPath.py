@@ -37,12 +37,12 @@ from bsplinegenerator.bsplines import BsplineEvaluation
 
 #creates the start position in 3D
 startPos_3D = np.array([[0.0],[0.0],[0.0]])
-startVel_3D = np.array([[1.0],[0.0],[0.0]])
-startAccel_3D = np.array([[10.0],[0.0],[0.0]])
+startVel_3D = np.array([[0.0],[0.0],[-1.0]])
+startAccel_3D = np.array([[0.0],[0.0],[-1.0]])
 
 startConditions_3D = [startPos_3D, startVel_3D, startAccel_3D]
 
-endPos_3D = np.array([[10000.0],[0.0],[-200.0]])
+endPos_3D = np.array([[500.0],[0.0],[-100.0]])
 endVel_3D = np.array([[25.0],[0.0],[0.0]])
 endAccel_3D = np.array([[0.0],[0.0],[0.0]])
 
@@ -82,13 +82,14 @@ controlPoints = flightPathGen.getControlPoints(initialConditions=startConditions
 
 bspline_object = BsplineEvaluation(control_points=controlPoints,
                                    order=3,
-                                   start_time=0.0)
+                                   start_time=0.0,
+                                   scale_factor=2.0)
 
 #section to get the data for the position of the bspline's samples
-bspline_sampledPositions_2D, bspline_timeData_2D = bspline_object.get_spline_data(num_data_points_per_interval=100)
-bspline_sampledVelocity_2D, _ = bspline_object.get_spline_derivative_data(num_data_points_per_interval=100,
+bspline_sampledPositions_2D, bspline_timeData_2D = bspline_object.get_spline_data(num_data_points_per_interval=10)
+bspline_sampledVelocity_2D, _ = bspline_object.get_spline_derivative_data(num_data_points_per_interval=10,
                                                                              rth_derivative=1)
-bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(num_data_points_per_interval=100,
+bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(num_data_points_per_interval=10,
                                                                                  rth_derivative=2)
 
 
@@ -123,8 +124,8 @@ viewers.drawTrajectory(controlPoints=outputControlPoints_3D,
 #instantiates the quadplane
 quadplane = QuadplaneDynamics(ts=SIM.ts_simulation,
                               plane_msg=PLANE.plane_msg,
-                              pn0_3D=0.0,
-                              pd0_3D=0.0)
+                              pos_3D_0=startPos_3D,
+                              vel_3D_0=startVel_3D)
 
 #creates the controller
 high_level_controller = highLevelControl(state=quadplane.true_state)

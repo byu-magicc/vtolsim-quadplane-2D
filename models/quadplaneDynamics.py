@@ -21,10 +21,8 @@ class QuadplaneDynamics:
     def __init__(self,
                  plane_msg: MsgPlane,
                  ts: float = SIM.ts_simulation,
-                 pn0_3D: float=CONDA.pn0,
-                 pd0_3D: float=CONDA.pd0,
-                 pn_dot0_3D: float=CONDA.pn_dot0,
-                 pd_dot0_3D: float=CONDA.pd_dot0,
+                 pos_3D_0: np.ndarray = np.array([[0.0],[0.0],[0.0]]),
+                 vel_3D_0: np.ndarray = np.array([[0.0],[0.0],[0.0]]),
                  theta0: float=CONDA.theta0,
                  q0: float=CONDA.q0):
         
@@ -36,12 +34,10 @@ class QuadplaneDynamics:
         self.ts = ts
 
         #gets the 3D position and Projects it onto the respective plane
-        pos_3D_init = np.array([[pn0_3D],[0.0],[pd0_3D]])
-        pos_2D_init = map_3D_to_2D_planeMsg(vec_3D=pos_3D_init,
+        pos_2D_init = map_3D_to_2D_planeMsg(vec_3D=pos_3D_0,
                                             plane_msg=plane_msg)
         
-        vel_3D_init = np.array([[pn_dot0_3D],[0.0],[pd_dot0_3D]])
-        vel_2D_init = map_3D_to_2D_planeMsg(vec_3D=vel_3D_init,
+        vel_2D_init = map_3D_to_2D_planeMsg(vec_3D=vel_3D_0,
                                             plane_msg=plane_msg)
 
 
@@ -230,6 +226,37 @@ class QuadplaneDynamics:
 
         potato = 0
 
+
+    def _motor_thrust_torque(self, Va: float, delta_t: float) -> tuple[float, float]:
+        '''
+        compute thrust and torque due to propeller
+        '''
+        # map delta_t throttle command(0 to 1) into motor input voltage
+        v_in = CONDA.V_max * delta_t
+        # Quadratic formula to solve for motor speed
+        a = CONDA.C_Q0 * CONDA.rho * np.power(CONDA.D_prop, 5) \
+            / ((2.*np.pi)**2)
+        b = (CONDA.C_Q1 * CONDA.rho * np.power(CONDA.D_prop, 4)
+             / (2.*np.pi)) * Va + CONDA.KQ * CONDA.KV / CONDA.R_motor
+        c = CONDA.C_Q2 * CONDA.rho * np.power(CONDA.D_prop, 3) \
+            * Va**2 - (CONDA.KQ / CONDA.R_motor) * v_in + CONDA.KQ * CONDA.i0
+       
+        # Angular speed of propeller
+        omega_p = (-b + np.sqrt(b**2 - 4*a*c)) / (2.*a)
+        # compute advance ratio
+        J_p = 2 * np.pi * Va / (omega_p * CONDA.D_prop)
+        # compute non-dimensionalized coefficients of thrust and torque
+        C_T = CONDA.C_T2 * J_p**2 + CONDA.C_T1 * J_p + CONDA.C_T0
+        C_Q = CONDA.C_Q2 * J_p**2 + CONDA.C_Q1 * J_p + CONDA.C_Q0
+        # compute propeller thrust and torque
+        n = omega_p / (2 * np.pi)
+        thrust_prop = CONDA.rho * n**2 * np.power(CONDA.D_prop, 4) * C_T
+        torque_prop = CONDA.rho * n**2 * np.power(CONDA.D_prop, 5) * C_Q
+
+        #the power being consumed by the propeller is omega times torque
+        power_prop = omega_p * torque_prop
+
+        return thrust_prop, torque_prop
 
 
     #creates the new motor thrust and torque function, which is an over simplification,

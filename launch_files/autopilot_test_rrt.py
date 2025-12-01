@@ -90,10 +90,12 @@ endPosition = params.endPosition
 #instantiates the quadplane
 quadplane = QuadplaneDynamics(ts=SIM.ts_simulation,
                               plane_msg=PLANE.plane_msg,
-                              pn0_3D=0.0,
-                              pd0_3D=100.0)
+                              vel_3D_0=np.array([[25.0],[0.0],[0.0]]))
+
+
 viewers = ViewManager(animation=True, 
                       data=True,
+                      video=False,
                       world_map=worldMap,
                       msg_plane=msg_plane)
 
@@ -221,7 +223,9 @@ while sim_time < end_time:
                    estimated_state=quadplane.true_state,
                    commanded_state=quadplane.true_state,
                    delta=delta,
-                   measurements=MsgSensors())
+                   measurements=MsgSensors(),
+                   integrator=integrator,
+                   trajectory=trajectory_ref)
 
     sim_time += SIM.ts_simulation
 

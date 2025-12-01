@@ -21,6 +21,8 @@ class AutopilotDataViewer:
         self.time_window_length = time_window_length
         self.plot_period = plot_period
         self.data_recording_period = data_recording_period
+        self.data_recording_delay = 0
+        self.plot_delay = 0
         self.plots_per_row = plots_per_row
         self.data_window_length= time_window_length/data_recording_period
 
@@ -61,13 +63,21 @@ class AutopilotDataViewer:
 
         self.plotter.show_window()
 
-    
     def update(self,
                true_state: MsgState,
-               trajectory: MsgTrajectory):
+               trajectory: MsgTrajectory,
+               integrator: MsgIntegrator):
         
-        pass
+        if self.data_recording_delay >= self.data_recording_period:
+            self.update_data(true_state=true_state, trajectory=trajectory, integrator=integrator)
+            self.data_recording_delay = 0
+        if self.plot_delay >= self.plot_period:
+            self.update_plot()
+            self.plot_delay = 0
 
+        self.plot_delay += self.Ts
+        self.data_recording_delay += self.Ts
+        self.time += self.Ts
 
     def update_data(self,
                     true_state: MsgState,
@@ -105,8 +115,9 @@ class AutopilotDataViewer:
                    [north_ddot_ref, altitude_ddot_ref, gamma_ref, 0.0],
                    [integration_north, integration_east, theta, theta_error]]
 
-                
 
+
+        #'''
         #iterates over all of the rows
         for row, yValueRow in zip(self.plot_id, yValues):
 
@@ -117,6 +128,10 @@ class AutopilotDataViewer:
                                             data_label=id,
                                             xvalue=self.time,
                                             yvalue=yValue)
-        
+                
+                potato = 0
+        #'''
 
-        self.time += self.Ts
+
+    def update_plot(self):
+        self.plotter.update_plots()

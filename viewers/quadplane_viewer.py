@@ -21,6 +21,8 @@ from rrt_mavsim.viewers.draw_trajectory import DrawTrajectory
 from scipy.spatial.transform import Rotation as R
 from rrt_mavsim.tools.plane_projections import *
 
+from viewers.video_writer import videoWriter
+
 
 red = np.array([[204, 0, 0],
                 [204, 0, 0]])/255.
@@ -94,6 +96,10 @@ class QuadplaneViewer():
         self.t = time()
         self.t_next = self.t  
 
+        self.window.resize(1920, 1080)
+
+        self.video = videoWriter(widget=self.window)
+
     def drawWaypoints(self,
                       waypoints: MsgWaypoints_SFC,
                       lineColor: np.ndarray = red,
@@ -165,8 +171,11 @@ class QuadplaneViewer():
             #     # defined in ENU coordinates
             #     # redraw
 
+        self.video.update(t=self.t)
+
     def close(self):
         self.window.close()
+        self.video.close()
 
     def addTrajectory(self, 
                       points,

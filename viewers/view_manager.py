@@ -101,7 +101,7 @@ class ViewManager:
                 estimated_state,  # estimated states
                 commanded_state,  # commanded states
                 delta)  # inputs to aircraft
-            self.autopilotDataView.update_data(
+            self.autopilotDataView.update(
                 true_state=true_state,
                 trajectory=trajectory,
                 integrator=integrator)

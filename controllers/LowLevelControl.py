@@ -162,6 +162,8 @@ def inverse_motor_thrust_simplified(Thrust_des: float):
     return delta_t
 
 
+#defines the inverse motor thrust torque function to obtain the 
+
 
 
 
