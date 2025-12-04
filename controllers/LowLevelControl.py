@@ -72,6 +72,13 @@ class LowLevelControl:
         #the forward thruster delta
         delta_t_forward = inverse_motor_thrust_simplified(Thrust_des=T_t_des)
 
+        #saturates each of these
+        delta_t_front = saturate(u=delta_t_front, u_max=1.0)
+        delta_t_rear = saturate(u=delta_t_rear, u_max=1.0)
+        delta_t_forward = saturate(u=delta_t_forward, u_max=1.0)
+
+
+
         #creates the delta message class
         deltaOutput = MsgDelta(elevator=delta_e,
                                throttle_front=delta_t_front,
@@ -164,6 +171,12 @@ def inverse_motor_thrust_simplified(Thrust_des: float):
 
 #defines the inverse motor thrust torque function to obtain the 
 
+def saturate(u: float,
+             u_max: float):
+    
+    if abs(u) > u_max:
+        u = u_max * np.sign(u)
 
+    return u
 
 

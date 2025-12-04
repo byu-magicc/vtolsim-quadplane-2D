@@ -34,6 +34,8 @@ from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlight
 
 from bsplinegenerator.bsplines import BsplineEvaluation
 
+from planners.takeoffGenerator import takeoffGenerator, pathTypes
+
 
 #creates the start position in 3D
 startPos_3D = np.array([[0.0],[0.0],[0.0]])
@@ -71,14 +73,22 @@ for condition_3D in endConditions_3D:
 
 rho = np.array([1.0, 1.0, 1.0])
 
-flightPathGen = staticFlightPath()
 
-controlPoints = flightPathGen.getControlPoints(initialConditions=startConditions_2D,
-                                               finalConditions=endConditions_2D,
-                                               rho=rho,
-                                               numDimensions=2,
-                                               d=3,
-                                               M=10)
+takeoffGen = takeoffGenerator(plane=plane_msg,
+                              rho=rho,
+                              numDimensions=2,
+                              d=3,
+                              M=10)
+
+controlPoints = takeoffGen.generatePath(pathType=pathTypes.PARABOLA,
+                                        startPosition_3D=startPos_3D,
+                                        endPosition_3D=endPos_3D,
+                                        startVelocity=1.0,
+                                        endVelocity=25.0,
+                                        startAccel=0.0,
+                                        endAccel=0.0)
+
+
 
 bspline_object = BsplineEvaluation(control_points=controlPoints,
                                    order=3,
@@ -86,10 +96,10 @@ bspline_object = BsplineEvaluation(control_points=controlPoints,
                                    scale_factor=2.0)
 
 #section to get the data for the position of the bspline's samples
-bspline_sampledPositions_2D, bspline_timeData_2D = bspline_object.get_spline_data(num_data_points_per_interval=10)
-bspline_sampledVelocity_2D, _ = bspline_object.get_spline_derivative_data(num_data_points_per_interval=10,
+bspline_sampledPositions_2D, bspline_timeData_2D = bspline_object.get_spline_data(num_data_points_per_interval=100)
+bspline_sampledVelocity_2D, _ = bspline_object.get_spline_derivative_data(num_data_points_per_interval=100,
                                                                              rth_derivative=1)
-bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(num_data_points_per_interval=10,
+bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(num_data_points_per_interval=100,
                                                                                  rth_derivative=2)
 
 
@@ -112,6 +122,8 @@ bspline_sampledPoints_3D, bspline_timeData_3D = bspline_object_3D.get_spline_dat
 
 viewers = ViewManager(animation=True, 
                       data=True,
+                      video=False,
+                      video_name='takeoff',
                       msg_plane=plane_msg)
 
 viewers.drawTrajectory(controlPoints=outputControlPoints_3D,

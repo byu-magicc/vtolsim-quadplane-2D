@@ -15,6 +15,10 @@ from controllers.feedforwardControl import feedForwardControl
 from message_types.msg_delta import MsgDelta
 from message_types.msg_state import MsgState
 
+import matplotlib.pyplot as plt
+
+from bsplinegenerator.bsplines import BsplineEvaluation
+
 numDimensions = 2
 numConditions = 3
 
@@ -25,14 +29,14 @@ flightConditions = conditions(dimension=numDimensions,
 
 #creates the init and final conditions
 pos_init = np.array([[0.],[0.]])
-vel_init = np.array([[0.],[0.]])
-accel_init = np.array([[9.8],[0.]])
+vel_init = np.array([[0.],[1.]])
+accel_init = np.array([[0.],[1.]])
 
 
 conditions_init = [pos_init, vel_init, accel_init]
 
 
-pos_final = np.array([[1000.],[100.]])
+pos_final = np.array([[500.],[100.]])
 vel_final = np.array([[25.],[0.]])
 accel_final = np.array([[0.],[0.]])
 
@@ -49,6 +53,18 @@ controlPoints = flightGen.getControlPoints(initialConditions=conditions_init,
                                            numDimensions=numDimensions,
                                            )
 
+
+bsplineObject = BsplineEvaluation(control_points=controlPoints,
+                                  order=3,
+                                  start_time=0.0)
+
+bsplineSampledPoints, _ = bsplineObject.get_spline_data(num_data_points_per_interval=100)
+
+plt.figure()
+plt.scatter(x=controlPoints[0,:],
+            y=controlPoints[1,:])
+plt.plot(bsplineSampledPoints[0,:], bsplineSampledPoints[1,:])
+plt.show()
 
 
 potato = 0
