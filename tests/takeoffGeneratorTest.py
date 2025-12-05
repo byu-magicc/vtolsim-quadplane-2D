@@ -9,6 +9,7 @@ from planners.takeoffGenerator import takeoffGenerator, pathTypes
 import numpy as np
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 
+
 import matplotlib.pyplot as plt
 
 
@@ -53,9 +54,18 @@ controlPoints =\
                          startAccel=0.0,
                          endAccel=0.0)
 
+
+#gets the velocity control points
+velocityControlPoints = controlPoints[:,1:] - controlPoints[:,:-1]
+
 plt.figure(0)
 plt.scatter(x=controlPoints[0,:],
             y=controlPoints[1,:])
+plt.show()
+
+plt.figure(1)
+plt.scatter(x=velocityControlPoints[0,:],
+            y=velocityControlPoints[1,:])
 plt.show()
 
 
