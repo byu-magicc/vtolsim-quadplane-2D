@@ -39,9 +39,13 @@ optimizer = takeoffOptimizer(plane=plane_msg,
                              d=d,
                              M=M)
 
+numControlPoints = 100
 
 
 optimizer.getMinTimePoints(startConditions_3D=startConditions_3D,
-                           endConditions_3D=endConditions_3D)
+                           endConditions_3D=endConditions_3D,
+                           numVariableControlPoints=numControlPoints)
+
+
 
 potato = 0

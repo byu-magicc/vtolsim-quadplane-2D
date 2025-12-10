@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
 
+
     
         {
             "name": "Obstacle Test",
@@ -121,6 +122,16 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/tests/takeoffOptimizerTest.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "David Christensen Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/david_christensen_comparison.py",
             "env": {
               "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
             },

@@ -95,7 +95,7 @@ quadplane = QuadplaneDynamics(ts=SIM.ts_simulation,
 
 viewers = ViewManager(animation=True, 
                       data=True,
-                      video=True,
+                      video=False,
                       world_map=worldMap,
                       msg_plane=msg_plane)
 

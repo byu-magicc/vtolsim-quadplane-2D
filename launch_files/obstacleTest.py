@@ -61,7 +61,7 @@ planner = RRT_SFC_BSpline(numDimensions=numDimensions,
                           p0=mapOrigin_3D)
 
 
-planner.generatePaths(startPosition_3D=startPosition,
+planner.generatePath(startPosition_3D=startPosition,
                       endPosition_3D=endPosition,
                       worldMap=worldMap,
                       segmentLength=FLIGHT_PLAN.segmentLength)
