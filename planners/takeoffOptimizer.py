@@ -110,7 +110,8 @@ class takeoffOptimizer:
     def getMinTimePoints(self,
                          startConditions_3D: list[np.ndarray],
                          endConditions_3D: list[np.ndarray],
-                         numVariableControlPoints: int):
+                         numVariableControlPoints: int,
+                         objectiveFunction):
         
         startConditions_2D =conditions_3D_to_2D(conditions_3D=startConditions_3D,
                                                 plane=self.plane)

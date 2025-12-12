@@ -34,11 +34,11 @@ from rrt_mavsim.tools.waypointsTools import getNumCntPts_list
 from rrt_mavsim.planners.bspline_generator import BSplineGenerator
 from rrt_mavsim.tools.plane_projections import *
 from rrt_mavsim.parameters.colors import *
+from rrt_mavsim.tools.plane_projections import map_3D_to_2D_planeMsg
 
 from rrt_mavsim.tools.plane_projections import *
 import rrt_mavsim.parameters.planner_parameters as PLAN
 import rrt_mavsim.parameters.flightCorridor_parameters as FLIGHT_PLAN
-from rrt_mavsim.tools.obstacle_conversions import Rectangular_to_circular_obstacle
 from rrt_mavsim.planners.david_christensen_wrapper import PathOptimizer
 
 
@@ -89,9 +89,15 @@ params = PlanarVTOLParams(mapOrigin_2D=mapOrigin_2D,
                           mapOrigin_3D=mapOrigin_3D,
                           n_hat=n_hat)
 
-startPosition = params.startPosition
-endPosition = params.endPosition
+startPosition_3D = params.startPosition
+endPosition_3D = params.endPosition
 
+#gets the 2D start and end positions
+startPosition_2D = map_3D_to_2D_planeMsg(vec_3D=startPosition_3D,
+                                         plane_msg=msg_plane)
+
+endPosition_2D = map_3D_to_2D_planeMsg(vec_3D=endPosition_3D,
+                                       plane_msg=msg_plane)
 
 
 #instantiates the quadplane
@@ -138,5 +144,12 @@ rrt_sfc_outputControlPoints_2D = bsplineGen.generateControlPoints(waypoints=wayp
 #creates the optimizer to optimize the path beyond what is being done currently
 path_optimizer = PathOptimizer(numDimensions=numDimensions,
                                world_map=worldMap,
-                               degree=3)
+                               degree=3,
+                               plane=msg_plane)
+
+
+
+path_optimizer.generate_path(controlPoints_RRTOutput=rrt_sfc_outputControlPoints_2D,
+                             startPosition=startPosition_2D,
+                             endPosition=endPosition_2D)
 
