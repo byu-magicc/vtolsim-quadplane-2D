@@ -41,6 +41,8 @@ import rrt_mavsim.parameters.planner_parameters as PLAN
 import rrt_mavsim.parameters.flightCorridor_parameters as FLIGHT_PLAN
 from rrt_mavsim.planners.david_christensen_wrapper import PathOptimizer
 
+from eVTOL_BSplines.submodules.path_generator.path_generation.waypoint_data import Waypoint, WaypointData
+
 
 from bsplinegenerator.bsplines import BsplineEvaluation
 
@@ -142,14 +144,33 @@ rrt_sfc_outputControlPoints_2D = bsplineGen.generateControlPoints(waypoints=wayp
                                                                   numPointsPerUnit=FLIGHT_PLAN.numPoints_perUnit)
 
 #creates the optimizer to optimize the path beyond what is being done currently
-path_optimizer = PathOptimizer(numDimensions=numDimensions,
-                               world_map=worldMap,
-                               degree=3,
-                               plane=msg_plane)
+path_optimizer = PathOptimizer(dimension=numDimensions,
+                               degree=3)
 
 
+#creates the start and end waypoints in 2D frame
+startVel = np.array([[0.0],[1.0]])
+startAccel = np.array([[0.0],[0.0]])
 
-path_optimizer.generate_path(controlPoints_RRTOutput=rrt_sfc_outputControlPoints_2D,
-                             startPosition=startPosition_2D,
-                             endPosition=endPosition_2D)
+startWaypoint = Waypoint(location=startPosition_2D,
+                         velocity=startVel,
+                         acceleration=startAccel)
 
+endVel = np.array([[25.0],[0.0]])
+endAccel = np.array([[0.0],[0.0]])
+
+endWaypoint = Waypoint(location=endPosition_2D,
+                       velocity=endVel,
+                       acceleration=endAccel)
+
+waypoint_data = WaypointData(start_waypoint=startWaypoint,
+                             end_waypoint=endWaypoint)
+
+
+path_optimizer.generate_path(waypoint_data=waypoint_data,
+                             world_map=worldMap,
+                             plane=msg_plane,
+                             controlPoints_init=rrt_sfc_outputControlPoints_2D)
+
+
+potato = 0
