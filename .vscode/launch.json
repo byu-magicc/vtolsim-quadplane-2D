@@ -131,7 +131,17 @@
             "name": "David Christensen Test",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/launch_files/david_christensen_comparison.py",
+            "program": "${workspaceFolder}/launch_files/david_christensen_comparison_3x3.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Maps Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/mapTests.py",
             "env": {
               "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
             },
