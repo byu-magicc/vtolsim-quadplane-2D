@@ -49,8 +49,17 @@ from rrt_mavsim.parameters.colors import *
 
 field_width = 1500.0
 
+numDimensions = 2
+
 startPosition_2D = np.array([[0.0],[0.0]])
 endPosition_2D = np.array([[field_width],[field_width]])
+
+startVelocity_2D = np.array([[0.0],[1.0]])
+endVelocity_2D = np.array([[25.0],[0.0]])
+
+startAccel_2D = np.array([[0.0],[0.0]])
+endAccel_2D = np.array([[0.0],[0.0]])
+
 #plane params
 mapOrigin_3D = np.array([[0.0],[0.0],[0.0]])
 n_hat = np.array([[0.0],[1.0],[0.0]])
@@ -72,6 +81,8 @@ params = PlanarVTOLSimplifiedParams(plane=msg_plane,
 world_map = MsgWorldMap(obstacleFieldType=MapTypes.PLANAR_VTOL_SIMPLIFIED,
                         numDimensions_algorithm=2,
                         planarVTOLSimplified_Params=params)
+
+
 
 #creates the planner and then plans the path on the world map
 planner = RRT_SFC_BSpline(numDimensions=2,
@@ -121,5 +132,26 @@ viewer.drawTrajectory(controlPoints=controlPoints_3D,
                       lineColor=purple,
                       lineWidth=5.0,
                       pointWidth=10.0)
+
+
+#instantiates the path optimizer
+path_optimizer = PathOptimizer(dimension=numDimensions)
+
+startWaypoint = Waypoint(location=startPosition_2D,
+                         velocity=startVelocity_2D,
+                         acceleration=startAccel_2D)
+
+endWaypoint = Waypoint(location=endPosition_2D,
+                       velocity=endVelocity_2D,
+                       acceleration=endAccel_2D)
+
+#generates the waypoint data
+waypoint_data = WaypointData(start_waypoint=startWaypoint,
+                             end_waypoint=endWaypoint)
+
+path_optimizer.generate_path(waypoint_data=waypoint_data,
+                             world_map=world_map,
+                             plane=msg_plane,
+                             controlPoints_init=sampledPoints)
 
 potato = 0

@@ -10,4 +10,4 @@ n_hat = n_hat / np.linalg.norm(n_hat)
 planeOrigin = np.array([[0.0],[0.0],[0.0]])
 
 plane_msg = MsgPlane(n_hat=n_hat,
-                    origin_3D=planeOrigin)
+                     origin_3D=planeOrigin)
