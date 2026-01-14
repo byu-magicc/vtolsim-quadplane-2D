@@ -1,5 +1,6 @@
 #implements the obstacle avoidance algorithm
-import os, sys
+import os
+import sys
 from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
 

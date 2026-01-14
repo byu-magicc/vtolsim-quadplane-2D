@@ -1,0 +1,12 @@
+{
+  "venvPath": "/home/benjamin/.virtualenvs",
+  "venv": "your_venv_name",
+  "include": ["."],
+  "reportMissingImports": false,
+  "extraPaths": [
+    "/home/benjamin/eVTOL_BSplines",
+    "/home/benjamin/rrt_mavsim",
+    "/usr/lib/python3/dist-packages",
+    "./"
+  ]
+}

@@ -27,7 +27,7 @@ class ViewManager:
                  animation: bool=False,
                  save_plots: bool=False,
                  draw_trajectory: bool=False,
-                 video_name: str=[],
+                 video_name: str = [],
                  world_map: MsgWorldMap = None):
         self.video_flag = video
         self.data_plot_flag = data
