@@ -1,0 +1,11 @@
+numpy
+matplotlib
+eVTOL_BSplines
+bspline_generator
+rrt_mavsim
+scipy
+pyqtgraph
+pyqt6
+pyopengl
+pynput
+

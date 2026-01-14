@@ -114,8 +114,7 @@ trajectory = MsgTrajectory()
 viewers = ViewManager(animation=True, data=True)
 
 # calls the function to create and draw the trajectory
-viewers.drawTrajectory(points=bspline_points_3d, width=5.0)
-
+viewers.drawTrajectory(controlPoints=bspline_points_3d, width=5.0)
 # sets the sim_time
 sim_time = SIM.start_time
 end_time = SIM.end_time
