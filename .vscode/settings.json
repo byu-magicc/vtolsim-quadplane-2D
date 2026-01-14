@@ -1,12 +1,5 @@
 {
     "cmake.sourceDirectory": "C:/Users/dben1/Documents/001_School/Masters/vtolsim/planners/trajectorygenerator",
-    "python.languageServer": "Pylance",
-    "python.analysis.typeCheckingMode": "basic",
-    "editor.semanticHighlighting.enabled": true,
-    "python.formatting.provider": "black",
-    "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
-    "python.sortImports.args": ["--profile", "black"],
     "ros.distro": "humble",
     "python.analysis.extraPaths": [
         "${workspaceFolder}",

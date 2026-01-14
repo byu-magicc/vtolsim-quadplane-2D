@@ -91,11 +91,15 @@ class ViewManager:
     def drawWaypoints(self,
                       waypoints: MsgWaypoints_SFC,
                       n_hat: np.ndarray = None,
-                      p0: np.ndarray = None):
+                      p0: np.ndarray = None,
+                      color = 'r'):
 
         self.quadplane_view.drawWaypoints(waypoints=waypoints,
                                           n_hat=n_hat,
-                                          p0=p0)
+                                          p0=p0,
+                                          lineColor=color)
+        
+    
 
     def close(self, dataplot_name: str=[], sensorplot_name: str=[]):
         # Save an Image of the Plot
@@ -109,9 +113,14 @@ class ViewManager:
 
     #creates the function to  draw a trajectory
     def drawTrajectory(self, 
-                       points: np.ndarray,
-                       width: float = 2):
-        #calls the add Trajectory function 
-        self.quadplane_view.addTrajectory(points=points,
-                                          width=width)
+                       controlPoints: np.ndarray,
+                       sampledPoints_spline: np.ndarray,
+                       lineColor: np.ndarray,
+                       lineWidth: float,
+                       pointWidth: float):
+        self.quadplane_view.drawTrajectory(controlPoints=controlPoints,
+                                           sampledPoints_spline=sampledPoints_spline,
+                                           lineColor=lineColor,
+                                           lineWidth=lineWidth,
+                                           pointWidth=pointWidth)
 

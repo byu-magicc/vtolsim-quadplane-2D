@@ -15,7 +15,8 @@ from rrt_mavsim.message_types.msg_world_map import MsgWorldMap
 from rrt_mavsim.viewers.draw_map import DrawMap
 from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
 from rrt_mavsim.viewers.draw_waypoints import DrawWaypoints
-
+from rrt_mavsim.viewers.draw_trajectory import DrawTrajectory
+from scipy.spatial.transform import Rotation as R
 
 
 red = np.array([[204, 0, 0],
@@ -24,6 +25,13 @@ red = np.array([[204, 0, 0],
 
 purple = np.array([[170, 0, 255],
                    [170, 0, 255]])/255
+
+cameraRotationMatrix = np.array([[1.0, 0.0, 0.0],
+                                 [0.0, 1.0, 0.0],
+                                 [0.0, 0.0, 1.0]])
+
+rot = R.from_matrix(cameraRotationMatrix)
+eulers = rot.as_euler('xyz', degrees=True)
 
 
 class QuadplaneViewer():
@@ -46,15 +54,10 @@ class QuadplaneViewer():
         self.window.setGeometry(500, 0, 500, 500)  # args: upper_left_x, upper_right_y, width, height
         
         center = self.window.cameraPosition()
-        center.setX(1000)
-        center.setY(1000)
+        center.setX(7000)
+        center.setY(5000)
         center.setZ(0)
-        self.window.setCameraPosition(pos=center,
-                                      distance=self.scale,
-                                      elevation=50,
-                                      azimuth=0)
         #TODO. Make sure this actually works
-        self.window.setBackgroundColor('k')
         grid = gl.GLGridItem() # make a grid to represent the ground
         grid.scale(self.scale/20, self.scale/20, self.scale/20) # set the size of the grid (distance between each line)
         
@@ -62,8 +65,11 @@ class QuadplaneViewer():
         if grid_on:
             self.window.addItem(grid) # add grid to viewer
         
-        self.window.setCameraPosition(distance=20) # distance from center of plot to camera
-        self.window.setBackgroundColor(0.25)  # set background color to black
+        self.window.setCameraPosition(pos=center,
+                                      distance=self.scale,
+                                      elevation=0.0,
+                                      azimuth=0.0) # distance from center of plot to camera
+        self.window.setBackgroundColor('k')  # set background color to black
         
         #draws the map
         DrawMap(map=worldMap,
@@ -89,6 +95,19 @@ class QuadplaneViewer():
                       n_hat=n_hat,
                       p0=p0)
 
+    def drawTrajectory(self,
+                       controlPoints: np.ndarray,
+                       sampledPoints_spline: np.ndarray,
+                       lineColor,
+                       lineWidth: float,
+                       pointWidth: float):
+        
+        DrawTrajectory(controlPoints=controlPoints,
+                       sampledPoints_spline=sampledPoints_spline,
+                       window=self.window,
+                       lineColor=lineColor,
+                       lineWidth=lineWidth,
+                       pointWidth=pointWidth)
 
 
 
