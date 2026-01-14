@@ -1,0 +1,19 @@
+This is the following necessary pyrightconfig.json file that 
+Is necessary to make this for dap to work
+
+{
+  "include": ["."],
+  "extraPaths": [
+    "/home/benjamin/eVTOL_BSplines",
+    "/home/benjamin/rrt_mavsim"
+  ],
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        "/home/benjamin/eVTOL_BSplines",
+        "/home/benjamin/rrt_mavsim"
+      ]
+    }
+  ]
+}

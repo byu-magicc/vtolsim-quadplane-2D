@@ -15,7 +15,6 @@ import parameters.plane_parameters as PLANE
 from models.quadplaneDynamics import QuadplaneDynamics
 from viewers.view_manager import ViewManager
 
-
 # controllers import section
 from controllers.highLevelControl import highLevelControl
 from controllers.LowLevelControl import LowLevelControl
