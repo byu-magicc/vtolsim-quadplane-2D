@@ -115,7 +115,7 @@ class takeoffGenerator:
         #gets the time corresponding to the north position
         t_end = np.sqrt(alpha*(delta_north))
 
-        Amp = (delta_altitude)/(delta_north*np.sqrt(alpha))
+        Amp = delta_altitude / np.sqrt(alpha*delta_north)
 
         # gets the initial spacing of control points
         centerControlPoint_start = startControlPoints[:, 1:2]
@@ -219,29 +219,31 @@ class takeoffGenerator:
         )
 
         # gets the highest start control point (the beginning point for the parabola)
-        parabolaStart = startControlPoints[:, -1:]
+        parabolaStart = endControlPoints[:, -1:]
         # and the ending point for the parabola
-        parabolaEnd = endControlPoints[:, 0:1]
+        parabolaEnd = startControlPoints[:, 0:1]
 
         # gets the change in altitude and North
-        delta_north = parabolaEnd.item(0) - parabolaStart.item(0)
-        delta_altitude = parabolaEnd.item(1) - parabolaStart.item(1)
+        delta_north = parabolaStart.item(0) - parabolaEnd.item(0)
+        delta_altitude = parabolaStart.item(1) - parabolaEnd.item(1)
 
         #gets the amplitude from alpha, the change in north, and the change in altitude 
-        Amp = (delta_altitude)/(delta_north*np.sqrt(alpha))
+        Amp = abs((delta_altitude)/(delta_north*np.sqrt(alpha)))
 
         # gets the initial spacing of control points
         centerControlPoint_start = startControlPoints[:, 1:2]
         centerControlPoint_end = endControlPoints[:, 1:2]
 
         # gets the initial and final spacing of control points
-        initialVelocity = np.linalg.norm(parabolaStart - centerControlPoint_start)
-        finalVelocity = np.linalg.norm(centerControlPoint_end - parabolaEnd)
+        initialVelocity = np.linalg.norm(parabolaEnd - centerControlPoint_start)
+        finalVelocity = np.linalg.norm(centerControlPoint_end - parabolaStart)
 
 
 
         # gets the change in spacing
         delta_velocity = finalVelocity - initialVelocity
+
+    
 
         # gets the total arc length
         totalArcLength = self.getArcLengthParabola(

@@ -75,17 +75,13 @@ takeoffGen = takeoffGenerator(plane=plane_msg, rho=rho, numDimensions=2, d=3, M=
 
 controlPoints = takeoffGen.generatePath(
     pathType=pathTypes.PARABOLA_TAKEOFF,
-    startPosition_3D=startPos_3D,
-    endPosition_3D=endPos_3D,
-    startVelocity=1.0,
-    endVelocity=25.0,
-    startAccel=0.0,
-    endAccel=0.0,
+    startConditions_3D=startConditions_3D,
+    endConditions_3D=endConditions_3D
 )
 
 
 bspline_object = BsplineEvaluation(
-    control_points=controlPoints, order=3, start_time=0.0, scale_factor=2.0
+    control_points=controlPoints, order=3, start_time=0.0, scale_factor=2
 )
 
 # section to get the data for the position of the bspline's samples
