@@ -2,7 +2,7 @@
 import os, sys
 from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
-from planners.takeoffGenerator import takeoffGenerator, pathTypes
+from planners.takeoffGenerator import flightPathGenerator, pathTypes
 import numpy as np
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 import matplotlib.pyplot as plt
@@ -16,13 +16,13 @@ plane_msg = MsgPlane(n_hat=n_hat,
 
 rho = np.array([1.0,1.0,1.0])
 
-takeoff_gen = takeoffGenerator(plane=plane_msg,
+path_gen = flightPathGenerator(plane=plane_msg,
                                rho=rho,
                                numDimensions=2,
                                d=3,
                                M=10)
 
-testPosition, testTangent = takeoff_gen.getPointParabola(t=1.0, 
+testPosition, testTangent = path_gen.getPointParabola(t=1.0, 
                              Amp=1, 
                              vertex_2D=np.array([[1.0],[1.0]]),
                              alpha=1)
@@ -60,7 +60,7 @@ endConditions_3D = [endPos_3D, endVel_3D, endAccel_3D]
 
 #'''
 controlPoints =\
-    takeoff_gen.generatePath(startConditions_3D=startConditions_3D,
+    path_gen.generatePath(startConditions_3D=startConditions_3D,
                              endConditions_3D=endConditions_3D,
                          pathType=pathTypes.PARABOLA_LANDING)
 

@@ -34,7 +34,7 @@ from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlight
 
 from bsplinegenerator.bsplines import BsplineEvaluation
 
-from planners.takeoffGenerator import takeoffGenerator, pathTypes
+from planners.takeoffGenerator import flightPathGenerator, pathTypes
 
 
 # creates the start position in 3D
@@ -71,7 +71,7 @@ for condition_3D in endConditions_3D:
 rho = np.array([1.0, 1.0, 1.0])
 
 
-takeoffGen = takeoffGenerator(plane=plane_msg, rho=rho, numDimensions=2, d=3, M=10)
+takeoffGen = flightPathGenerator(plane=plane_msg, rho=rho, numDimensions=2, d=3, M=10)
 
 controlPoints = takeoffGen.generatePath(
     pathType=pathTypes.PARABOLA_TAKEOFF,

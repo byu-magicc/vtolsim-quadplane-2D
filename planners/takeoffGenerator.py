@@ -19,7 +19,7 @@ class parabolaDirection(str, Enum):
     OPENS_BACKWARD = "Backward"
 
 
-class takeoffGenerator:
+class flightPathGenerator:
     def __init__(
         self,
         plane: MsgPlane,
@@ -64,7 +64,6 @@ class takeoffGenerator:
                     alpha=alpha
                 )
         return controlPoints
-
     # the start and end positions are given in coordinates (In 3D)
     # but the velocities are given in magnitude for easier tunin
     def generateParabolicTakeoffPath(
@@ -180,8 +179,12 @@ class takeoffGenerator:
 
         # returns the control point positions
         return controlPoints
+    #'''
 
 
+
+    # the start and end positions are given in coordinates (In 3D)
+    # but the velocities are given in magnitude for easier tunin
     def generateParabolicLandingPath(
         self,
         startConditions_3D: list[np.ndarray],
@@ -219,16 +222,18 @@ class takeoffGenerator:
         )
 
         # gets the highest start control point (the beginning point for the parabola)
-        parabolaStart = endControlPoints[:, -1:]
+        parabolaStart = endControlPoints[:, 0:1]
         # and the ending point for the parabola
-        parabolaEnd = startControlPoints[:, 0:1]
+        parabolaEnd = startControlPoints[:, -1:]
 
         # gets the change in altitude and North
-        delta_north = parabolaStart.item(0) - parabolaEnd.item(0)
-        delta_altitude = parabolaStart.item(1) - parabolaEnd.item(1)
+        delta_north = parabolaEnd.item(0) - parabolaStart.item(0)
+        delta_altitude = parabolaEnd.item(1) - parabolaStart.item(1)
 
-        #gets the amplitude from alpha, the change in north, and the change in altitude 
-        Amp = abs((delta_altitude)/(delta_north*np.sqrt(alpha)))
+        #gets the time corresponding to the north position
+        t_end = np.sqrt(np.abs(alpha*(delta_north)))
+
+        Amp = delta_altitude / np.sqrt(abs(alpha*delta_north))
 
         # gets the initial spacing of control points
         centerControlPoint_start = startControlPoints[:, 1:2]
@@ -238,16 +243,12 @@ class takeoffGenerator:
         initialVelocity = np.linalg.norm(parabolaEnd - centerControlPoint_start)
         finalVelocity = np.linalg.norm(centerControlPoint_end - parabolaStart)
 
-
-
         # gets the change in spacing
         delta_velocity = finalVelocity - initialVelocity
 
-    
-
         # gets the total arc length
         totalArcLength = self.getArcLengthParabola(
-            t1=0.0, t2=delta_north, Amp=Amp, vertex_2D=parabolaStart, alpha=alpha
+            t1=0.0, t2=t_end, Amp=Amp, vertex_2D=parabolaStart, alpha=alpha
         )
 
         controlPoints_list = []
@@ -273,13 +274,13 @@ class takeoffGenerator:
             currentTime = self.getArcPositionTime(
                 endArcLength=currentArcLength,
                 Amp=Amp,
-                vertex_2D=startPosition_2D,
+                vertex_2D=endPosition_2D,
                 alpha=alpha,
             )
 
             # gets the actual position for this current time
             currentPosition, _ = self.getPointParabola(
-                t=currentTime, Amp=Amp, vertex_2D=startPosition_2D, alpha=alpha
+                t=currentTime, Amp=Amp, vertex_2D=endPosition_2D, alpha=alpha
             )
 
             controlPoints_list.append(currentPosition)
@@ -297,6 +298,9 @@ class takeoffGenerator:
 
         # returns the control point positions
         return controlPoints
+    #'''
+
+
 
     # defines the function to get the individual points for a specific time
     # t: time value for point
@@ -396,3 +400,123 @@ class takeoffGenerator:
 
         return arcLength
 
+
+
+
+
+    def generateParabolicLandingPath_old(
+        self,
+        startConditions_3D: list[np.ndarray],
+        endConditions_3D: list[np.ndarray],
+        alpha=1.0
+    ):
+        # gets the positions in 2D
+        startPosition_2D = map_3D_to_2D_planeMsg(
+            vec_3D=startConditions_3D[0], plane_msg=self.plane
+        )
+        endPosition_2D = map_3D_to_2D_planeMsg(
+            vec_3D=endConditions_3D[0], plane_msg=self.plane
+        )
+
+
+        startVel_2D = map_3D_to_2D_planeMsg(vec_3D=startConditions_3D[1], plane_msg=self.plane)
+        endVel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[1], plane_msg=self.plane)
+
+        startAccel_2D = map_3D_to_2D_planeMsg(
+            vec_3D=startConditions_3D[2], plane_msg=self.plane
+        )
+        endAccel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[2], plane_msg=self.plane)
+
+        # start and end conditions
+        startConditions_2D = [startPosition_2D, startVel_2D, startAccel_2D]
+        endConditions_2D = [endPosition_2D, endVel_2D, endAccel_2D]
+
+        # gets the initial and final control points
+        startControlPoints = self.staticPathGenerator.getLocalizedControlPoints(
+            conditions=startConditions_2D, d=self.d, M=self.M
+        )
+
+        endControlPoints = self.staticPathGenerator.getLocalizedControlPoints(
+            conditions=endConditions_2D, d=self.d, M=self.M
+        )
+
+        # gets the highest start control point (the beginning point for the parabola)
+        parabolaStart = endControlPoints[:, -1:]
+        # and the ending point for the parabola
+        parabolaEnd = startControlPoints[:, 0:1]
+
+        # gets the change in altitude and North
+        delta_north = parabolaStart.item(0) - parabolaEnd.item(0)
+        delta_altitude = parabolaStart.item(1) - parabolaEnd.item(1)
+
+        #gets the amplitude from alpha, the change in north, and the change in altitude 
+        Amp = abs((delta_altitude)/(delta_north*np.sqrt(alpha)))
+
+        # gets the initial spacing of control points
+        centerControlPoint_start = startControlPoints[:, 1:2]
+        centerControlPoint_end = endControlPoints[:, 1:2]
+
+        # gets the initial and final spacing of control points
+        initialVelocity = np.linalg.norm(parabolaEnd - centerControlPoint_start)
+        finalVelocity = np.linalg.norm(centerControlPoint_end - parabolaStart)
+
+
+
+        # gets the change in spacing
+        delta_velocity = finalVelocity - initialVelocity
+
+        
+        t_end = np.sqrt(alpha*(delta_north))
+
+        # gets the total arc length
+        totalArcLength = self.getArcLengthParabola(
+            t1=0.0, t2=t_end, Amp=Amp, vertex_2D=parabolaStart, alpha=alpha
+        )
+
+        controlPoints_list = []
+
+        # spatial acceleration over the length
+        spatialAcceleration = delta_velocity / totalArcLength
+
+        # initializes the current arc length as the initial velocity
+        currentArcLength = 0.0
+
+        withinEnd = False
+
+        while not withinEnd:
+            # gets the current desired velocity
+            current_desired_velocity = (
+                initialVelocity + currentArcLength * spatialAcceleration
+            )
+
+            # changes the current arc length to include a new section that's as long as the current desired velocity
+            currentArcLength += current_desired_velocity
+
+            # gets the time for the current arc length
+            currentTime = self.getArcPositionTime(
+                endArcLength=currentArcLength,
+                Amp=Amp,
+                vertex_2D=startPosition_2D,
+                alpha=alpha,
+            )
+
+            # gets the actual position for this current time
+            currentPosition, _ = self.getPointParabola(
+                t=currentTime, Amp=Amp, vertex_2D=startPosition_2D, alpha=alpha
+            )
+
+            controlPoints_list.append(currentPosition)
+
+            # if the current arc length is within the desired velocity's length of the end
+            if (totalArcLength - currentArcLength) < current_desired_velocity:
+                withinEnd = True
+
+        # control points as an 2D array
+        controlPoints = np.concatenate((controlPoints_list), axis=1)
+
+        # concatenates on the start and end control points
+        controlPoints = np.concatenate((startControlPoints, controlPoints), axis=1)
+        controlPoints = np.concatenate((controlPoints, endControlPoints), axis=1)
+
+        # returns the control point positions
+        return controlPoints
