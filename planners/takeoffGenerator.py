@@ -41,12 +41,8 @@ class takeoffGenerator:
 
     def generatePath(
         self,
-        startPosition_3D: np.ndarray,
-        endPosition_3D: np.ndarray,
-        startVelocity: float,
-        endVelocity: float,
-        startAccel: float,
-        endAccel: float,
+        startConditions_3D: list[np.ndarray],
+        endConditions_3D: list[np.ndarray],
         alpha: float = 1.0,
         pathType: pathTypes = pathTypes.PARABOLA_TAKEOFF,
     )->np.ndarray:
@@ -56,23 +52,15 @@ class takeoffGenerator:
         match pathType:
             case pathTypes.PARABOLA_TAKEOFF:
                 controlPoints = self.generateParabolicTakeoffPath(
-                    startPosition_3D=startPosition_3D,
-                    endPosition_3D=endPosition_3D,
-                    startVelocity=startVelocity,
-                    endVelocity=endVelocity,
-                    startAcceleration=startAccel,
-                    endAcceleration=endAccel,
+                    startConditions_3D=startConditions_3D,
+                    endConditions_3D=endConditions_3D,
                     alpha=alpha
                 )
 
             case pathTypes.PARABOLA_LANDING:
                 controlPoints = self.generateParabolicLandingPath(
-                    startPosition_3D=startPosition_3D,
-                    endPosition_3D=endPosition_3D,
-                    startVelocity=startVelocity,
-                    endVelocity=endVelocity,
-                    startAcceleration=startAccel,
-                    endAcceleration=endAccel,
+                    startConditions_3D=startConditions_3D,
+                    endConditions_3D=endConditions_3D,
                     alpha=alpha
                 )
         return controlPoints
@@ -81,46 +69,38 @@ class takeoffGenerator:
     # but the velocities are given in magnitude for easier tunin
     def generateParabolicTakeoffPath(
         self,
-        startPosition_3D: np.ndarray,
-        endPosition_3D: np.ndarray,
-        startVelocity: float,
-        endVelocity: float,
-        startAcceleration: float,
-        endAcceleration: float,
+        startConditions_3D: list[np.ndarray],
+        endConditions_3D: list[np.ndarray],
         alpha=1.0
     ):
         # gets the positions in 2D
         startPosition_2D = map_3D_to_2D_planeMsg(
-            vec_3D=startPosition_3D, plane_msg=self.plane
+            vec_3D=startConditions_3D[0], plane_msg=self.plane
         )
         endPosition_2D = map_3D_to_2D_planeMsg(
-            vec_3D=endPosition_3D, plane_msg=self.plane
+            vec_3D=endConditions_3D[0], plane_msg=self.plane
         )
 
-        startVel_3D = np.array([[0.0], [0.0], [-startVelocity]])
-        endVel_3D = np.array([[endVelocity], [0.0], [0.0]])
-        startAccel_3D = np.array([[0.0], [0.0], [-startAcceleration]])
-        endAccel_3D = np.array([[endAcceleration], [0.0], [0.0]])
 
-        startVel_2D = map_3D_to_2D_planeMsg(vec_3D=startVel_3D, plane_msg=self.plane)
-        endVel_2D = map_3D_to_2D_planeMsg(vec_3D=endVel_3D, plane_msg=self.plane)
+        startVel_2D = map_3D_to_2D_planeMsg(vec_3D=startConditions_3D[1], plane_msg=self.plane)
+        endVel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[1], plane_msg=self.plane)
 
         startAccel_2D = map_3D_to_2D_planeMsg(
-            vec_3D=startAccel_3D, plane_msg=self.plane
+            vec_3D=startConditions_3D[2], plane_msg=self.plane
         )
-        endAccel_2D = map_3D_to_2D_planeMsg(vec_3D=endAccel_3D, plane_msg=self.plane)
+        endAccel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[2], plane_msg=self.plane)
 
         # start and end conditions
-        startConditions = [startPosition_2D, startVel_2D, startAccel_2D]
-        endConditions = [endPosition_2D, endVel_2D, endAccel_2D]
+        startConditions_2D = [startPosition_2D, startVel_2D, startAccel_2D]
+        endConditions_2D = [endPosition_2D, endVel_2D, endAccel_2D]
 
         # gets the initial and final control points
         startControlPoints = self.staticPathGenerator.getLocalizedControlPoints(
-            conditions=startConditions, d=self.d, M=self.M
+            conditions=startConditions_2D, d=self.d, M=self.M
         )
 
         endControlPoints = self.staticPathGenerator.getLocalizedControlPoints(
-            conditions=endConditions, d=self.d, M=self.M
+            conditions=endConditions_2D, d=self.d, M=self.M
         )
 
         # gets the highest start control point (the beginning point for the parabola)
@@ -204,46 +184,38 @@ class takeoffGenerator:
 
     def generateParabolicLandingPath(
         self,
-        startPosition_3D: np.ndarray,
-        endPosition_3D: np.ndarray,
-        startVelocity: float,
-        endVelocity: float,
-        startAcceleration: float,
-        endAcceleration: float,
+        startConditions_3D: list[np.ndarray],
+        endConditions_3D: list[np.ndarray],
         alpha=1.0
     ):
         # gets the positions in 2D
         startPosition_2D = map_3D_to_2D_planeMsg(
-            vec_3D=startPosition_3D, plane_msg=self.plane
+            vec_3D=startConditions_3D[0], plane_msg=self.plane
         )
         endPosition_2D = map_3D_to_2D_planeMsg(
-            vec_3D=endPosition_3D, plane_msg=self.plane
+            vec_3D=endConditions_3D[0], plane_msg=self.plane
         )
 
-        startVel_3D = np.array([[0.0], [0.0], [-startVelocity]])
-        endVel_3D = np.array([[endVelocity], [0.0], [0.0]])
-        startAccel_3D = np.array([[0.0], [0.0], [-startAcceleration]])
-        endAccel_3D = np.array([[endAcceleration], [0.0], [0.0]])
 
-        startVel_2D = map_3D_to_2D_planeMsg(vec_3D=startVel_3D, plane_msg=self.plane)
-        endVel_2D = map_3D_to_2D_planeMsg(vec_3D=endVel_3D, plane_msg=self.plane)
+        startVel_2D = map_3D_to_2D_planeMsg(vec_3D=startConditions_3D[1], plane_msg=self.plane)
+        endVel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[1], plane_msg=self.plane)
 
         startAccel_2D = map_3D_to_2D_planeMsg(
-            vec_3D=startAccel_3D, plane_msg=self.plane
+            vec_3D=startConditions_3D[2], plane_msg=self.plane
         )
-        endAccel_2D = map_3D_to_2D_planeMsg(vec_3D=endAccel_3D, plane_msg=self.plane)
+        endAccel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[2], plane_msg=self.plane)
 
         # start and end conditions
-        startConditions = [startPosition_2D, startVel_2D, startAccel_2D]
-        endConditions = [endPosition_2D, endVel_2D, endAccel_2D]
+        startConditions_2D = [startPosition_2D, startVel_2D, startAccel_2D]
+        endConditions_2D = [endPosition_2D, endVel_2D, endAccel_2D]
 
         # gets the initial and final control points
         startControlPoints = self.staticPathGenerator.getLocalizedControlPoints(
-            conditions=startConditions, d=self.d, M=self.M
+            conditions=startConditions_2D, d=self.d, M=self.M
         )
 
         endControlPoints = self.staticPathGenerator.getLocalizedControlPoints(
-            conditions=endConditions, d=self.d, M=self.M
+            conditions=endConditions_2D, d=self.d, M=self.M
         )
 
         # gets the highest start control point (the beginning point for the parabola)
