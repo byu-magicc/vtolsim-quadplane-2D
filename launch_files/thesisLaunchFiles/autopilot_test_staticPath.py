@@ -74,7 +74,7 @@ rho = np.array([1.0, 1.0, 1.0])
 takeoffGen = takeoffGenerator(plane=plane_msg, rho=rho, numDimensions=2, d=3, M=10)
 
 controlPoints = takeoffGen.generatePath(
-    pathType=pathTypes.PARABOLA,
+    pathType=pathTypes.PARABOLA_TAKEOFF,
     startPosition_3D=startPos_3D,
     endPosition_3D=endPos_3D,
     startVelocity=1.0,
