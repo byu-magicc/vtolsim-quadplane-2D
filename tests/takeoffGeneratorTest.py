@@ -2,7 +2,7 @@
 import os, sys
 from pathlib import Path
 sys.path.insert(0,os.fspath(Path(__file__).parents[1]))
-from planners.takeoffGenerator import takeoffGenerator, pathTypes
+from planners.takeoffGenerator import flightPathGenerator, pathTypes
 import numpy as np
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 import matplotlib.pyplot as plt
@@ -16,7 +16,7 @@ plane_msg = MsgPlane(n_hat=n_hat,
 
 rho = np.array([1.0,1.0,1.0])
 
-takeoff_gen = takeoffGenerator(plane=plane_msg,
+takeoff_gen = flightPathGenerator(plane=plane_msg,
                                rho=rho,
                                numDimensions=2,
                                d=3,

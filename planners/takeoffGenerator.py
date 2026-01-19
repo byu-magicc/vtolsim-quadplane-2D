@@ -4,6 +4,7 @@ from rrt_mavsim.message_types.msg_plane import MsgPlane
 from rrt_mavsim.tools.plane_projections import map_3D_to_2D_planeMsg
 from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlightPath
 from enum import Enum
+import matplotlib.pyplot as plt
 
 
 class pathTypes(str, Enum):
@@ -139,6 +140,7 @@ class flightPathGenerator:
 
         # initializes the current arc length as the initial velocity
         currentArcLength = 0.0
+        currentTime_list = []
 
         withinEnd = False
 
@@ -159,6 +161,8 @@ class flightPathGenerator:
                 alpha=alpha,
             )
 
+            currentTime_list.append(currentTime)
+
             # gets the actual position for this current time
             currentPosition, _ = self.getPointParabola(
                 t=currentTime, Amp=Amp, vertex_2D=startPosition_2D, alpha=alpha
@@ -169,6 +173,10 @@ class flightPathGenerator:
             # if the current arc length is within the desired velocity's length of the end
             if (totalArcLength - currentArcLength) < current_desired_velocity:
                 withinEnd = True
+        
+        plt.figure(0)
+        plt.plot(currentTime_list)
+        plt.show()
 
         # control points as an 2D array
         controlPoints = np.concatenate((controlPoints_list), axis=1)
@@ -382,7 +390,7 @@ class flightPathGenerator:
 
         for i in range(numSteps):
             currentTime = t1 + i * self.searchResolution
-            nextTime = t1 + (i + 1) self.searchResolution
+            nextTime = t1 + (i + 1) * self.searchResolution
 
             currentPosition, _ = self.getPointParabola(
                 t=currentTime, Amp=Amp, vertex_2D=vertex_2D, alpha=alpha
