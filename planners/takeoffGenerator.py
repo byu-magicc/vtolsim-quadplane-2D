@@ -197,7 +197,6 @@ class flightPathGenerator:
         self,
         startConditions_3D: list[np.ndarray],
         endConditions_3D: list[np.ndarray],
-        alpha=1.0
     ):
         # gets the positions in 2D
         startPosition_2D = map_3D_to_2D_planeMsg(
@@ -282,13 +281,13 @@ class flightPathGenerator:
             currentTime = self.getArcPositionTime(
                 endArcLength=currentArcLength,
                 Amp=Amp,
-                vertex_2D=endPosition_2D,
+                vertex_2D=parabolaStart,
                 alpha=alpha,
             )
 
             # gets the actual position for this current time
             currentPosition, _ = self.getPointParabola(
-                t=currentTime, Amp=Amp, vertex_2D=endPosition_2D, alpha=alpha
+                t=currentTime, Amp=Amp, vertex_2D=parabolaStart, alpha=alpha
             )
 
             controlPoints_list.append(currentPosition)
