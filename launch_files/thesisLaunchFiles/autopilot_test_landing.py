@@ -79,18 +79,14 @@ takeoffGen = flightPathGenerator(plane=plane_msg, rho=rho, numDimensions=2, d=3,
 
 controlPoints = takeoffGen.generatePath(
     pathType=pathTypes.PARABOLA_LANDING,
-    startPosition_3D=startPos_3D,
-    endPosition_3D=endPos_3D,
-    startVelocity=startVelocity,
-    endVelocity=endVelocity,
-    startAccel=0.0,
-    endAccel=0.0,
+    startConditions_3D=startConditions_3D,
+    endConditions_3D=endConditions_3D,
 )
 
 
 testPoint = 0
 
-"""
+#"""
 bspline_object = BsplineEvaluation(
     control_points=controlPoints, order=3, start_time=0.0, scale_factor=2.0
 )
@@ -141,8 +137,8 @@ viewers.drawTrajectory(
 quadplane = QuadplaneDynamics(
     ts=SIM.ts_simulation,
     plane_msg=PLANE.plane_msg,
-    pos_3D_0=temp_endPos_3D,
-    vel_3D_0=temp_endVel_3D,
+    pos_3D_0=startPos_3D,
+    vel_3D_0=startVel_3D,
 )
 
 # creates the controller

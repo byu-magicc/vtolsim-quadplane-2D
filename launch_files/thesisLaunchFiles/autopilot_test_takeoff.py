@@ -153,6 +153,10 @@ timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)
 sim_time = SIM.start_time
 end_time = SIM.end_time
 
+#section to create the lists to store the data for later analysis
+desired_state_list = [] #stores each pos, vel, and accel in its own list
+actual_state_list = [] #same as above. Everything needs to be in world frame
+
 
 # iterates through until we get to the end time
 while sim_time < end_time:
@@ -163,6 +167,8 @@ while sim_time < end_time:
     pos_desired = bspline_sampledPositions_2D[:, currentTimeIndex].reshape(-1, 1)
     vel_desired = bspline_sampledVelocity_2D[:, currentTimeIndex].reshape(-1, 1)
     accel_desired = bspline_sampledAcceleration_2d[:, currentTimeIndex].reshape(-1, 1)
+
+    desired_state_list.append([pos_desired, vel_desired, accel_desired])
 
     # updates the trajectory reference (does not do theta yet.)
     trajectory_ref.update(pos=pos_desired, vel=vel_desired, accel=accel_desired)
@@ -178,6 +184,12 @@ while sim_time < end_time:
     delta = low_level_controller.update(
         state=quadplane.true_state, F_des_b=F_des_b, M_des_b=M_des_b
     )
+
+    pos_actual = quadplane.true_state.pos_2D
+    vel_actual = quadplane.true_state.vel_2D
+    
+    actual_state_list.append([pos_actual, vel_actual])
+
 
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)

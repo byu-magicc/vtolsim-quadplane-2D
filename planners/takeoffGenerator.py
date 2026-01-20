@@ -40,6 +40,9 @@ class flightPathGenerator:
         # sets the search resolution
         self.searchResolution = 0.1
 
+        self.alpha_takeoff = 1.0
+        self.alpha_landing = -1.0
+
     def generatePath(
         self,
         startConditions_3D: list[np.ndarray],
@@ -55,14 +58,12 @@ class flightPathGenerator:
                 controlPoints = self.generateParabolicTakeoffPath(
                     startConditions_3D=startConditions_3D,
                     endConditions_3D=endConditions_3D,
-                    alpha=alpha
                 )
 
             case pathTypes.PARABOLA_LANDING:
                 controlPoints = self.generateParabolicLandingPath(
                     startConditions_3D=startConditions_3D,
                     endConditions_3D=endConditions_3D,
-                    alpha=alpha
                 )
         return controlPoints
     # the start and end positions are given in coordinates (In 3D)
@@ -71,7 +72,6 @@ class flightPathGenerator:
         self,
         startConditions_3D: list[np.ndarray],
         endConditions_3D: list[np.ndarray],
-        alpha=1.0
     ):
         # gets the positions in 2D
         startPosition_2D = map_3D_to_2D_planeMsg(
@@ -113,9 +113,9 @@ class flightPathGenerator:
         delta_altitude = parabolaEnd.item(1) - parabolaStart.item(1)
 
         #gets the time corresponding to the north position
-        t_end = np.sqrt(alpha*(delta_north))
+        t_end = np.sqrt(self.alpha_takeoff*(delta_north))
 
-        Amp = delta_altitude / np.sqrt(alpha*delta_north)
+        Amp = delta_altitude / np.sqrt(self.alpha_takeoff*delta_north)
 
         # gets the initial spacing of control points
         centerControlPoint_start = startControlPoints[:, 1:2]
@@ -130,7 +130,7 @@ class flightPathGenerator:
 
         # gets the total arc length
         totalArcLength = self.getArcLengthParabola(
-            t1=0.0, t2=t_end, Amp=Amp, vertex_2D=parabolaStart, alpha=alpha
+            t1=0.0, t2=t_end, Amp=Amp, vertex_2D=parabolaStart, alpha=self.alpha_takeoff
         )
 
         controlPoints_list = []
@@ -158,14 +158,14 @@ class flightPathGenerator:
                 endArcLength=currentArcLength,
                 Amp=Amp,
                 vertex_2D=startPosition_2D,
-                alpha=alpha,
+                alpha=self.alpha_takeoff,
             )
 
             currentTime_list.append(currentTime)
 
             # gets the actual position for this current time
             currentPosition, _ = self.getPointParabola(
-                t=currentTime, Amp=Amp, vertex_2D=startPosition_2D, alpha=alpha
+                t=currentTime, Amp=Amp, vertex_2D=startPosition_2D, alpha=self.alpha_takeoff
             )
 
             controlPoints_list.append(currentPosition)
@@ -174,9 +174,6 @@ class flightPathGenerator:
             if (totalArcLength - currentArcLength) < current_desired_velocity:
                 withinEnd = True
         
-        plt.figure(0)
-        plt.plot(currentTime_list)
-        plt.show()
 
         # control points as an 2D array
         controlPoints = np.concatenate((controlPoints_list), axis=1)
@@ -238,9 +235,9 @@ class flightPathGenerator:
         delta_altitude = parabolaEnd.item(1) - parabolaStart.item(1)
 
         #gets the time corresponding to the north position
-        t_end = np.sqrt(np.abs(alpha*(delta_north)))
+        t_end = np.sqrt(np.abs(self.alpha_landing*(delta_north)))
 
-        Amp = delta_altitude / np.sqrt(abs(alpha*delta_north))
+        Amp = delta_altitude / np.sqrt(abs(self.alpha_landing*delta_north))
 
         # gets the initial spacing of control points
         centerControlPoint_start = startControlPoints[:, 1:2]
@@ -255,13 +252,13 @@ class flightPathGenerator:
 
         # gets the total arc length
         totalArcLength = self.getArcLengthParabola(
-            t1=0.0, t2=t_end, Amp=Amp, vertex_2D=parabolaStart, alpha=alpha
+            t1=0.0, t2=t_end, Amp=Amp, vertex_2D=parabolaStart, alpha=self.alpha_landing
         )
 
         controlPoints_list = []
 
         # spatial acceleration over the length
-        spatialAcceleration = delta_velocity / totalArcLength
+        spatialAcceleration = abs(delta_velocity / totalArcLength)
 
         # initializes the current arc length as the initial velocity
         currentArcLength = 0.0
@@ -271,7 +268,7 @@ class flightPathGenerator:
         while not withinEnd:
             # gets the current desired velocity
             current_desired_velocity = (
-                initialVelocity + currentArcLength * spatialAcceleration
+                finalVelocity + currentArcLength * spatialAcceleration
             )
 
             # changes the current arc length to include a new section that's as long as the current desired velocity
@@ -282,13 +279,15 @@ class flightPathGenerator:
                 endArcLength=currentArcLength,
                 Amp=Amp,
                 vertex_2D=parabolaStart,
-                alpha=alpha,
+                alpha=self.alpha_landing,
             )
 
             # gets the actual position for this current time
             currentPosition, _ = self.getPointParabola(
-                t=currentTime, Amp=Amp, vertex_2D=parabolaStart, alpha=alpha
+                t=currentTime, Amp=Amp, vertex_2D=parabolaStart, alpha=self.alpha_landing
             )
+
+
 
             controlPoints_list.append(currentPosition)
 
@@ -296,6 +295,9 @@ class flightPathGenerator:
             if (totalArcLength - currentArcLength) < current_desired_velocity:
                 withinEnd = True
 
+
+        #flips the order of the control points
+        controlPoints_list.reverse()
         # control points as an 2D array
         controlPoints = np.concatenate((controlPoints_list), axis=1)
 
