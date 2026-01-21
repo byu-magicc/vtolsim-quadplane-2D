@@ -6,10 +6,12 @@ from pathlib import Path
 sys.path.insert(0, os.fspath(Path(__file__).parents[2]))
 import numpy as np
 from copy import deepcopy
+import matplotlib.pyplot as plt
 
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as CONDA
 import parameters.plane_parameters as PLANE
+import pandas as pd
 
 
 from models.quadplaneDynamics import QuadplaneDynamics
@@ -151,11 +153,17 @@ wind = np.array([[0.0], [0.0], [0.0], [0.0]])
 timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)
 
 sim_time = SIM.start_time
-end_time = SIM.end_time
+end_time = 60.0
 
 #section to create the lists to store the data for later analysis
-desired_state_list = [] #stores each pos, vel, and accel in its own list
-actual_state_list = [] #same as above. Everything needs to be in world frame
+desiredPosition_list = []
+desiredVelocity_list = []
+desiredAcceleration_list = []
+
+actualPosition_list = []
+actualVelocity_list = []
+
+time_list = []
 
 
 # iterates through until we get to the end time
@@ -168,7 +176,10 @@ while sim_time < end_time:
     vel_desired = bspline_sampledVelocity_2D[:, currentTimeIndex].reshape(-1, 1)
     accel_desired = bspline_sampledAcceleration_2d[:, currentTimeIndex].reshape(-1, 1)
 
-    desired_state_list.append([pos_desired, vel_desired, accel_desired])
+    desiredPosition_list.append(pos_desired.T)
+    desiredVelocity_list.append(vel_desired.T)
+    desiredAcceleration_list.append(accel_desired.T)
+
 
     # updates the trajectory reference (does not do theta yet.)
     trajectory_ref.update(pos=pos_desired, vel=vel_desired, accel=accel_desired)
@@ -188,8 +199,8 @@ while sim_time < end_time:
     pos_actual = quadplane.true_state.pos_2D
     vel_actual = quadplane.true_state.vel_2D
     
-    actual_state_list.append([pos_actual, vel_actual])
-
+    actualPosition_list.append(pos_actual.T)
+    actualVelocity_list.append(vel_actual.T)
 
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)
@@ -205,7 +216,33 @@ while sim_time < end_time:
         trajectory=trajectory_ref,
     )
 
+    time_list.append(np.array([[sim_time]]))
     sim_time += SIM.ts_simulation
+
+timeArray = np.concatenate(time_list, axis=0)
+df_m1 = pd.DataFrame(timeArray)
+df_m1.to_csv('launch_files/thesisLaunchFiles/times.csv', index=False, header=False)
+
+actualPositions = np.concatenate((actualPosition_list), axis = 0)
+df0 = pd.DataFrame(actualPositions)
+df0.to_csv('launch_files/thesisLaunchFiles/ActualPositions.csv', index=False, header=False)
+
+actualVelocities = np.concatenate((actualVelocity_list), axis = 0)
+df1 = pd.DataFrame(actualVelocities)
+df1.to_csv('launch_files/thesisLaunchFiles/actualVelocities.csv', index=False, header=False)
+
+desiredVelocities = np.concatenate((desiredVelocity_list), axis = 0)
+df2 = pd.DataFrame(desiredVelocities)
+df2.to_csv('launch_files/thesisLaunchFiles/desiredVelocities.csv', index=False, header=False)
+
+desiredPositions = np.concatenate((desiredPosition_list), axis = 0)
+df3 = pd.DataFrame(desiredPositions)
+df3.to_csv('launch_files/thesisLaunchFiles/desiredPositions.csv', index=False, header=False)
+
+desiredAccelerations = np.concatenate((desiredAcceleration_list), axis = 0)
+df4 = pd.DataFrame(desiredAccelerations)
+df4.to_csv('launch_files/thesisLaunchFiles/desiredAccelerations.csv', index=False, header=False)
+
 
 
 potato = 0
