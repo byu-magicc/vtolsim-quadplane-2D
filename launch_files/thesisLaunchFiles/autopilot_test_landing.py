@@ -2,6 +2,7 @@
 # and then uses the autopilot to command to those.
 import os, sys
 from pathlib import Path
+import pandas as pd
 
 sys.path.insert(0, os.fspath(Path(__file__).parents[2]))
 import numpy as np
@@ -157,8 +158,19 @@ wind = np.array([[0.0], [0.0], [0.0], [0.0]])
 # gets the time spacing between time data samples
 timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)
 
+
+#section to create the lists to store the data for later analysis
+desiredPosition_list = []
+desiredVelocity_list = []
+desiredAcceleration_list = []
+
+actualPosition_list = []
+actualVelocity_list = []
+
+time_list = []
+
 sim_time = SIM.start_time
-end_time = SIM.end_time
+end_time = 60.0
 
 
 # iterates through until we get to the end time
@@ -170,6 +182,10 @@ while sim_time < end_time:
     pos_desired = bspline_sampledPositions_2D[:, currentTimeIndex].reshape(-1, 1)
     vel_desired = bspline_sampledVelocity_2D[:, currentTimeIndex].reshape(-1, 1)
     accel_desired = bspline_sampledAcceleration_2d[:, currentTimeIndex].reshape(-1, 1)
+
+    desiredPosition_list.append(pos_desired.T)
+    desiredVelocity_list.append(vel_desired.T)
+    desiredAcceleration_list.append(accel_desired.T)
 
     # updates the trajectory reference (does not do theta yet.)
     trajectory_ref.update(pos=pos_desired, vel=vel_desired, accel=accel_desired)
@@ -186,6 +202,13 @@ while sim_time < end_time:
         state=quadplane.true_state, F_des_b=F_des_b, M_des_b=M_des_b
     )
 
+
+    pos_actual = quadplane.true_state.pos_2D
+    vel_actual = quadplane.true_state.vel_2D
+    
+    actualPosition_list.append(pos_actual.T)
+    actualVelocity_list.append(vel_actual.T)
+
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)
 
@@ -199,8 +222,34 @@ while sim_time < end_time:
         integrator=integrator,
         trajectory=trajectory_ref,
     )
+    
+    time_list.append(np.array([[sim_time]]))
 
     sim_time += SIM.ts_simulation
+
+timeArray = np.concatenate(time_list, axis=0)
+df_m1 = pd.DataFrame(timeArray)
+df_m1.to_csv('launch_files/thesisLaunchFiles/landingCSV/times.csv', index=False, header=False)
+
+actualPositions = np.concatenate((actualPosition_list), axis = 0)
+df0 = pd.DataFrame(actualPositions)
+df0.to_csv('launch_files/thesisLaunchFiles/landingCSV/ActualPositions.csv', index=False, header=False)
+
+actualVelocities = np.concatenate((actualVelocity_list), axis = 0)
+df1 = pd.DataFrame(actualVelocities)
+df1.to_csv('launch_files/thesisLaunchFiles/landingCSV/actualVelocities.csv', index=False, header=False)
+
+desiredVelocities = np.concatenate((desiredVelocity_list), axis = 0)
+df2 = pd.DataFrame(desiredVelocities)
+df2.to_csv('launch_files/thesisLaunchFiles/landingCSV/desiredVelocities.csv', index=False, header=False)
+
+desiredPositions = np.concatenate((desiredPosition_list), axis = 0)
+df3 = pd.DataFrame(desiredPositions)
+df3.to_csv('launch_files/thesisLaunchFiles/landingCSV/desiredPositions.csv', index=False, header=False)
+
+desiredAccelerations = np.concatenate((desiredAcceleration_list), axis = 0)
+df4 = pd.DataFrame(desiredAccelerations)
+df4.to_csv('launch_files/thesisLaunchFiles/landingCSV/desiredAccelerations.csv', index=False, header=False)
 
 
 potato = 0

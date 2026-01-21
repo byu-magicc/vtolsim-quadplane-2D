@@ -221,27 +221,27 @@ while sim_time < end_time:
 
 timeArray = np.concatenate(time_list, axis=0)
 df_m1 = pd.DataFrame(timeArray)
-df_m1.to_csv('launch_files/thesisLaunchFiles/times.csv', index=False, header=False)
+df_m1.to_csv('launch_files/thesisLaunchFiles/takeoffCSV/times.csv', index=False, header=False)
 
 actualPositions = np.concatenate((actualPosition_list), axis = 0)
 df0 = pd.DataFrame(actualPositions)
-df0.to_csv('launch_files/thesisLaunchFiles/ActualPositions.csv', index=False, header=False)
+df0.to_csv('launch_files/thesisLaunchFiles/takeoffCSV/ActualPositions.csv', index=False, header=False)
 
 actualVelocities = np.concatenate((actualVelocity_list), axis = 0)
 df1 = pd.DataFrame(actualVelocities)
-df1.to_csv('launch_files/thesisLaunchFiles/actualVelocities.csv', index=False, header=False)
+df1.to_csv('launch_files/thesisLaunchFiles/takeoffCSV/actualVelocities.csv', index=False, header=False)
 
 desiredVelocities = np.concatenate((desiredVelocity_list), axis = 0)
 df2 = pd.DataFrame(desiredVelocities)
-df2.to_csv('launch_files/thesisLaunchFiles/desiredVelocities.csv', index=False, header=False)
+df2.to_csv('launch_files/thesisLaunchFiles/takeoffCSV/desiredVelocities.csv', index=False, header=False)
 
 desiredPositions = np.concatenate((desiredPosition_list), axis = 0)
 df3 = pd.DataFrame(desiredPositions)
-df3.to_csv('launch_files/thesisLaunchFiles/desiredPositions.csv', index=False, header=False)
+df3.to_csv('launch_files/thesisLaunchFiles/takeoffCSV/desiredPositions.csv', index=False, header=False)
 
 desiredAccelerations = np.concatenate((desiredAcceleration_list), axis = 0)
 df4 = pd.DataFrame(desiredAccelerations)
-df4.to_csv('launch_files/thesisLaunchFiles/desiredAccelerations.csv', index=False, header=False)
+df4.to_csv('launch_files/thesisLaunchFiles/takeoffCSV/desiredAccelerations.csv', index=False, header=False)
 
 
 
