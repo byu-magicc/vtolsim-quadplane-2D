@@ -31,7 +31,6 @@ from message_types.msg_trajectory import MsgTrajectory
 from rrt_mavsim.tools.plane_projections import *
 from rrt_mavsim.parameters.colors import *
 
-
 from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlightPath
 
 from bsplinegenerator.bsplines import BsplineEvaluation
