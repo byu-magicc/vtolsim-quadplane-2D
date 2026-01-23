@@ -1,17 +1,17 @@
 {
   "include": ["."],
   "extraPaths": [
-    "~/eVTOL_BSplines",
-    "~/rrt_mavsim",
-    "~/bspline_generator"
+    "/home/benjamin/eVTOL_BSplines",
+    "/home/benjamin/rrt_mavsim",
+    "/home/benjamin/bspline_generator"
   ],
   "executionEnvironments": [
     {
       "root": ".",
       "extraPaths": [
-        "~/eVTOL_BSplines",
-        "~/rrt_mavsim",
-        "~/bspline_generator"
+        "/home/benjamin/eVTOL_BSplines",
+        "/home/benjamin/rrt_mavsim",
+        "/home/benjamin/bspline_generator"
       ]
     }
   ]
