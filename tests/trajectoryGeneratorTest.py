@@ -31,11 +31,39 @@ gen = trajectoryGenerator(plane=plane_msg,
 
 
 
+#runs through a test for the parabola function 
+#That is just getting the right points off a parabola
+t_list = np.linspace(0, 10, 101)
+t_list.tolist()
+
+verticesList = []
+
+Amp=1.0
+vertex = np.array([[0.0],[0.0]])
+
+#gets the time from the two altitudes
+t1 = gen.getTimeFromNorth(north=0.0,
+                          vertex=vertex,
+                          directionIsForward=True)
+
+
+t2 = gen.getTimeFromNorth(north=10.0,
+                          vertex=vertex,
+                          directionIsForward=True)
+
+
+arcLength = gen.getArcLengthPolynomial(t1=t1,
+                                     t2=t2,
+                                     Amp=Amp,
+                                     vertex_2D=vertex)
+
+endTime = gen.getTimeFromArcLength(endArcLength=arcLength,
+                                   Amp=Amp,
+                                   vertex=vertex,
+                                   directionIsForward=True)
 
 
 gen.generateParabola_takeoff(startConditions_3D=startConditions,
                              endConditions_3D=endConditions)
-
-
 
 testPoint = 0

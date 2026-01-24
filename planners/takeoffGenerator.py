@@ -352,6 +352,8 @@ class flightPathGenerator:
         # section to get the velocity and acceleration magnitude
 
         return output_position_2D, tangentVector
+    
+
 
     def getArcPositionTime(
             self, endArcLength, Amp: float,  alpha: float, vertex_2D: np.ndarray):
