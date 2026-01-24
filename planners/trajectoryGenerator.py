@@ -73,16 +73,86 @@ class trajectoryGenerator:
 
         
         # gets the highest start control point (the beginning point for the parabola)
-        parabolaStart = startControlPoints[:, -1:]
+        parabolaStartPoint = startControlPoints[:, -1:]
         # and the ending point for the parabola
-        parabolaEnd = endControlPoints[:, 0:1]
+        parabolaEndPoint = endControlPoints[:, 0:1]
+
+        alpha = self.getAlpha(directionIsForward=True)
+
+        #gets the change in north position
+        delta_north = parabolaEndPoint.item(0) - parabolaStartPoint.item(0)
+        delta_altitude = parabolaEndPoint.item(1) - parabolaStartPoint.item(1)
+        
+        #gets the time for that change in north position
+        t_end = self.getTimeFromNorth(north=delta_north,
+                                      vertex=parabolaStartPoint,
+                                      polynomialDegree=polynomialDegree,
+                                      directionIsForward=True)
 
 
+        #gets the amplitude
+        Amp = delta_altitude / ((alpha*delta_north)**polynomialDegree)
 
 
+        #gets the initial velocity
+        v_init = np.linalg.norm(startConditions_2D[1])
+        v_end = np.linalg.norm(endConditions_2D[1])
+
+        #gets the change in velocity
+        delta_velocity = v_end - v_init
+
+        #gets the total arc length
+        totalArcLength = self.getArcLengthPolynomial(t1=0.0,
+                                                     t2=t_end,
+                                                     Amp=Amp,
+                                                     vertex_2D=parabolaStartPoint,
+                                                     polynomialDegree=polynomialDegree)
+
+        spatialAcceleration = delta_velocity / totalArcLength
+
+        
+        #goes through to space out the control points
+        controlPoints_list = []
+        times_list = []
+        #creates the current arc length
+        currentArcLength = 0.0
+        #flag for whether we are at the end
+        withinEnd = False
+
+        while not withinEnd:
 
 
+            #gets the current desired velocity
+            currentVel_desired = v_init + spatialAcceleration*currentArcLength
 
+            currentArcLength += currentVel_desired 
+
+            #gets the arc time from the length
+            currentTime = self.getTimeFromArcLength(endArcLength=currentArcLength,
+                                                    Amp=Amp,
+                                                    vertex=parabolaStartPoint,
+                                                    polynomialDegree=polynomialDegree)
+            times_list.append(currentTime)
+
+            currentPosition = self.getPointPolynomial(t=currentTime,
+                                                      Amp=Amp,
+                                                      vertex_2D=parabolaStartPoint,
+                                                      polynomialDegree=polynomialDegree,
+                                                      directionIsForward=True)
+
+            controlPoints_list.append(currentPosition)
+            
+
+            # if the current arc length is within the desired velocity's length of the end
+            if (totalArcLength - currentArcLength) < currentVel_desired:
+                withinEnd = True
+
+
+        #concatenates the control points
+        controlPoints = np.concatenate(controlPoints_list, axis=1)
+        
+
+        return controlPoints
 
 
     #defines the function to get a point on a parabola using parametric equations
@@ -185,11 +255,6 @@ class trajectoryGenerator:
 
         return nextTime
         
-
-
-        
-
-
 
 
     def getTimeFromNorth(self,

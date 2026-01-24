@@ -41,29 +41,34 @@ verticesList = []
 Amp=1.0
 vertex = np.array([[0.0],[0.0]])
 
-#gets the time from the two altitudes
-t1 = gen.getTimeFromNorth(north=0.0,
-                          vertex=vertex,
-                          directionIsForward=True)
+degree = 1/3
 
+t1=0.0
 
 t2 = gen.getTimeFromNorth(north=10.0,
-                          vertex=vertex,
-                          directionIsForward=True)
+                                vertex=vertex,
+                                polynomialDegree=degree,
+                                directionIsForward=True)
 
 
 arcLength = gen.getArcLengthPolynomial(t1=t1,
-                                     t2=t2,
-                                     Amp=Amp,
-                                     vertex_2D=vertex)
+                           t2=t2,
+                           Amp=Amp,
+                           vertex_2D=vertex,
+                           polynomialDegree=degree)
 
-endTime = gen.getTimeFromArcLength(endArcLength=arcLength,
-                                   Amp=Amp,
-                                   vertex=vertex,
-                                   directionIsForward=True)
+t_out = gen.getTimeFromArcLength(endArcLength=arcLength,
+                                 Amp=Amp,
+                                 vertex=vertex,
+                                 polynomialDegree=degree)
 
 
-gen.generateParabola_takeoff(startConditions_3D=startConditions,
-                             endConditions_3D=endConditions)
+controlPoints = gen.generatePolynomial_takeoff(startConditions_3D=startConditions,
+                               endConditions_3D=endConditions,
+                               polynomialDegree=degree)
+plt.figure(0)
+plt.plot(controlPoints[0,:], controlPoints[1,:])
+plt.scatter(controlPoints[0,:], controlPoints[1,:])
+plt.show()
 
 testPoint = 0
