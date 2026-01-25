@@ -38,7 +38,6 @@ class trajectoryGenerator:
         self.alphaBackward = -1.0
 
 
-
     def generateTrajectory(self,
                            path_type: pathTypes,
                            startConditions_3D: list[np.ndarray],
@@ -52,7 +51,43 @@ class trajectoryGenerator:
                                             endConditions_3D=endConditions_3D,
                                             polynomialDegree=polynomialDegree)
 
+    def generateCompleteTrajectory(self,
+                                   startConditions_takeoff: list[np.ndarray],
+                                   endConditions_takeoff: list[np.ndarray],
+                                   startConditions_landing: list[np.ndarray],
+                                   endConditions_landing: list[np.ndarray],
+                                   polynomialDegree: float):
 
+        #gets the control points for the takeoff
+        takeoffControlPoints = self.generatePolynomialTrajectory(startConditions_3D=startConditions_takeoff,
+                                                                 endConditions_3D=endConditions_takeoff,
+                                                                 polynomialDegree=polynomialDegree,
+                                                                 directionIsForward=True)
+
+        landingControlPoints = self.generatePolynomialTrajectory(startConditions_3D=startConditions_landing,
+                                                                 endConditions_3D=endConditions_landing,
+                                                                 polynomialDegree=polynomialDegree,
+                                                                 directionIsForward=False)
+        
+        #gets the norm of the velocity of the end conditions takeoff
+        velocity_cruise = np.linalg.norm(endConditions_takeoff[1])
+        endTakeoffPoint = takeoffControlPoints[:,-1:]
+
+        startLandingPoint = landingControlPoints[:,0:1]
+
+        #gets the interpolation straight control points
+        straightControlPoints = self.generateLinearInterpolation(startControlPoint=endTakeoffPoint,
+                                                                 endControlPoint=startLandingPoint,
+                                                                 velocity=velocity_cruise)
+
+        #concatenates together the control points
+        controlPoints = np.concatenate((takeoffControlPoints, straightControlPoints, landingControlPoints), axis=1)
+        
+
+        testPoint = 0
+
+
+        return controlPoints
 
     def generatePolynomialTrajectory(self,
                                  startConditions_3D: list[np.ndarray],
@@ -192,9 +227,6 @@ class trajectoryGenerator:
                                     startControlPoint: np.ndarray,
                                     endControlPoint: np.ndarray,
                                     velocity: float):
-        
-        
-        
         
         differenceVector = endControlPoint - startControlPoint
         #gets the total distance

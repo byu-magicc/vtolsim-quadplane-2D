@@ -87,7 +87,7 @@ controlPoints_landing = gen.generatePolynomialTrajectory(startConditions_3D=star
 
 
 #gets the end takeoff and start landing control points
-endTakeoffPoint = controlPoints_takeoff[:,-2:-1]
+endTakeoffPoint = controlPoints_takeoff[:,-1:]
 startLandingPoint = controlPoints_landing[:,0:1]
 
 
