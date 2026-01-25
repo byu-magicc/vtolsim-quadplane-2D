@@ -8,14 +8,30 @@ from planners.trajectoryGenerator import trajectoryGenerator, pathTypes
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 import matplotlib.pyplot as plt
 
+'''
+#Takeoff
+
 startConditions = [np.array([[0.0],[0.0],[0.0]]),
                    np.array([[0.0],[0.0],[-1.0]]),
-                   np.array([[0.0],[0.0],[-1.0]])]
+                   np.array([[0.0],[0.0],[0.0]])]
 
 
 endConditions = [np.array([[500.0],[0.0],[-100.0]]),
                    np.array([[25.0],[0.0],[0.0]]),
                    np.array([[0.0],[0.0],[0.0]])]
+#'''
+
+#'''
+#Landing
+startConditions = [np.array([[0.0],[0.0],[-100.0]]),
+                   np.array([[25.0],[0.0],[0.0]]),
+                   np.array([[0.0],[0.0],[0.0]])]
+
+
+endConditions = [np.array([[500.0],[0.0],[0.0]]),
+                   np.array([[0.0],[0.0],[1.0]]),
+                   np.array([[0.0],[0.0],[0.0]])]
+#'''
 
 mapOrigin_2D = np.array([[0.0],[0.0]])
 mapOrigin_3D = np.array([[0.0],[0.0],[0.0]])
@@ -43,29 +59,11 @@ vertex = np.array([[0.0],[0.0]])
 
 degree = 1/3
 
-t1=0.0
 
-t2 = gen.getTimeFromNorth(north=10.0,
-                                vertex=vertex,
-                                polynomialDegree=degree,
-                                directionIsForward=True)
-
-
-arcLength = gen.getArcLengthPolynomial(t1=t1,
-                           t2=t2,
-                           Amp=Amp,
-                           vertex_2D=vertex,
-                           polynomialDegree=degree)
-
-t_out = gen.getTimeFromArcLength(endArcLength=arcLength,
-                                 Amp=Amp,
-                                 vertex=vertex,
-                                 polynomialDegree=degree)
-
-
-controlPoints = gen.generatePolynomial_takeoff(startConditions_3D=startConditions,
-                               endConditions_3D=endConditions,
-                               polynomialDegree=degree)
+controlPoints = gen.generatePolynomialTrajectory(startConditions_3D=startConditions,
+                                                 endConditions_3D=endConditions,
+                                                 polynomialDegree=degree,
+                                                 directionIsForward=False)
 plt.figure(0)
 plt.plot(controlPoints[0,:], controlPoints[1,:])
 plt.scatter(controlPoints[0,:], controlPoints[1,:])

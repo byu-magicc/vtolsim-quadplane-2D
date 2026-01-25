@@ -48,16 +48,17 @@ class trajectoryGenerator:
 
 
         if path_type == pathTypes.POLYNOMIAL_TAKEOFF:
-            self.generatePolynomial_takeoff(startConditions_3D=startConditions_3D,
+            self.generatePolynomialTrajectory(startConditions_3D=startConditions_3D,
                                             endConditions_3D=endConditions_3D,
                                             polynomialDegree=polynomialDegree)
 
 
 
-    def generatePolynomial_takeoff(self,
+    def generatePolynomialTrajectory(self,
                                  startConditions_3D: list[np.ndarray],
                                  endConditions_3D: list[np.ndarray],
-                                 polynomialDegree: float):
+                                 polynomialDegree: float,
+                                 directionIsForward: bool = True):
         startConditions_2D = conditions_3D_to_2D(conditions_3D=startConditions_3D,
                                                  plane=self.plane) 
         endConditions_2D = conditions_3D_to_2D(conditions_3D=endConditions_3D,
@@ -71,41 +72,62 @@ class trajectoryGenerator:
                                                                                 d=self.d,
                                                                                 M=self.M)
 
+        #case the direction is Forward, in which case the parabola starts from the start point
+        if directionIsForward:
         
-        # gets the highest start control point (the beginning point for the parabola)
-        parabolaStartPoint = startControlPoints[:, -1:]
-        # and the ending point for the parabola
-        parabolaEndPoint = endControlPoints[:, 0:1]
+            # gets the highest start control point (the beginning point for the parabola)
+            polynomialStartPoint = startControlPoints[:, -1:]
+            # and the ending point for the parabola
+            polynomialEndPoint = endControlPoints[:, 0:1]
+            #gets the initial velocity at the vertex
+            v_init = np.linalg.norm(startConditions_2D[1])
+            v_end = np.linalg.norm(endConditions_2D[1])
 
-        alpha = self.getAlpha(directionIsForward=True)
+            #gets the change in velocity
+            delta_velocity = v_end - v_init
+
+            testPoint = 0
+
+        else:
+
+            # gets the highest start control point (the beginning point for the parabola)
+            polynomialStartPoint = endControlPoints[:, 0:1]
+            # and the ending point for the parabola
+            polynomialEndPoint = startControlPoints[:, -1:]
+
+            #gets the initial velocity at the vertex
+            v_init = np.linalg.norm(startConditions_2D[1])
+            v_end = np.linalg.norm(endConditions_2D[1])
+
+            #gets the change in velocity
+            delta_velocity = v_end - v_init
+            testPoint = 0
+
+        alpha = self.getAlpha(directionIsForward=directionIsForward)
 
         #gets the change in north position
-        delta_north = parabolaEndPoint.item(0) - parabolaStartPoint.item(0)
-        delta_altitude = parabolaEndPoint.item(1) - parabolaStartPoint.item(1)
+        delta_north = polynomialEndPoint.item(0) - polynomialStartPoint.item(0)
+        delta_altitude = polynomialEndPoint.item(1) - polynomialStartPoint.item(1)
+
+        north_end = polynomialEndPoint.item(0)
         
         #gets the time for that change in north position
-        t_end = self.getTimeFromNorth(north=delta_north,
-                                      vertex=parabolaStartPoint,
+        t_end = self.getTimeFromNorth(north=north_end,
+                                      vertex=polynomialStartPoint,
                                       polynomialDegree=polynomialDegree,
-                                      directionIsForward=True)
+                                      directionIsForward=directionIsForward)
 
 
         #gets the amplitude
         Amp = delta_altitude / ((alpha*delta_north)**polynomialDegree)
 
 
-        #gets the initial velocity
-        v_init = np.linalg.norm(startConditions_2D[1])
-        v_end = np.linalg.norm(endConditions_2D[1])
-
-        #gets the change in velocity
-        delta_velocity = v_end - v_init
 
         #gets the total arc length
         totalArcLength = self.getArcLengthPolynomial(t1=0.0,
                                                      t2=t_end,
                                                      Amp=Amp,
-                                                     vertex_2D=parabolaStartPoint,
+                                                     vertex_2D=polynomialStartPoint,
                                                      polynomialDegree=polynomialDegree)
 
         spatialAcceleration = delta_velocity / totalArcLength
@@ -130,15 +152,15 @@ class trajectoryGenerator:
             #gets the arc time from the length
             currentTime = self.getTimeFromArcLength(endArcLength=currentArcLength,
                                                     Amp=Amp,
-                                                    vertex=parabolaStartPoint,
+                                                    vertex=polynomialStartPoint,
                                                     polynomialDegree=polynomialDegree)
             times_list.append(currentTime)
 
             currentPosition = self.getPointPolynomial(t=currentTime,
                                                       Amp=Amp,
-                                                      vertex_2D=parabolaStartPoint,
+                                                      vertex_2D=polynomialStartPoint,
                                                       polynomialDegree=polynomialDegree,
-                                                      directionIsForward=True)
+                                                      directionIsForward=directionIsForward)
 
             controlPoints_list.append(currentPosition)
             
@@ -153,6 +175,9 @@ class trajectoryGenerator:
         
 
         return controlPoints
+
+
+    
 
 
     #defines the function to get a point on a parabola using parametric equations
