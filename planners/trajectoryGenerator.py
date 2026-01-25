@@ -59,6 +59,7 @@ class trajectoryGenerator:
                                  endConditions_3D: list[np.ndarray],
                                  polynomialDegree: float,
                                  directionIsForward: bool = True):
+
         startConditions_2D = conditions_3D_to_2D(conditions_3D=startConditions_3D,
                                                  plane=self.plane) 
         endConditions_2D = conditions_3D_to_2D(conditions_3D=endConditions_3D,
@@ -96,8 +97,8 @@ class trajectoryGenerator:
             polynomialEndPoint = startControlPoints[:, -1:]
 
             #gets the initial velocity at the vertex
-            v_init = np.linalg.norm(startConditions_2D[1])
-            v_end = np.linalg.norm(endConditions_2D[1])
+            v_init = np.linalg.norm(endConditions_2D[1])
+            v_end = np.linalg.norm(startConditions_2D[1])
 
             #gets the change in velocity
             delta_velocity = v_end - v_init
@@ -170,15 +171,57 @@ class trajectoryGenerator:
                 withinEnd = True
 
 
+        #case it is open backwards
+        if not directionIsForward:
+            controlPoints_list.reverse()
+
         #concatenates the control points
         controlPoints = np.concatenate(controlPoints_list, axis=1)
+        shapeMainList = np.shape(controlPoints)
+        shapeStartList = np.shape(startControlPoints)
+        shapeEndList = np.shape(endControlPoints)
+
+        #concatenates on the start and end control points 
+        controlPoints = np.concatenate((startControlPoints, controlPoints, endControlPoints), axis=1)
         
 
         return controlPoints
 
+    #generates a linear interpolation between two control points with a constant velocity
+    def generateLinearInterpolation(self,
+                                    startControlPoint: np.ndarray,
+                                    endControlPoint: np.ndarray,
+                                    velocity: float):
+        
+        
+        
+        
+        differenceVector = endControlPoint - startControlPoint
+        #gets the total distance
+        distanceTotal = np.linalg.norm(differenceVector)
+        #gets the direction vector
+        direction_hat = differenceVector / distanceTotal 
+        
 
+        #gets the distance divided by velocity
+        numControlSpaces = int(distanceTotal / velocity)
+
+        #gets the actual interpolation velocity so that there's no awkward spaces
+        actualVelocity = distanceTotal / numControlSpaces
+        actualVelocity_vector = actualVelocity * direction_hat
     
+        #the number of control points is the number of spaces minus one
+        numControlPoints = numControlSpaces - 1
 
+        controlPointsList = []
+
+        for i in range(numControlPoints):
+            currentPosition = startControlPoint + (i+1)*actualVelocity_vector
+            controlPointsList.append(currentPosition)
+
+        controlPoints = np.concatenate((controlPointsList), axis=1)
+
+        return controlPoints
 
     #defines the function to get a point on a parabola using parametric equations
     def getPointPolynomial(self,
@@ -193,8 +236,8 @@ class trajectoryGenerator:
         #then we set alpha to 1. If it's backwards,
 
         alpha = self.getAlpha(directionIsForward=directionIsForward)
-        N_0 = vertex_2D[0]
-        A_0 = vertex_2D[1]
+        N_0 = vertex_2D.item(0)
+        A_0 = vertex_2D.item(1)
 
         north =(t**(1/polynomialDegree))/alpha + N_0
         altitude = Amp*t + A_0
