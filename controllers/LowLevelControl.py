@@ -73,9 +73,9 @@ class LowLevelControl:
         delta_t_forward = inverse_motor_thrust_simplified(Thrust_des=T_t_des)
 
         #saturates each of these
-        delta_t_front = saturate(u=delta_t_front, u_max=1.0)
-        delta_t_rear = saturate(u=delta_t_rear, u_max=1.0)
-        delta_t_forward = saturate(u=delta_t_forward, u_max=1.0)
+        delta_t_front = saturate_motor(u=delta_t_front, u_max=1.0)
+        delta_t_rear = saturate_motor(u=delta_t_rear, u_max=1.0)
+        delta_t_forward = saturate_motor(u=delta_t_forward, u_max=1.0)
 
 
 
@@ -177,6 +177,17 @@ def saturate(u: float,
     if abs(u) > u_max:
         u = u_max * np.sign(u)
 
+    return u
+
+
+def saturate_motor(u: float,
+                   u_max: float):
+    
+    if u>u_max:
+        u = u_max
+    elif u < 0.0:
+        u = 0.0
+    
     return u
 
 

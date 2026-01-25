@@ -4,8 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
-
     
         {
             "name": "Obstacle Test",
@@ -28,144 +26,14 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Autopilot Test",
+            "name": "Complete Test",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/launch_files/quadplane_autopilot_test.py",
+            "program": "${workspaceFolder}/launch_files/thesisLaunchFiles/autopilot_test_complete.py",
             "env": {
               "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
             },
             "console": "integratedTerminal"
         },
-        {
-            "name": "Feedforward Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/feedforward_test.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Low Level Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/lowLevelControl_test.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "RRT Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/autopilot_test_rrt.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "LQR Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/parameters/highLevelControl_parameters.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Dynamics Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/dynamicsTest.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Takeoff Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/takeoffTest.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Static Path Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/autopilot_test_staticPath.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Takeoff Generator Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/tests/takeoffGeneratorTest.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Takeoff Optimizer Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/tests/takeoffOptimizerTest.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "David Christensen Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/david_christensen_comparison_3x3.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Maps Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/tests/mapTests.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Takeoff Test",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/thesisLaunchFiles/autopilot_test_takeoff.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Plot Viewer",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_files/thesisLaunchFiles/plotViewer.py",
-            "env": {
-              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
-            },
-            "console": "integratedTerminal"
-        }
     ]
 }

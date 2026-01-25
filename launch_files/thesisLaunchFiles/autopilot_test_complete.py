@@ -167,7 +167,7 @@ wind = np.array([[0.0], [0.0], [0.0], [0.0]])
 timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)
 
 sim_time = SIM.start_time
-end_time = 600.0
+end_time = 220.0
 
 #section to create the lists to store the data for later analysis
 desiredPosition_list = []
@@ -178,6 +178,8 @@ actualPosition_list = []
 actualVelocity_list = []
 
 time_list = []
+
+deltasList = []
 
 
 # iterates through until we get to the end time
@@ -210,6 +212,8 @@ while sim_time < end_time:
         state=quadplane.true_state, F_des_b=F_des_b, M_des_b=M_des_b
     )
 
+    deltasList.append((delta.to_array()).T)
+
     pos_actual = quadplane.true_state.pos_2D
     vel_actual = quadplane.true_state.vel_2D
     
@@ -234,3 +238,13 @@ while sim_time < end_time:
     sim_time += SIM.ts_simulation
 
 
+timeArray = np.concatenate(time_list, axis=0)
+df_m1 = pd.DataFrame(timeArray)
+df_m1.to_csv('launch_files/thesisLaunchFiles/completePathCSV/times.csv', index=False, header=False)
+
+deltasArray = np.concatenate(deltasList, axis=0)
+df_m2 = pd.DataFrame(deltasArray)
+df_m2.to_csv('launch_files/thesisLaunchFiles/completePathCSV/deltas.csv', index=False, header=False)
+
+
+testPoint = 0
