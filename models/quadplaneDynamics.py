@@ -42,7 +42,7 @@ class QuadplaneDynamics:
 
 
         #creates the state array from the initialized 2D points
-        self._state = np.concatenate((pos_2D_init, vel_2D_init, np.array([[theta0]]), np.array([[q0]])))
+        self._state = np.concatenate((pos_2D_init, vel_2D_init, np.array([[theta0]]), np.array([[q0]])), axis=0)
         
 
         #creates the true state
@@ -54,8 +54,6 @@ class QuadplaneDynamics:
         self._forces_moments(delta=MsgDelta())
         #updates the true state
         self._update_true_state()
-
-
 
         potato = 0
 
