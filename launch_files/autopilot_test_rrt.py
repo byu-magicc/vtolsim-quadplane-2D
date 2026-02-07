@@ -90,7 +90,7 @@ endPosition = params.endPosition
 #instantiates the quadplane
 quadplane = QuadplaneDynamics(ts=SIM.ts_simulation,
                               plane_msg=PLANE.plane_msg,
-                              vel_3D_0=np.array([[25.0],[0.0],[0.0]]))
+                              vel_3D_inertial_init=np.array([[25.0],[0.0],[0.0]]))
 
 
 viewers = ViewManager(animation=True, 

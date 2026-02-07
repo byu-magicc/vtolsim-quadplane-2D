@@ -138,8 +138,8 @@ viewers.drawTrajectory(
 quadplane = QuadplaneDynamics(
     ts=SIM.ts_simulation,
     plane_msg=PLANE.plane_msg,
-    pos_3D_0=startPos_3D,
-    vel_3D_0=startVel_3D,
+    pos_3D_inertial_init=startPos_3D,
+    vel_3D_inertial_init=startVel_3D,
 )
 
 # creates the controller
