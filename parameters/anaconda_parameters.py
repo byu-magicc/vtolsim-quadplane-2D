@@ -147,6 +147,10 @@ trimDelta = MsgDelta(elevator=trim_elevator,
 elevator_bound_rad = np.radians(30.0)
 #sets the 
 
+#creates the thrust mixing matrix to go from rotor thrust to body frame forces
+thrust_forces_mixing = np.array([[0.0, 0.0, 1.0],
+                                 [-1.0, -1.0, 0.0]])
 
+thrust_moments_mixing = np.array([[ell_f],[-ell_r],[0.0]])
 
 #
