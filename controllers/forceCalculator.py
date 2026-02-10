@@ -6,8 +6,6 @@ from rrt_mavsim.message_types.msg_plane import MsgPlane
 from rrt_mavsim.tools.plane_projections_2 import map_3D_to_2D, map_2D_to_3D
 
 
-
-
 #Note to the user: 
 #if you look closely, this file is exactly like the, or almost exactly like the 
 #quadplane dynamics forces_moments function. It is possible to create two instances

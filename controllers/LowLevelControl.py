@@ -14,14 +14,11 @@ from scipy.optimize import minimize
 from copy import copy
 
 
-
 class LowLevelControl:
 
     def __init__(self):
 
         pass
-
-
 
     def update(self,
                state: MsgState,
@@ -63,8 +60,6 @@ class LowLevelControl:
 
         #returns the delta output
         return deltaOutput
-
-
 
     #gets the delta_e saturated, which allows for the maximum possible moment control
     #which may end up being enough to generate a particular moment desired
