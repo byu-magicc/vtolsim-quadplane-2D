@@ -1,3 +1,5 @@
+#this is the path following algorithm we need to make the low level controller operate correctly.
+
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
 from message_types.msg_integrator import MsgIntegrator
@@ -7,13 +9,15 @@ import parameters.control_allocation_parameters as CAP
 import parameters.anaconda_parameters as CONDA
 import parameters.highLevelControl_parameters as HLC
 
-from rrt_mavsim.message_types.msg_plane import MsgPlane
-from rrt_mavsim.tools.plane_projections_2 import map_3D_to_2D
-
 from controllers.feedforwardControl import feedForwardControl
 from controllers.pitch_optimization import PitchOptimization
-from tools.rotations import theta_to_rotation_2D
+from tools.old.rotations import *
+
 import numpy as np
+
+e_up = np.array([[0.0],
+                 [1.0]])
+
 
 
 class highLevelControl:
@@ -21,7 +25,6 @@ class highLevelControl:
 
     def __init__(self,
                  state: MsgState,
-                 plane: MsgPlane,
                  Ts: float = SIM.ts_simulation,
                  pitchControl_riseTime: float = CAP.pitchControl_riseTime,
                  pitchControl_zeta: float = CAP.pitchControl_zeta):
@@ -30,10 +33,9 @@ class highLevelControl:
         self.pitchControl_riseTime = pitchControl_riseTime
         self.pitchControl_zeta = pitchControl_zeta
 
-        self.plane = plane
-
         #from this, we get the natural frequency
         pitchControl_naturalFrequency = np.pi / (2.0*pitchControl_riseTime*np.sqrt(1.0 - (pitchControl_zeta**2)))
+        
 
         #creates the three variables for the main PD transfer function here
         b0 = CONDA.Jy
@@ -44,7 +46,6 @@ class highLevelControl:
         kp_pitch = (pitchControl_naturalFrequency**2 - a0)/(b0)
         kd_pitch = (2*pitchControl_zeta*pitchControl_naturalFrequency - a1)/(b0)
 
-
         #creates the pitch controller
         self.pitchController = feedForwardControl(kp=kp_pitch,
                                                   kd=kd_pitch,
@@ -52,6 +53,7 @@ class highLevelControl:
                                                   Jy=CONDA.Jy,
                                                   u_max=CAP.tau_max,
                                                   sigma=0.05)
+        
 
         #creates the pitch optimizer, which obtains the desired pitch
         self.pitchOptimizer = PitchOptimization(state=state,
@@ -67,6 +69,8 @@ class highLevelControl:
         self.pos_error_d1 = np.zeros((2,1))
 
         self.integrator_msg = MsgIntegrator()
+
+
 
     #Arguments:
     #1. trajectory reference
@@ -85,7 +89,6 @@ class highLevelControl:
         #and the velocity
         velocity = state.vel_2D
 
-
         #gets the position error
         position_error = trajectory_ref.pos - position
         #the velocity error
@@ -95,18 +98,12 @@ class highLevelControl:
         self.update_integral(pos_error=position_error,
                              vel_error=velocity_error)
 
-        e_up_2D = map_3D_to_2D(vec_3D=CONDA.e_up_3D,
-                               plane=self.plane)
-
         #gets the error state vector
         errorState = np.concatenate((position_error, velocity_error), axis=0)
 
         #TODO get rid of these three. They're just for testing right now
         accelTerm_accel = trajectory_ref.accel
-
-        #TODO get rid of these three. They're just for testing right now
-        accelTerm_accel = trajectory_ref.accel
-        gravityTerm_accel = CONDA.gravity*e_up_2D
+        gravityTerm_accel = CONDA.gravity*e_up
         errorStateTerm_accel = HLC.K @ errorState
         integratorTerm_accel = HLC.Ki @ self.integrator_msg.getIntegrator()
 
@@ -114,7 +111,7 @@ class highLevelControl:
         gravityTerm_Force = CONDA.mass * gravityTerm_accel
         errorStateTerm_Force = CONDA.mass * errorStateTerm_accel
         integratorTerm_Force = CONDA.mass * integratorTerm_accel
-
+         
 
         #given these terms, we create the simple trajectory following control law
         #gets the desired force on the aircraft in the inertial frame.
@@ -122,7 +119,7 @@ class highLevelControl:
         #plus gravity (negated because of the positive d vector pointing down, and we want a force to oppose that)
         #plus State-Feedback matrix K times error state 
         #TODO make gravity generalized-planable
-        accel_des_i = trajectory_ref.accel + CONDA.gravity*e_up_2D + HLC.K @ errorState + HLC.Ki @ self.integrator_msg.getIntegrator()
+        accel_des_i = trajectory_ref.accel + CONDA.gravity*e_up + HLC.K @ errorState + HLC.Ki @ self.integrator_msg.getIntegrator()
         F_des_i = CONDA.mass * accel_des_i
 
         #given the Force desired, we call the pitch optimization function to get the optimal theta
@@ -140,13 +137,14 @@ class highLevelControl:
                                     state_ref=theta_ref)
         
         #gets the force desired in the body frame
-        F_des_b = theta_to_rotation_2D(theta=theta) @ F_des_i
+        F_des_b = theta_to_rotation_2d(theta=theta) @ F_des_i
 
         #saves the current position error as delayed by 1
         self.pos_error_d1 = position_error
 
         #returns these two things to go to the low level control
         return F_des_b, M_des_b
+    
 
     #defines the update integral function
     def update_integral(self,
@@ -180,3 +178,4 @@ class highLevelControl:
 
     def getIntegrator(self):
         return self.integrator_msg
+

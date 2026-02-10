@@ -159,7 +159,8 @@ class QuadplaneDynamics:
 
         # compute Lift and Drag Forces
         F_lift = q_bar * CONDA.S_wing * (CL + CONDA.C_L_q * q_nondim + CONDA.C_L_delta_e * delta.elevator)
-        F_drag = q_bar * CONDA.S_wing * (CD + CONDA.C_D_q * q_nondim + CONDA.C_D_delta_e * delta.elevator)
+        #very important to add the absolute value to the delta_e portion
+        F_drag = q_bar * CONDA.S_wing * (CD + CONDA.C_D_q * q_nondim + CONDA.C_D_delta_e * np.abs(delta.elevator))
 
         #gets the alpha rotation matrix
         R_alpha = alpha_to_rotation_2D(alpha=self._alpha)

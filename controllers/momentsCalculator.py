@@ -21,7 +21,6 @@ class momentsCalculator:
         #gets the airspeed from the current state
         Va = currentState.Va
 
-
         alpha = currentState.alpha
 
         #gets the q_bar 

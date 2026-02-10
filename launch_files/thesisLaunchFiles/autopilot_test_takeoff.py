@@ -192,7 +192,7 @@ while sim_time < end_time:
 
     # calls the low level controller
     delta = low_level_controller.update(
-        state=quadplane.true_state, F_des_b=F_des_b, M_des_b=M_des_b
+        state=quadplane.true_state, F_des_body=F_des_b, M_des_body=M_des_b
     )
 
     pos_actual = quadplane.true_state.pos_2D

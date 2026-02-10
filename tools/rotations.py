@@ -77,8 +77,8 @@ def theta_to_rotation_2D(theta: float)->np.ndarray:
     c_theta = np.cos(theta)
     s_theta = np.sin(theta)
     
-    R_pitch = np.array([[c_theta, -s_theta],
-                        [s_theta, c_theta]])
+    R_pitch = np.array([[c_theta, s_theta],
+                        [-s_theta, c_theta]])
     
     return R_pitch
 

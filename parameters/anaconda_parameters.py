@@ -1,6 +1,4 @@
 #This file contains the parameters for the anaconda aircraft
-
-
 import numpy as np
 from tools.old.rotations import euler_to_quaternion
 from message_types.msg_delta import MsgDelta
@@ -60,7 +58,7 @@ ell_r = 0.5
 
 
 #mixes individual thrusts to get the net thrust and torque
-individualThrustMixer = np.array([[1, 1],
+individualThrustMixer = np.array([[-1, -1],
                                   [ell_f, -ell_r]])
 
 #creates the mapping from total Thrust and Torque to front and rear thrusts
@@ -70,11 +68,17 @@ individualThrustUnmixer = np.linalg.inv(individualThrustMixer)
 
 #######################################################################################
 # Aerodynamic Coefficients
+#has some lift from the airfoil, even at zero angle of attack
 C_L_0 = 0.23
+#has some drag just by going through the air
 C_D_0 = 0.0424
 C_m_0 = 0.0135
+#lift (or downward force) given angle of attack
 C_L_alpha = 5.61
+#drag increases with angle of attack
 C_D_alpha = 0.132
+#the tail wants to fight the angle of attack. If it's positive,
+#it tries to rotate it back down
 C_m_alpha = -2.74
 C_L_q = 7.95
 C_D_q = 0.0
@@ -150,7 +154,10 @@ elevator_bound_rad = np.radians(30.0)
 #creates the thrust mixing matrix to go from rotor thrust to body frame forces
 thrust_forces_mixing = np.array([[0.0, 0.0, 1.0],
                                  [-1.0, -1.0, 0.0]])
+thrust_moments_mixing = np.array([[ell_f, -ell_r, 0.0]])
 
-thrust_moments_mixing = np.array([[ell_f],[-ell_r],[0.0]])
+#sets the definition of upward direction
+e_up_3D = np.array([[0.0],[0.0],[-1.0]])
+
 
 #
