@@ -101,12 +101,23 @@ class QuadplaneDynamics:
     def _forces_moments(self,
                         delta: MsgDelta):
 
+        forcesMoments_gravity = self.forces_moments_gravity()
+        forcesMoments_aero = self.forces_moments_aero(delta=delta)
+        forcesMoments_props = self.forces_moments_props(delta=delta)
+
+        forces_moments = forcesMoments_gravity + forcesMoments_aero + forcesMoments_props
+        
+        return forces_moments
+
+
+    #breaks up the forces and moments into three smaller functions
+    #gets the forces and moments due to gravity
+    def forces_moments_gravity(self):
+
         #gets the rotation matrixes
         theta = self._state.item(CONDA.theta_index)
         R_bodyToInertial = theta_to_rotation_2D(theta=theta)
         R_inertialToBody = R_bodyToInertial.T
-
-        q = self._state.item(CONDA.q_index)
 
         #obtains the force of gravity in the inertial frame
         fg_inertial_3D = CONDA.mass * CONDA.gravity * CONDA.e3_3D
@@ -116,18 +127,21 @@ class QuadplaneDynamics:
         #rotates it into the body frame
         fg_body_2D = R_inertialToBody @ fg_inertial_2D
 
+        Mg_body = np.array([[0.0]])
 
-        #initializes the fx and fy in the body frame with gravity first
-        fn_body = fg_body_2D.item(0)
-        fd_body = fg_body_2D.item(1)
+
+        forcesMoments_gravity = np.concatenate((fg_body_2D, Mg_body), axis=0)
+        
+        return forcesMoments_gravity
+    #gets the forces and moments due to aerodynamics
+    def forces_moments_aero(self,
+                            delta: MsgDelta):
+
+        q = self._state.item()
 
         #gets the constant coefficients
         #TODO I need to make sure _Va is getting updated
         q_bar = 0.5*CONDA.rho*self._Va**2
-
-        #gets the cosine of alpha
-        c_alpha = np.cos(self._alpha)
-        s_alpha = np.sin(self._alpha)
 
         #gets the cosine and sine of alpha
         ca = np.cos(self._alpha)
@@ -157,12 +171,6 @@ class QuadplaneDynamics:
 
         #gets the body frame aerodynamic forces
         f_aero_body = R_alpha @ np.array([[F_drag],[F_lift]])
-        fn_aero_body = f_aero_body.item(0)
-        fd_aero_body = f_aero_body.item(1)
-
-        #adds to the body frame forces
-        fn_body += fn_aero_body
-        fd_body += fd_aero_body
 
         #computes the pitching moment
         My = q_bar * CONDA.S_wing * CONDA.c * (
@@ -170,6 +178,14 @@ class QuadplaneDynamics:
                 + CONDA.C_m_alpha * self._alpha
                 + CONDA.C_m_q * q_nondim
                 + CONDA.C_m_delta_e * delta.elevator)
+
+        forcesMoments_aero = np.concatenate((f_aero_body, np.array([[My]])), axis=0)
+        
+        return forcesMoments_aero
+    
+    def forces_moments_props(self,
+                        delta: MsgDelta):
+
 
         #gets the three thrusts from the simplified (constant*delta) model
         Thrust_front = self._motor_thrust_torque_simplified(delta_t=delta.throttle_front)
@@ -180,21 +196,17 @@ class QuadplaneDynamics:
         thrustVector = np.array([[Thrust_front],[Thrust_rear],[Thrust_forward]])
         #gets the body frame thrust forces
         f_thrust_body = CONDA.thrust_forces_mixing @ thrustVector
-        fn_thrust_body = f_thrust_body.item(0)
-        fd_thrust_body = f_thrust_body.item(1)
-
-        fn_body += fn_thrust_body
-        fd_body += fd_thrust_body
         
         M_thrust = CONDA.thrust_moments_mixing @ thrustVector
         
-        #and then adds it
-        My += M_thrust.item(0)
-
-        forces_moments = np.array([[fn_body],[fd_body],[My]])
+        forcesMoments_props = np.concatenate((f_thrust_body, M_thrust), axis=0)
 
         
-        return forces_moments
+        return forcesMoments_props
+
+
+
+
 
     def _update_true_state(self):
         pn = self._state.item(CONDA.pn_index)

@@ -6,19 +6,71 @@ from rrt_mavsim.message_types.msg_plane import MsgPlane
 from rrt_mavsim.tools.plane_projections_2 import map_3D_to_2D, map_2D_to_3D
 
 
+
+
+#Note to the user: 
+#if you look closely, this file is exactly like the, or almost exactly like the 
+#quadplane dynamics forces_moments function. It is possible to create two instances
+#of the same class, so if there's an update in one, it will reflect the other.
+#this may be a good project to work on in the future.
+
 class forceCalculator:
 
     def __init__(self):
 
         pass
 
-
-
-    def _forces_moments(self,
+    #gets the NET forces and moments on the aircraft,
+    #INCLUDING the propeller forces
+    def forces_moments_total(self,
                         delta: MsgDelta,
                         plane: MsgPlane,
                         Va: float,
                         alpha: float,
+                        state: np.ndarray):
+
+        #gets the forces moments vector due to gravity
+        forcesMomentsGravity = self.forces_moments_gravity(plane=plane,
+                                               state=state)
+
+        forcesMomentsAero = self.forces_moments_aerodynamics(delta=delta,
+                                                             Va=Va,
+                                                             alpha=alpha,
+                                                             state=state)
+        
+        forcesMomentsProps = self.forces_moments_propellers(delta=delta)
+        
+        #sums the forces and moments together to get the 
+        forces_moments = forcesMomentsGravity + forcesMomentsAero + forcesMomentsProps
+
+        
+        return forces_moments
+
+    #gets the non-propeller forces and moments
+    def forces_moments_nonProp(self,
+                               delta: MsgDelta,
+                               plane: MsgPlane,
+                               state: np.ndarray,
+                               alpha: float,
+                               Va: float):
+
+
+        #gets the forces moments vector due to gravity
+        forcesMomentsGravity = self.forces_moments_gravity(plane=plane,
+                                               state=state)
+
+        forcesMomentsAero = self.forces_moments_aerodynamics(delta=delta,
+                                                             Va=Va,
+                                                             alpha=alpha,
+                                                             state=state)
+
+        forcesMoments_nonProp = forcesMomentsGravity + forcesMomentsAero
+
+        return forcesMoments_nonProp
+
+    #gets the gravitational forces/moment on the aircraft
+    def forces_moments_gravity(self,
+                        plane: MsgPlane,
                         state: np.ndarray):
 
         #gets the rotation matrixes
@@ -26,7 +78,6 @@ class forceCalculator:
         R_bodyToInertial = theta_to_rotation_2D(theta=theta)
         R_inertialToBody = R_bodyToInertial.T
 
-        q = state.item(CONDA.q_index)
 
         #obtains the force of gravity in the inertial frame
         fg_inertial_3D = CONDA.mass * CONDA.gravity * CONDA.e3_3D
@@ -36,11 +87,22 @@ class forceCalculator:
         #rotates it into the body frame
         fg_body_2D = R_inertialToBody @ fg_inertial_2D
 
+        #sets the moment due to gravity
+        Mg = np.array([[0.0]])
 
-        #initializes the fx and fy in the body frame with gravity first
-        fn_body = fg_body_2D.item(0)
-        fd_body = fg_body_2D.item(1)
+        forces_moments_grav = np.concatenate((fg_body_2D, Mg), axis=0)
 
+        #returns the forces of gravity in the body frame
+        return forces_moments_grav
+
+    #gets the aerodynamic forces/moment on the aircraft, INCLUDING the control surface
+    def forces_moments_aerodynamics(self,
+                        delta: MsgDelta,
+                        Va: float,
+                        alpha: float,
+                        state: np.ndarray):
+
+        q = state.item(CONDA.q_index)
         #gets the constant coefficients
         #TODO I need to make sure _Va is getting updated
         q_bar = 0.5*CONDA.rho*Va**2
@@ -73,12 +135,6 @@ class forceCalculator:
 
         #gets the body frame aerodynamic forces
         f_aero_body = R_alpha @ np.array([[F_drag],[F_lift]])
-        fn_aero_body = f_aero_body.item(0)
-        fd_aero_body = f_aero_body.item(1)
-
-        #adds to the body frame forces
-        fn_body += fn_aero_body
-        fd_body += fd_aero_body
 
         #computes the pitching moment
         My = q_bar * CONDA.S_wing * CONDA.c * (
@@ -87,6 +143,16 @@ class forceCalculator:
                 + CONDA.C_m_q * q_nondim
                 + CONDA.C_m_delta_e * delta.elevator)
 
+        #turns My into an array
+        My = np.array([[My]])
+        
+        forces_moments_aerodynamic = np.concatenate((f_aero_body,My), axis=0)
+
+        return forces_moments_aerodynamic
+
+    #gets the propellers forces/moments on the aircraft
+    def forces_moments_propellers(self,
+                                  delta: MsgDelta):
         #gets the three thrusts from the simplified (constant*delta) model
         Thrust_front = motor_thrust_torque_simplified(delta_t=delta.throttle_front)
         Thrust_rear = motor_thrust_torque_simplified(delta_t=delta.throttle_rear)
@@ -96,24 +162,15 @@ class forceCalculator:
         thrustVector = np.array([[Thrust_front],[Thrust_rear],[Thrust_forward]])
         #gets the body frame thrust forces
         f_thrust_body = CONDA.thrust_forces_mixing @ thrustVector
-        fn_thrust_body = f_thrust_body.item(0)
-        fd_thrust_body = f_thrust_body.item(1)
 
-        fn_body += fn_thrust_body
-        fd_body += fd_thrust_body
-        
         M_thrust = CONDA.thrust_moments_mixing @ thrustVector
+
+        #concatenates them together
+        forces_moments_props = np.concatenate((f_thrust_body, M_thrust), axis=0)
+
+        return forces_moments_props
+
         
-        #and then adds it
-        My += M_thrust.item(0)
-
-        forces_moments = np.array([[fn_body],[fd_body],[My]])
-
-        
-        return forces_moments
-
-
-
 #creates the new motor thrust and torque function, which is an over simplification,
 #but is better for our simpler modelling and figuring everything out
 def motor_thrust_torque_simplified(delta_t: float):

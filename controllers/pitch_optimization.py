@@ -3,10 +3,11 @@
 from scipy.optimize import minimize
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
+from controllers.forceCalculator import forceCalculator
 
 import parameters.pitchOptimizationParameters as PITCH
 from tools.old.rotations import theta_to_rotation_2d
-from tools.gamma import *
+from tools.gamma import getGamma
 import numpy as np
 
 class PitchOptimization:
@@ -17,7 +18,7 @@ class PitchOptimization:
                  p_norm_order: int = 1):
 
         #creates an instance of the force calculator
-        self.forceCalculator = ForceCalculator()
+        self.forceCalculator = forceCalculator()
 
         #saves the order of the p
         self.p_norm_order = p_norm_order
@@ -26,7 +27,6 @@ class PitchOptimization:
 
         #creates the previous theta sample. initializes it to the state's theta
         self.theta_prev = np.array([state.theta])
-
 
         #sets the minimium value to take into account a vector
         self.minValue = 0.001
@@ -86,10 +86,13 @@ class PitchOptimization:
 
 
         #temp to get the aerodynamic forces
+        '''
         aerodynamicForces = self.forceCalculator.getAerodynamicForces(currentState=state,
                                                                       theta=0.0,
                                                                       gamma=gamma,
                                                                       Va=25.0)
+        '''
+        aerodynamicForces = self.forceCalculator.forces_moments_nonProp(delta=)
         
         #gets the forces difference (the difference between what force we want, and what we can achieve)
         forcesDifference = F_des_b - aerodynamicForces
