@@ -9,17 +9,6 @@ from message_types.msg_delta import MsgDelta
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 from rrt_mavsim.tools.plane_projections_2 import getNormalBasis, map_2D_to_3D, map_3D_to_2D
 
-pn_index = 0
-pd_index = 1
-pn_dot_index = 2
-pd_dot_index = 3
-theta_index = 4
-q_index = 5
-
-
-fx_index = 0
-fz_index = 1
-My_index = 2
 
 
 class QuadplaneDynamics:
@@ -42,6 +31,7 @@ class QuadplaneDynamics:
         
         #saves the plane message
         self.plane_msg = plane_msg
+        self.ts = ts
 
         #creates the initial state array
         self._state = np.concatenate((pos_2D_init, vel_2D_init, np.array([[theta0]]), np.array([[q0]])), axis=0)
@@ -79,15 +69,15 @@ class QuadplaneDynamics:
            state: np.ndarray,
            forces_moments: np.ndarray):
 
-        pn_dot = state.item(pn_index)
-        pd_dot = state.item(pd_index)
-        theta = state.item(theta_index)
-        q = state.item(q_index)
+        pn_dot = state.item(CONDA.pn_index)
+        pd_dot = state.item(CONDA.pd_index)
+        theta = state.item(CONDA.theta_index)
+        q = state.item(CONDA.q_index)
 
 
-        fx_body = forces_moments.item(fx_index)
-        fz_body = forces_moments.item(fz_index)
-        My = forces_moments.item(My_index)
+        fx_body = forces_moments.item(CONDA.fx_index)
+        fz_body = forces_moments.item(CONDA.fz_index)
+        My = forces_moments.item(CONDA.My_index)
 
 
         R_bodyToInertial = theta_to_rotation_2D(theta=theta)
@@ -112,11 +102,11 @@ class QuadplaneDynamics:
                         delta: MsgDelta):
 
         #gets the rotation matrixes
-        theta = self._state.item(theta_index)
+        theta = self._state.item(CONDA.theta_index)
         R_bodyToInertial = theta_to_rotation_2D(theta=theta)
         R_inertialToBody = R_bodyToInertial.T
 
-        q = self._state.item(q_index)
+        q = self._state.item(CONDA.q_index)
 
         #obtains the force of gravity in the inertial frame
         fg_inertial_3D = CONDA.mass * CONDA.gravity * CONDA.e3_3D
@@ -207,14 +197,14 @@ class QuadplaneDynamics:
         return forces_moments
 
     def _update_true_state(self):
-        pn = self._state.item(pn_index)
-        pd = self._state.item(pd_index)
+        pn = self._state.item(CONDA.pn_index)
+        pd = self._state.item(CONDA.pd_index)
 
-        pn_dot = self._state.item(pn_dot_index)
-        pd_dot = self._state.item(pd_dot_index)
+        pn_dot = self._state.item(CONDA.pn_dot_index)
+        pd_dot = self._state.item(CONDA.pd_dot_index)
 
-        theta = self._state.item(theta_index)
-        q = self._state.item(q_index)
+        theta = self._state.item(CONDA.theta_index)
+        q = self._state.item(CONDA.q_index)
 
         Va = self._Va
 
@@ -261,7 +251,7 @@ class QuadplaneDynamics:
         self.v_air_body = R_inertial2body @ self.v_air_inertial
 
         #gets the airspeed magnitude
-        self._Va = np.linalg.norm(self.v_air_body)
+        self._Va = float(np.linalg.norm(self.v_air_body))
         ur = self.v_air_body.item(0)
         wr = self.v_air_body.item(1)
         # compute angle of attack

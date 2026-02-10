@@ -3,7 +3,7 @@
 from scipy.optimize import minimize
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
-from controllers.old.forceCalculator import ForceCalculator
+
 import parameters.pitchOptimizationParameters as PITCH
 from tools.old.rotations import theta_to_rotation_2d
 from tools.gamma import *

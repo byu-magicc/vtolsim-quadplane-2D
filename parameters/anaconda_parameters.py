@@ -159,5 +159,17 @@ thrust_moments_mixing = np.array([[ell_f, -ell_r, 0.0]])
 #sets the definition of upward direction
 e_up_3D = np.array([[0.0],[0.0],[-1.0]])
 
+#saves the indices for what each item in the state vector means
+pn_index = 0
+pd_index = 1
+pn_dot_index = 2
+pd_dot_index = 3
+theta_index = 4
+q_index = 5
+
+#and then also the indices for the force, moments vector
+fx_index = 0
+fz_index = 1
+My_index = 2
 
 #
