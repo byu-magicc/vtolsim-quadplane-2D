@@ -136,7 +136,9 @@ quadplane = QuadplaneDynamics(
 )
 
 # creates the controller
-high_level_controller = highLevelControl(state=quadplane.true_state)
+high_level_controller = highLevelControl(state=quadplane.true_state,
+                                         plane=plane_msg)
+
 
 # creates the low level controller
 low_level_controller = LowLevelControl()

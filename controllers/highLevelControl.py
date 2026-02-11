@@ -126,9 +126,13 @@ class highLevelControl:
         F_des_i = CONDA.mass * accel_des_i
 
         #given the Force desired, we call the pitch optimization function to get the optimal theta
-        theta_ref = self.pitchOptimizer.update(state=state,
+        '''theta_ref = self.pitchOptimizer.update(state=state,
                                            state_ref=trajectory_ref,
                                            F_des_i=F_des_i)
+                    '''
+        theta_ref = self.pitchOptimizer.update(state=state,
+                                               state_ref=trajectory_ref,
+                                               F_des_i=F_des_i)
         
         #gets the actual theta
         theta = state.theta

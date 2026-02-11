@@ -41,10 +41,10 @@ class PitchOptimization:
                F_des_i: np.ndarray):
         
         #gets the flight path angle gamma
-        gamma = getGamma(state_ref=state_ref)
+        gamma_ref = getGamma(state_ref=state_ref)
 
         #gets the theta constraints
-        theta_constraints = self.createConstraints(gamma=gamma,
+        theta_constraints = self.createConstraints(gamma=gamma_ref,
                                                    theta_prev_array=self.theta_prev,
                                                    Ts=self.Ts)
         
@@ -52,7 +52,7 @@ class PitchOptimization:
         #creates the arguments for the args
         objective_args = (F_des_i,
                           state,
-                          gamma)
+                          gamma_ref)
         
         #given the constraints on theta and so forth, finds the optimized theta
         theta_result = minimize(fun=self.objectiveFunction,
@@ -71,31 +71,34 @@ class PitchOptimization:
 
     #creates the optimization's objective function
     def objectiveFunction(self,
-                          theta_array: np.ndarray,
+                          theta_array_variable: np.ndarray,
                           F_des_i: np.ndarray,
                           state: MsgState,
                           gamma: float):
         
         #gets the theta from the theta as an array
-        theta = theta_array.item(0)
+        #it is called the theta variable, because it is what we are modifying
+        #to find the optimal theta to minimize the cost equation
+        theta_variable = theta_array_variable.item(0)
 
-        Rot = theta_to_rotation_2d(theta=theta)
+        Rot = theta_to_rotation_2d(theta=theta_variable)
         #gets the forces desired in the body frame
         F_des_b =  Rot @ F_des_i
 
+        #alpha = theta - gamma
+        #gets the resultant alpha variable given the theta variable and gamma
+        alpha = theta_variable - gamma
+        
+        #gets the Va from the state message
+        Va = state.Va
 
-
-        #temp to get the aerodynamic forces
-        '''
-        aerodynamicForces = self.forceCalculator.getAerodynamicForces(currentState=state,
-                                                                      theta=0.0,
-                                                                      gamma=gamma,
-                                                                      Va=25.0)
-        '''
-        aerodynamicForces = self.forceCalculator.forces_moments_nonProp(delta=)
+        forcesMomentsUncontrolled = self.forceCalculator.forces_moments_uncontrolledAero(Va=Va,
+                                                                                 alpha=alpha)
+        
+        forcesUncontrolled = forcesMomentsUncontrolled[0:2,:]
         
         #gets the forces difference (the difference between what force we want, and what we can achieve)
-        forcesDifference = F_des_b - aerodynamicForces
+        forcesDifference = F_des_b - forcesUncontrolled
 
         #gets the objective
         objective = np.linalg.norm(forcesDifference, 

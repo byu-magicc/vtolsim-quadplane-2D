@@ -1,6 +1,5 @@
 #This file contains the parameters for the anaconda aircraft
 import numpy as np
-from tools.old.rotations import euler_to_quaternion
 from message_types.msg_delta import MsgDelta
 
 

@@ -3,8 +3,7 @@ import numpy as np
 from tools.rotations import alphaToRotation, theta_to_rotation_2D
 import parameters.anaconda_parameters as CONDA
 from rrt_mavsim.message_types.msg_plane import MsgPlane
-from rrt_mavsim.tools.plane_projections_2 import map_3D_to_2D, map_2D_to_3D
-
+from rrt_mavsim.tools.plane_projections_2 import map_3D_to_2D
 
 #Note to the user: 
 #if you look closely, this file is exactly like the, or almost exactly like the 
@@ -167,6 +166,52 @@ class forceCalculator:
         forces_moments_props = np.concatenate((f_thrust_body, M_thrust), axis=0)
 
         return forces_moments_props
+
+    #gets the F_0, which is the forces and moments due to the airframe's airspeed
+    #as well as the angle of attack. Technically, we should include the 
+    def forces_moments_uncontrolledAero(self,
+                                        Va: float,
+                                        alpha: float):
+
+        #gets the constant coefficients
+        #TODO I need to make sure _Va is getting updated
+        q_bar = 0.5*CONDA.rho*Va**2
+
+        #gets the cosine and sine of alpha
+        ca = np.cos(alpha)
+        sa = np.sin(alpha)
+
+
+        # compute Lift and Drag coefficients
+        tmp1 = np.exp(-CONDA.M * (alpha - CONDA.alpha0))
+        tmp2 = np.exp(CONDA.M * (alpha + CONDA.alpha0))
+        sigma = (1.0 + tmp1 + tmp2) / ((1.0 + tmp1) * (1.0 + tmp2))
+        CL = (1.0 - sigma) * (CONDA.C_L_0 + CONDA.C_L_alpha * alpha) \
+             + sigma * 2 * np.sign(alpha) * sa**2 * ca
+        CD = CONDA.C_D_p + ((CONDA.C_L_0 + CONDA.C_L_alpha * alpha)**2)/(np.pi * CONDA.e * CONDA.AR)
+
+        # compute Lift and Drag Forces
+        F_lift = q_bar * CONDA.S_wing * CL
+        #very important to add the absolute value to the delta_e portion
+        F_drag = q_bar * CONDA.S_wing * CD
+
+        #gets the alpha rotation matrix
+        R_alpha = alphaToRotation(alpha=alpha)
+
+        #gets the body frame aerodynamic forces
+        f_aero_body = R_alpha @ np.array([[F_drag],[F_lift]])
+
+        #computes the pitching moment
+        My = q_bar * CONDA.S_wing * CONDA.c * (
+                CONDA.C_m_0
+                + CONDA.C_m_alpha * alpha)
+
+        #turns My into an array
+        My = np.array([[My]])
+        
+        forces_moments_aerodynamic = np.concatenate((f_aero_body,My), axis=0)
+
+        return forces_moments_aerodynamic
 
         
 #creates the new motor thrust and torque function, which is an over simplification,

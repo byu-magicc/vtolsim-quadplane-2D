@@ -137,7 +137,7 @@ class QuadplaneDynamics:
     def forces_moments_aero(self,
                             delta: MsgDelta):
 
-        q = self._state.item()
+        q = self._state.item(CONDA.q_index)
 
         #gets the constant coefficients
         #TODO I need to make sure _Va is getting updated
