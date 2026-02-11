@@ -32,6 +32,7 @@ class ViewManager:
         self,
         video: bool = False,
         data: bool = False,
+        pathPlot: bool = False,
         sensors: bool = False,
         animation: bool = False,
         save_plots: bool = False,
@@ -42,6 +43,7 @@ class ViewManager:
     ):
         self.video_flag = video
         self.data_plot_flag = data
+        self.path_plot_flag = pathPlot
         self.sensor_plot_flag = sensors
         self.animation_flag = animation
         self.save_plots_flag = save_plots
@@ -68,6 +70,7 @@ class ViewManager:
                     data_recording_period=SIM.ts_plot_record_data,
                     time_window_length=30,
                 )
+            if self.path_plot_flag:
                 self.autopilotDataView = AutopilotDataViewer(
                     app=self.app,
                     Ts=SIM.ts_simulation,
@@ -106,6 +109,7 @@ class ViewManager:
                 commanded_state,  # commanded states
                 delta,
             )  # inputs to aircraft
+        if self.path_plot_flag:
             self.autopilotDataView.update(
                 true_state=true_state, trajectory=trajectory, integrator=integrator
             )

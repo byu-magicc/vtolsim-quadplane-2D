@@ -43,16 +43,11 @@ from planners.takeoffGenerator import flightPathGenerator, pathTypes
 
 # creates the start position in 3D
 startPos_3D = np.array([[0.0], [0.0], [0.0]])
-startVel_3D = np.array([[0.0], [0.0], [-1.0]])
-startAccel_3D = np.array([[0.0], [0.0], [-1.0]])
+startVel_3D = np.array([[0.0], [0.0], [0.0]])
+startAccel_3D = np.array([[0.0], [0.0], [0.0]])
 
 startConditions_3D = [startPos_3D, startVel_3D, startAccel_3D]
 
-endPos_3D = np.array([[500.0], [0.0], [-100.0]])
-endVel_3D = np.array([[25.0], [0.0], [0.0]])
-endAccel_3D = np.array([[0.0], [0.0], [0.0]])
-
-endConditions_3D = [endPos_3D, endVel_3D, endAccel_3D]
 
 mapOrigin_2D = np.array([[0.0], [0.0]])
 mapOrigin_3D = np.array([[0.0], [0.0], [0.0]])
