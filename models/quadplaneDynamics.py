@@ -69,21 +69,21 @@ class QuadplaneDynamics:
            state: np.ndarray,
            forces_moments: np.ndarray):
 
-        pn_dot = state.item(CONDA.pn_index)
-        pd_dot = state.item(CONDA.pd_index)
+        pn_dot = state.item(CONDA.pn_dot_index)
+        pd_dot = state.item(CONDA.pd_dot_index)
         theta = state.item(CONDA.theta_index)
         q = state.item(CONDA.q_index)
 
 
-        fx_body = forces_moments.item(CONDA.fx_index)
-        fz_body = forces_moments.item(CONDA.fz_index)
+        fn_body = forces_moments.item(CONDA.fn_index)
+        fd_body = forces_moments.item(CONDA.fd_index)
         My = forces_moments.item(CONDA.My_index)
 
 
         R_bodyToInertial = theta_to_rotation_2D(theta=theta)
 
-        #gets the inertial forces;
-        f_inertial = R_bodyToInertial @ np.array([[fx_body],[fz_body]])
+        #gets the inertial forces
+        f_inertial = R_bodyToInertial @ np.array([[fn_body],[fd_body]])
 
         pn_ddot = (1.0/CONDA.mass)*f_inertial.item(0)
         pd_ddot = (1.0/CONDA.mass)*f_inertial.item(1)

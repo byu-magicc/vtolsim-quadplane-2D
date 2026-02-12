@@ -168,8 +168,8 @@ theta_index = 4
 q_index = 5
 
 #and then also the indices for the force, moments vector
-fx_index = 0
-fz_index = 1
+fn_index = 0
+fd_index = 1
 My_index = 2
 
 #
