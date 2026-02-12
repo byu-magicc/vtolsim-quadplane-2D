@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as CONDA
-import parameters.plane_parameters as PLANE
 import pandas as pd
 
 
@@ -43,45 +42,28 @@ from planners.takeoffGenerator import flightPathGenerator, pathTypes
 
 # creates the start position in 3D
 startPos_3D = np.array([[0.0], [0.0], [0.0]])
-startVel_3D = np.array([[0.0], [0.0], [0.0]])
+startVel_3D = np.array([[25.0], [0.0], [0.0]])
 startAccel_3D = np.array([[0.0], [0.0], [0.0]])
 
 startConditions_3D = [startPos_3D, startVel_3D, startAccel_3D]
 
-
-mapOrigin_2D = np.array([[0.0], [0.0]])
-mapOrigin_3D = np.array([[0.0], [0.0], [0.0]])
-n_hat = np.array([[0.0], [-1.0], [0.0]])
-
-plane_msg = MsgPlane(n_hat=n_hat, origin_3D=mapOrigin_3D)
-
-
 viewers = ViewManager(
-    animation=True, data=True, video=False, video_name="takeoff", msg_plane=plane_msg
+    animation=True, data=True, video=False, video_name="takeoff", msg_plane=CONDA.plane_msg
 )
-
-
 
 # instantiates the quadplane
 quadplane = QuadplaneDynamics(
     ts=SIM.ts_simulation,
-    plane_msg=PLANE.plane_msg,
+    plane_msg=CONDA.plane_msg,
     pos_3D_inertial_init=startPos_3D,
     vel_3D_inertial_init=startVel_3D,
 )
 
-
-
-
 # creates the wind
 wind = np.array([[0.0], [0.0], [0.0], [0.0]])
 
-
-
 sim_time = SIM.start_time
 end_time = 60.0
-
-
 
 # iterates through until we get to the end time
 while sim_time < end_time:

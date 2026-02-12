@@ -272,7 +272,8 @@ class QuadplaneDynamics:
         else:
             self._alpha = np.arctan2(wr, ur)
 
-        potato = 0
+        testPoint = 0
+
 
     #creates the new motor thrust and torque function, which is an over simplification,
     #but is better for our simpler modelling and figuring everything out

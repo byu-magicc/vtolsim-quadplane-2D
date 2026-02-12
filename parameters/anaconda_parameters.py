@@ -1,6 +1,7 @@
 #This file contains the parameters for the anaconda aircraft
 import numpy as np
 from message_types.msg_delta import MsgDelta
+from rrt_mavsim.message_types.msg_plane import MsgPlane
 
 
 ######################################################################################
@@ -172,3 +173,11 @@ fz_index = 1
 My_index = 2
 
 #
+#
+#
+#defines the plane message with the nhat in the west direction
+mapOrigin_2D = np.array([[0.0], [0.0]])
+mapOrigin_3D = np.array([[0.0], [0.0], [0.0]])
+n_hat = np.array([[0.0], [-1.0], [0.0]])
+
+plane_msg = MsgPlane(n_hat=n_hat, origin_3D=mapOrigin_3D)
