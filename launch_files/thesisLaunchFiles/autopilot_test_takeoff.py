@@ -158,6 +158,8 @@ actualVelocity_list = []
 
 time_list = []
 
+counter = 0
+
 
 # iterates through until we get to the end time
 while sim_time < end_time:
@@ -209,8 +211,13 @@ while sim_time < end_time:
         trajectory=trajectory_ref,
     )
 
+    if counter % 10 == 0:
+
+        testPoint = 0
+
     time_list.append(np.array([[sim_time]]))
     sim_time += SIM.ts_simulation
+    counter += 1
 
 timeArray = np.concatenate(time_list, axis=0)
 df_m1 = pd.DataFrame(timeArray)
