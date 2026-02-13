@@ -1,8 +1,9 @@
 # creates the generator which creates the conditions necessary for takeoff
 import numpy as np
 from rrt_mavsim.message_types.msg_plane import MsgPlane
-from rrt_mavsim.tools.plane_projections import map_3D_to_2D_planeMsg
+from rrt_mavsim.tools.plane_projections_2 import map_3D_to_2D, map_2D_to_3D
 from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlightPath
+import parameters.anaconda_parameters as CONDA
 from enum import Enum
 import matplotlib.pyplot as plt
 
@@ -74,21 +75,20 @@ class flightPathGenerator:
         endConditions_3D: list[np.ndarray],
     ):
         # gets the positions in 2D
-        startPosition_2D = map_3D_to_2D_planeMsg(
-            vec_3D=startConditions_3D[0], plane_msg=self.plane
-        )
-        endPosition_2D = map_3D_to_2D_planeMsg(
-            vec_3D=endConditions_3D[0], plane_msg=self.plane
-        )
+        startPosition_2D = map_3D_to_2D(vec_3D=startConditions_3D[0],
+                                        plane=CONDA.plane_msg)
+        endPosition_2D = map_3D_to_2D(vec_3D=endConditions_3D[0],
+                                      plane=CONDA.plane_msg)
 
+        startVel_2D = map_3D_to_2D(vec_3D=startConditions_3D[1],
+                                   plane=CONDA.plane_msg)
+        endVel_2D = map_3D_to_2D(vec_3D=endConditions_3D[1],
+                                 plane=CONDA.plane_msg)
 
-        startVel_2D = map_3D_to_2D_planeMsg(vec_3D=startConditions_3D[1], plane_msg=self.plane)
-        endVel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[1], plane_msg=self.plane)
-
-        startAccel_2D = map_3D_to_2D_planeMsg(
-            vec_3D=startConditions_3D[2], plane_msg=self.plane
-        )
-        endAccel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[2], plane_msg=self.plane)
+        startAccel_2D = map_3D_to_2D(vec_3D=startConditions_3D[2],
+                                     plane=CONDA.plane_msg)
+        endAccel_2D = map_3D_to_2D(vec_3D=endConditions_3D[2],
+                                   plane=CONDA.plane_msg)
 
         # start and end conditions
         startConditions_2D = [startPosition_2D, startVel_2D, startAccel_2D]
@@ -196,21 +196,20 @@ class flightPathGenerator:
         endConditions_3D: list[np.ndarray],
     ):
         # gets the positions in 2D
-        startPosition_2D = map_3D_to_2D_planeMsg(
-            vec_3D=startConditions_3D[0], plane_msg=self.plane
-        )
-        endPosition_2D = map_3D_to_2D_planeMsg(
-            vec_3D=endConditions_3D[0], plane_msg=self.plane
-        )
+        startPosition_2D = map_3D_to_2D(vec_3D=startConditions_3D[0],
+                                        plane=CONDA.plane_msg)
+        endPosition_2D = map_3D_to_2D(vec_3D=endConditions_3D[0],
+                                      plane=CONDA.plane_msg)
 
+        startVel_2D = map_3D_to_2D(vec_3D=startConditions_3D[1],
+                                   plane=CONDA.plane_msg)
+        endVel_2D = map_3D_to_2D(vec_3D=endConditions_3D[1],
+                                 plane=CONDA.plane_msg)
 
-        startVel_2D = map_3D_to_2D_planeMsg(vec_3D=startConditions_3D[1], plane_msg=self.plane)
-        endVel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[1], plane_msg=self.plane)
-
-        startAccel_2D = map_3D_to_2D_planeMsg(
-            vec_3D=startConditions_3D[2], plane_msg=self.plane
-        )
-        endAccel_2D = map_3D_to_2D_planeMsg(vec_3D=endConditions_3D[2], plane_msg=self.plane)
+        startAccel_2D = map_3D_to_2D(vec_3D=startConditions_3D[2],
+                                     plane=CONDA.plane_msg)
+        endAccel_2D = map_3D_to_2D(vec_3D=endConditions_3D[2],
+                                   plane=CONDA.plane_msg)
 
         # start and end conditions
         startConditions_2D = [startPosition_2D, startVel_2D, startAccel_2D]
@@ -358,6 +357,9 @@ class flightPathGenerator:
     def getArcPositionTime(
             self, endArcLength, Amp: float,  alpha: float, vertex_2D: np.ndarray):
         currentArcLength = 0.0
+
+        #initializes the nextTime
+        nextTime = 0.0
 
         counter = 0
         while currentArcLength < endArcLength:
