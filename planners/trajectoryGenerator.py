@@ -1,7 +1,7 @@
 
 import numpy as np
 from rrt_mavsim.message_types.msg_plane import MsgPlane
-from rrt_mavsim.tools.plane_projections import map_3D_to_2D_planeMsg
+from rrt_mavsim.tools.plane_projections_2 import map_3D_to_2D
 from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlightPath
 from enum import Enum
 import matplotlib.pyplot as plt
@@ -70,7 +70,7 @@ class trajectoryGenerator:
                                                                  directionIsForward=False)
         
         #gets the norm of the velocity of the end conditions takeoff
-        velocity_cruise = np.linalg.norm(endConditions_takeoff[1])
+        velocity_cruise = float(np.linalg.norm(endConditions_takeoff[1]))
         endTakeoffPoint = takeoffControlPoints[:,-1:]
 
         startLandingPoint = landingControlPoints[:,0:1]
@@ -284,7 +284,7 @@ class trajectoryGenerator:
                              Amp: float,
                              vertex_2D: np.ndarray,
                              polynomialDegree: float,
-                             directionIsForward: bool = True)->float:
+                             directionIsForward: bool = True):
 
         numSteps = int((t2 - t1) / self.searchResolution)
         
@@ -325,6 +325,8 @@ class trajectoryGenerator:
 
         currentTime = 0.0
         counter = 0
+        #initializes nextTime to zero
+        nextTime = 0.0
 
         currentArcLength = 0.0
         while currentArcLength < endArcLength:
@@ -401,8 +403,8 @@ def conditions_3D_to_2D(conditions_3D: list[np.ndarray],
     conditions_2D = []
     for condition_3D in conditions_3D:
 
-        condition_2D = map_3D_to_2D_planeMsg(vec_3D=condition_3D,
-                                             plane_msg=plane)
+        condition_2D = map_3D_to_2D(vec_3D=condition_3D,
+                                    plane=plane)
         conditions_2D.append(condition_2D)
 
     return conditions_2D

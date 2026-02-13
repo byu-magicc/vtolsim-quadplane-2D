@@ -29,8 +29,8 @@ from message_types.msg_state import MsgState
 from message_types.msg_sensors import MsgSensors
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 from message_types.msg_trajectory import MsgTrajectory
-from rrt_mavsim.tools.plane_projections import *
 from rrt_mavsim.parameters.colors import *
+from rrt_mavsim.tools.plane_projections_2 import map_2D_to_3D, map_3D_to_2D
 
 from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlightPath
 
@@ -76,16 +76,10 @@ endConditions_landing = [np.array([[north_endLanding],[0.0],[0.0]]),
                    np.array([[0.0],[0.0],[0.0]])]
 #'''
 
-mapOrigin_2D = np.array([[0.0],[0.0]])
-mapOrigin_3D = np.array([[0.0],[0.0],[0.0]])
-n_hat = np.array([[0.0],[1.0],[0.0]])
-
-plane_msg = MsgPlane(n_hat=n_hat,
-                     origin_3D=mapOrigin_3D)
 
 rho = np.array([1.0,1.0,1.0])
 
-gen = trajectoryGenerator(plane=plane_msg,
+gen = trajectoryGenerator(plane=CONDA.plane_msg,
                           rho=rho)
 
 controlPoints = gen.generateCompleteTrajectory(startConditions_takeoff=startConditions_takeoff,
@@ -113,9 +107,9 @@ bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(
 
 
 # gets the same ouptut control points in 3D
-outputControlPoints_3D = map_2D_to_3D(
-    vec_2D=controlPoints, n_hat=n_hat, p0=mapOrigin_3D
-)
+
+outputControlPoints_3D = map_2D_to_3D(vec_2D=controlPoints,
+                                      plane=CONDA.plane_msg)
 
 
 # gets the spline object
@@ -130,7 +124,7 @@ bspline_sampledPoints_3D, bspline_timeData_3D = bspline_object_3D.get_spline_dat
 
 
 viewers = ViewManager(
-    animation=True, data=True, video=False, video_name="takeoff", msg_plane=plane_msg
+    animation=True, data=True, video=False, video_name="takeoff", msg_plane=CONDA.plane_msg
 )
 
 viewers.drawTrajectory(
@@ -151,7 +145,8 @@ quadplane = QuadplaneDynamics(
 )
 
 # creates the controller
-high_level_controller = highLevelControl(state=quadplane.true_state)
+high_level_controller = highLevelControl(state=quadplane.true_state,
+                                         plane=CONDA.plane_msg)
 
 # creates the low level controller
 low_level_controller = LowLevelControl()

@@ -13,7 +13,6 @@ import parameters.anaconda_parameters as CONDA
 import parameters.plane_parameters as PLANE
 import pandas as pd
 
-
 from models.quadplaneDynamics import QuadplaneDynamics
 from viewers.view_manager import ViewManager
 
