@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    
+        {
+            "name": "Obstacle Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/obstacleTest.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "BSpline Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/bsplineTest.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Complete Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_files/thesisLaunchFiles/autopilot_test_complete.py",
+            "env": {
+              "PYTHONPATH": "${workspaceFolder}/eVTOL_BSplines:${workspaceFolder}/eVTOL_BSplines/path_generator:${workspaceFolder}/rrt_mavsim"
+            },
+            "console": "integratedTerminal"
+        },
+    ]
+}

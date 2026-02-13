@@ -51,6 +51,13 @@ coverage.xml
 .pytest_cache/
 cover/
 
+
+#.json files
+*.json
+
+#creates an exception for the pyrightconfig file
+!pyrightconfig.json
+
 # Translations
 *.mo
 *.pot

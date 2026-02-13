@@ -1,37 +1,55 @@
-"""
-mavsimPy: video making function
-    - Beard & McLain, PUP, 2012
-    - Update history:  
-        1/10/2019 - RWB
-"""
 import numpy as np
-import cv2
-from PIL import ImageGrab
+import imageio
+from OpenGL import GL
+import pyqtgraph.opengl as gl
 
-class videoWriter():
-    def __init__(self, video_name="video.avi", bounding_box=(0, 0, 1000, 1000), output_rate = 0.1):
-        # bbox specifies specific region (bbox= top_left_x, top_left_y, width, height)
-        # set up video writer by grabbing first image and initializing
-        img = ImageGrab.grab(bbox=bounding_box)
-        img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-        height, width, channels = img.shape
-        # Define the codec and create VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        self.video = cv2.VideoWriter(video_name, fourcc, 20.0, (width, height))
-        self.bounding_box = bounding_box
+
+class videoWriter:
+    def __init__(
+        self, widget: gl.GLViewWidget, video_name="video.mp4", fps=20, output_rate=0.1
+    ):
+        self.widget = widget
         self.output_rate = output_rate
-        self.time_of_last_frame = 0
+        self.last_t = 0
+        self.fps = fps
 
-    ###################################
-    # public functions
-    def update(self, time):
-        if (time-self.time_of_last_frame) >= self.output_rate:
-            img = ImageGrab.grab(bbox=self.bounding_box)
-            img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-            self.video.write(img)
-            self.time_of_last_frame = time
+        # Widget dimensions
+        self.width = widget.width()
+        self.height = widget.height()
+
+        # imageio MP4 writer (no fourcc required!)
+
+    def grab_frame(self):
+        """
+        Grab OpenGL framebuffer from the GLViewWidget.
+        Returns RGB frame for imageio.
+        """
+
+        w = self.width
+        h = self.height
+
+        # Bind correct OpenGL context
+        self.widget.makeCurrent()
+
+        # Read pixels from GL framebuffer
+        data = GL.glReadPixels(0, 0, w, h, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE)
+
+        # Convert to NumPy
+        arr = np.frombuffer(data, dtype=np.uint8).reshape(h, w, 4)
+
+        # OpenGL framebuffer is bottom-up → flip vertically
+        arr = np.flip(arr, axis=0)
+
+        # Convert RGBA → RGB
+        rgb = arr[..., :3]
+
+        return rgb
+
+    def update(self, t: float):
+        if (t - self.last_t) >= self.output_rate:
+            frame = self.grab_frame()
+
+            self.last_t = t
 
     def close(self):
-        self.video.release()
-
-
+        pass

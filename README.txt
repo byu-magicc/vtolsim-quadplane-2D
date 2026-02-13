@@ -8,6 +8,18 @@ pip3 install pyqtgraph
 pip3 install pyqt6
 pip3 install pyopengl
 pip3 install pynput
+pip3 install imageio
+pip3 install pyrisistent
+
+
+cd bspline_generator
+pip install .
+
+cd eVTOL_BSplines/
+pip install -e .
+
+cd rrt_mavsim/
+pip install -e .
 
 #sometimes there are issues with that data_viewer if you have ROS installed on your system, in this case. If you are having problems
 #with the data viewer try running the following in the commandline and then reinstalling pqt6. 

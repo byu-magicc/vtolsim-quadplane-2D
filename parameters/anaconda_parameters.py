@@ -1,9 +1,7 @@
 #This file contains the parameters for the anaconda aircraft
-
-
 import numpy as np
-from tools.rotations import euler_to_quaternion
 from message_types.msg_delta import MsgDelta
+from rrt_mavsim.message_types.msg_plane import MsgPlane
 
 
 ######################################################################################
@@ -12,11 +10,27 @@ from message_types.msg_delta import MsgDelta
 #initial conditions for the QUADPLANE
 pn0 = 0.0  # initial north position
 pd0 = 0.0  # initial down position
-pn_dot0 = 20.0  # initial velocity along inertial x-axis
-pd_dot0 = 0.0  # initial velocity along inertial z-axis
+pn_dot0 = 25.0  # initial velocity along inertial x-axis
+pd_dot0 = 0.0  # initial velocity along inertial z-axis (TODO reset to zero)
 theta0 = 0.0  # initial pitch angle
 q0 = 0.0  # initial pitch rate
 Va0 = np.sqrt(pn_dot0**2+pd_dot0**2)
+
+######################################################################################
+                #Standard Vectors
+######################################################################################
+
+Basis_3D = np.eye(3)
+
+e1_3D = Basis_3D[:,0:1]
+e2_3D = Basis_3D[:,1:2]
+e3_3D = Basis_3D[:,2:3]
+
+Basis_2D = np.eye(2)
+
+e1_2D = Basis_2D[:,0:1]
+e2_2D = Basis_2D[:,1:2]
+
 
 ######################################################################################
                 #Physical Parameters
@@ -33,11 +47,8 @@ e = 0.9
 AR = (b**2) / S_wing # aspect ratio
 gravity = 9.81
 
-#creates the gravity acceleration vector in the inertial frame
-gravity_accel_inertial = np.array([[0.0],[gravity]])
-
-#creates the gravity acceleration vector in the inertial frame
-gravity_accel_inertial = np.array([[0.0],[gravity]])
+#gets the 3D gravity vector
+gravityAccel_3D = gravity * e3_3D
 
 
 #sets the physical positions of the props. That is, where their bases are located.
@@ -47,7 +58,7 @@ ell_r = 0.5
 
 
 #mixes individual thrusts to get the net thrust and torque
-individualThrustMixer = np.array([[1, 1],
+individualThrustMixer = np.array([[-1, -1],
                                   [ell_f, -ell_r]])
 
 #creates the mapping from total Thrust and Torque to front and rear thrusts
@@ -57,22 +68,28 @@ individualThrustUnmixer = np.linalg.inv(individualThrustMixer)
 
 #######################################################################################
 # Aerodynamic Coefficients
-C_L_0 = 0.23#
-C_D_0 = 0.043#
+#has some lift from the airfoil, even at zero angle of attack
+C_L_0 = 0.23
+#has some drag just by going through the air
+C_D_0 = 0.0424
 C_m_0 = 0.0135
-C_L_alpha = 5.61#
-C_D_alpha = 0.03#
+#lift (or downward force) given angle of attack
+C_L_alpha = 5.61
+#drag increases with angle of attack
+C_D_alpha = 0.132
+#the tail wants to fight the angle of attack. If it's positive,
+#it tries to rotate it back down
 C_m_alpha = -2.74
-C_L_q = 7.95#
-C_D_q = 0.0#
+C_L_q = 7.95
+C_D_q = 0.0
 C_m_q = -38.21
-C_L_delta_e = -0.13#
-C_D_delta_e = 0.0135#
+C_L_delta_e = 0.13
+C_D_delta_e = 0.0135
 C_m_delta_e = -0.99
 M = 50.0
-alpha0 = np.deg2rad(15)
+alpha0 = 0.47
 epsilon = 0.16
-C_D_p = 0.0
+C_D_p = 0.043 
 
 ######################################################################################
                 #  Propeller parameters
@@ -124,3 +141,43 @@ trimDelta = MsgDelta(elevator=trim_elevator,
                 throttle_thrust=trim_forwardThrottle,
                 throttle_front=0.0,
                 throttle_rear=0.0)
+
+
+######################################################################################
+                #  Control Surface parameters
+######################################################################################
+
+#sets the elevator's max (and likewise min angle)
+elevator_bound_rad = np.radians(30.0)
+#sets the 
+
+#creates the thrust mixing matrix to go from rotor thrust to body frame forces
+thrust_forces_mixing = np.array([[0.0, 0.0, 1.0],
+                                 [-1.0, -1.0, 0.0]])
+thrust_moments_mixing = np.array([[ell_f, -ell_r, 0.0]])
+
+#sets the definition of upward direction
+e_up_3D = np.array([[0.0],[0.0],[-1.0]])
+
+#saves the indices for what each item in the state vector means
+pn_index = 0
+pd_index = 1
+pn_dot_index = 2
+pd_dot_index = 3
+theta_index = 4
+q_index = 5
+
+#and then also the indices for the force, moments vector
+fn_index = 0
+fd_index = 1
+My_index = 2
+
+#
+#
+#
+#defines the plane message with the nhat in the west direction
+mapOrigin_2D = np.array([[0.0], [0.0]])
+mapOrigin_3D = np.array([[0.0], [0.0], [0.0]])
+n_hat = np.array([[0.0], [-1.0], [0.0]])
+
+plane_msg = MsgPlane(n_hat=n_hat, origin_3D=mapOrigin_3D)

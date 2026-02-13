@@ -2,21 +2,40 @@
 
 import numpy as np
 import pyqtgraph.opengl as gl
-from tools.rotations import euler_to_rotation
+from tools.old.rotations import euler_to_rotation, pitch_2d_to_3d
 from message_types.msg_state import MsgState
+from rrt_mavsim.message_types.msg_plane import MsgPlane
 import pyqtgraph.opengl as gl
+from rrt_mavsim.tools.plane_projections import *
 
 
 class DrawQuadplane():
 
     #defines the initialization function
-    def __init__(self, state: MsgState, window: gl.GLViewWidget, scale=1.0):
+    def __init__(self, 
+                 state: MsgState,
+                 msg_plane: MsgPlane, 
+                 window: gl.GLViewWidget, scale=1.0):
         #saves the unit length
         self.unit_length = scale
+        self.msg_plane = msg_plane
         #gets the position of the vtol
-        quad_position = state.pos
-        #gets the body to inertial rotation matrix
-        R_bi = state.R
+        quad_position_2D = state.pos_2D
+
+        #gets the n_hat and Map Origin 3D vectors
+        self.n_hat = msg_plane.n_hat
+        self.origin_3D = msg_plane.origin_3D
+
+        #with the n_hat and the origin_3D, we get the 3D position of the quadplane
+        quad_position_3D = map_2D_to_3D(vec_2D=quad_position_2D,
+                                        n_hat=self.n_hat,
+                                        p0=self.origin_3D)
+
+        #gets the body to inertial rotation matrix. after converting it to a 3d rotation and everything.
+        R_bi = pitch_2d_to_3d(R=state.R)
+
+
+        #in order to do this in 3d, we need to translate from a 2d to a 3d matrix
         #converts to north east down for rendering
         self.R_ned = np.array([[0, 1, 0],
                                [1, 0, 0],
@@ -37,7 +56,7 @@ class DrawQuadplane():
                                              self.fuselage_index,
                                              self.fuselage_meshColors,
                                              R_bi,
-                                             quad_position)
+                                             quad_position_3D)
         #adds the item to the window
         window.addItem(self.quad_fuselage)
         ################################################################################
@@ -53,7 +72,7 @@ class DrawQuadplane():
                                              self.left_wing_indicies, 
                                              self.leftWing_meshColors,
                                              R_bi,
-                                             quad_position + R_bi @ self.leftWingLocation)
+                                             quad_position_3D + R_bi @ self.leftWingLocation)
         window.addItem(self.quad_leftWing)
         ################################################################################
 
@@ -68,7 +87,7 @@ class DrawQuadplane():
                                               self.rightWingIndicies,
                                               self.rightWing_meshColors,
                                               R_bi,
-                                              quad_position + R_bi @ self.rightWingLocation)
+                                              quad_position_3D + R_bi @ self.rightWingLocation)
         #adds the right wing to the window
         window.addItem(self.quad_rightWing)
         ################################################################################
@@ -84,7 +103,7 @@ class DrawQuadplane():
                                              self.leftSparIndicies,
                                              self.leftSpar_meshColors,
                                              R_bi,
-                                             quad_position + R_bi @ self.leftSparLocation)
+                                             quad_position_3D + R_bi @ self.leftSparLocation)
         #adds the item
         window.addItem(self.quad_leftSpar)
         ################################################################################
@@ -100,7 +119,7 @@ class DrawQuadplane():
                                               self.rightSparIndicies,
                                               self.rightSpar_meshColors,
                                               R_bi,
-                                              quad_position + R_bi @ self.rightSparLocation)
+                                              quad_position_3D + R_bi @ self.rightSparLocation)
         #addsthe item
         window.addItem(self.quad_rightspar)
         ################################################################################
@@ -115,7 +134,7 @@ class DrawQuadplane():
                                                            self.leftVerticalStabilizerIndicies,
                                                            self.leftVerticalStabilizer_meshColors,
                                                            R_bi,
-                                                           quad_position + R_bi @ self.leftVerticalStabilizerLocation)
+                                                           quad_position_3D + R_bi @ self.leftVerticalStabilizerLocation)
 
         #adds the item
         window.addItem(self.quad_leftVerticalStabilizer)
@@ -131,7 +150,7 @@ class DrawQuadplane():
                                                            self.rightVerticalStabilizerIndicies,
                                                            self.rightVerticalStabilizer_meshColors,
                                                            R_bi,
-                                                           quad_position + R_bi @ self.rightVerticalStabilizerLocation)
+                                                           quad_position_3D + R_bi @ self.rightVerticalStabilizerLocation)
 
         #adds the item
         window.addItem(self.quad_rightVerticalStabilizer)
@@ -148,7 +167,7 @@ class DrawQuadplane():
                                                            self.horizontalStabilizerIndicies,
                                                            self.horizontalStabilizer_meshColors,
                                                            R_bi,
-                                                           quad_position + R_bi @ self.horizontalStabilizerLocation)
+                                                           quad_position_3D + R_bi @ self.horizontalStabilizerLocation)
 
         #adds the item
         window.addItem(self.quad_horizontalStabilizer)        
@@ -165,7 +184,7 @@ class DrawQuadplane():
                                               self.motor_indicies,
                                               self.motor_meshColors,
                                               R_bi,
-                                              quad_position + R_bi @ self.portFrontMotorPos)
+                                              quad_position_3D + R_bi @ self.portFrontMotorPos)
 
         window.addItem(self.portFrontMotor)
 
@@ -176,7 +195,7 @@ class DrawQuadplane():
                                               self.motor_indicies,
                                               self.motor_meshColors,
                                               R_bi,
-                                              quad_position + R_bi @ self.portRearMotorPos)
+                                              quad_position_3D + R_bi @ self.portRearMotorPos)
 
         window.addItem(self.portRearMotor)
 
@@ -187,7 +206,7 @@ class DrawQuadplane():
                                               self.motor_indicies,
                                               self.motor_meshColors,
                                               R_bi,
-                                              quad_position + R_bi @ self.starboardRearMotorPos)
+                                              quad_position_3D + R_bi @ self.starboardRearMotorPos)
 
         window.addItem(self.starboardRearMotor)
 
@@ -198,7 +217,7 @@ class DrawQuadplane():
                                                    self.motor_indicies,
                                                    self.motor_meshColors,
                                                    R_bi,
-                                                   quad_position + R_bi @ self.starboardFrontMotorPos)
+                                                   quad_position_3D + R_bi @ self.starboardFrontMotorPos)
 
         window.addItem(self.starboardFrontMotor)
 
@@ -210,7 +229,7 @@ class DrawQuadplane():
                                                       self.motor_indicies,
                                                       self.motor_meshColors,
                                                       R_bi @ self.R_motor,
-                                                      quad_position + R_bi @ self.forwardPropulsionMotorPos)
+                                                      quad_position_3D + R_bi @ self.forwardPropulsionMotorPos)
         window.addItem(self.forwardPropulsionMotor)
         ################################################################################
 
@@ -226,7 +245,7 @@ class DrawQuadplane():
                                            self.rotor_indicies,
                                            self.rotor_meshColors,
                                            R_bi,
-                                           quad_position + R_bi @ self.portFront_rotorPosition)
+                                           quad_position_3D + R_bi @ self.portFront_rotorPosition)
         window.addItem(self.portFront_rotor)
 
         #creates the port rear rotor
@@ -237,7 +256,7 @@ class DrawQuadplane():
                                               self.rotor_indicies,
                                               self.rotor_meshColors,
                                               R_bi,
-                                              quad_position + R_bi @ self.portRear_rotorPosition)
+                                              quad_position_3D + R_bi @ self.portRear_rotorPosition)
         window.addItem(self.portRear_rotor)
 
 
@@ -249,7 +268,7 @@ class DrawQuadplane():
                                               self.rotor_indicies,
                                               self.rotor_meshColors,
                                               R_bi,
-                                              quad_position + R_bi @ self.starboardRear_rotorPosition)
+                                              quad_position_3D + R_bi @ self.starboardRear_rotorPosition)
         window.addItem(self.starboardRear_rotor)
 
         #creates the port rear rotor
@@ -260,7 +279,7 @@ class DrawQuadplane():
                                               self.rotor_indicies,
                                               self.rotor_meshColors,
                                               R_bi,
-                                              quad_position + R_bi @ self.starboardFront_rotorPosition)
+                                              quad_position_3D + R_bi @ self.starboardFront_rotorPosition)
         window.addItem(self.starboardFront_rotor)
 
         window.addItem(self.starboardFront_rotor)
@@ -277,7 +296,7 @@ class DrawQuadplane():
                                                        self.rotor_indicies,
                                                        self.rotor_meshColors,
                                                        R_bi @ self.R_rotor,
-                                                       quad_position + R_bi @ self.forwardPropulsion_rotorPosition)
+                                                       quad_position_3D + R_bi @ self.forwardPropulsion_rotorPosition)
         window.addItem(self.forwardPropulsion_rotor)
         ################################################################################
 
@@ -285,24 +304,33 @@ class DrawQuadplane():
 
 
     #creates the update function
-    def update(self, state: MsgState):
+    def update(self, 
+               state: MsgState):
 
         #gets the North, East, Down position of the aircraft
-        quad_position = state.pos
-        R_bi = state.R
+        quad_position_2D = state.pos_2D
+
+        #gets the function to convert between 2D and 3D quadplane position
+        quad_position_3D = map_2D_to_3D(vec_2D=quad_position_2D,
+                                        n_hat=self.n_hat,
+                                        p0=self.origin_3D)
+
+        #gets the 3D pitch rotation matrix (generated from the 2D equivalent)
+        R_bi = pitch_2d_to_3d(state.R)
+
         self.quad_fuselage = self.update_object(self.quad_fuselage,
                                             self.fuselage_points,
                                             self.fuselage_index,
                                             self.fuselage_meshColors,
                                             R_bi,
-                                            quad_position)
+                                            quad_position_3D)
         #updates the left wing
         self.quad_leftWing = self.update_object(self.quad_leftWing,
                                                 self.leftWingPoints,
                                                 self.left_wing_indicies,
                                                 self.leftWing_meshColors,
                                                 R_bi,
-                                                quad_position + R_bi @ self.leftWingLocation)
+                                                quad_position_3D + R_bi @ self.leftWingLocation)
         
         #updates the right wing
         self.quad_rightWing = self.update_object(self.quad_rightWing,
@@ -310,7 +338,7 @@ class DrawQuadplane():
                                                  self.rightWingIndicies,
                                                  self.rightWing_meshColors,
                                                  R_bi,
-                                                 quad_position + R_bi @ self.rightWingLocation)
+                                                 quad_position_3D + R_bi @ self.rightWingLocation)
         
         #updates the left spar
         self.quad_leftSpar = self.update_object(self.quad_leftSpar,
@@ -318,7 +346,7 @@ class DrawQuadplane():
                                                 self.leftSparIndicies,
                                                 self.leftSpar_meshColors,
                                                 R_bi,
-                                                quad_position + R_bi @ self.leftSparLocation)
+                                                quad_position_3D + R_bi @ self.leftSparLocation)
         
         #updates the right spar
         self.quad_rightspar = self.update_object(self.quad_rightspar,
@@ -326,7 +354,7 @@ class DrawQuadplane():
                                                  self.rightSparIndicies,
                                                  self.leftSpar_meshColors,
                                                  R_bi,
-                                                 quad_position + R_bi @ self.rightSparLocation)
+                                                 quad_position_3D + R_bi @ self.rightSparLocation)
         
         #updates the left vertical stabilizer
         self.quad_leftVerticalStabilizer = self.update_object(self.quad_leftVerticalStabilizer,
@@ -334,7 +362,7 @@ class DrawQuadplane():
                                                               self.leftVerticalStabilizerIndicies,
                                                               self.leftVerticalStabilizer_meshColors,
                                                               R_bi,
-                                                              quad_position + R_bi @ self.leftVerticalStabilizerLocation)
+                                                              quad_position_3D + R_bi @ self.leftVerticalStabilizerLocation)
         
         #updatesthe right vertical stabilizer
         self.quad_rightVerticalStabilizer = self.update_object(self.quad_rightVerticalStabilizer,
@@ -342,7 +370,7 @@ class DrawQuadplane():
                                                                self.rightVerticalStabilizerIndicies,
                                                                self.rightVerticalStabilizer_meshColors,
                                                                R_bi,
-                                                               quad_position + R_bi @ self.rightVerticalStabilizerLocation)
+                                                               quad_position_3D + R_bi @ self.rightVerticalStabilizerLocation)
         
         #updates the horizontal stabilizer
         self.quad_horizontalStabilizer = self.update_object(self.quad_horizontalStabilizer,
@@ -350,7 +378,7 @@ class DrawQuadplane():
                                                             self.horizontalStabilizerIndicies,
                                                             self.horizontalStabilizer_meshColors,
                                                             R_bi,
-                                                            quad_position + R_bi @ self.horizontalStabilizerLocation)
+                                                            quad_position_3D + R_bi @ self.horizontalStabilizerLocation)
         
         #updates the front port motor
         self.portFrontMotor = self.update_object(self.portFrontMotor,
@@ -358,35 +386,35 @@ class DrawQuadplane():
                                                  self.motor_indicies,
                                                  self.motor_meshColors,
                                                  R_bi,
-                                                 quad_position + R_bi @ self.portFrontMotorPos)
+                                                 quad_position_3D + R_bi @ self.portFrontMotorPos)
         
         self.portRearMotor = self.update_object(self.portRearMotor,
                                                 self.motor_points,
                                                 self.motor_indicies,
                                                 self.motor_meshColors,
                                                 R_bi,
-                                                quad_position + R_bi @ self.portRearMotorPos)
+                                                quad_position_3D + R_bi @ self.portRearMotorPos)
         
         self.starboardRearMotor = self.update_object(self.starboardRearMotor,
                                                      self.motor_points,
                                                      self.motor_indicies,
                                                      self.motor_meshColors,
                                                      R_bi,
-                                                     quad_position + R_bi @ self.starboardRearMotorPos)
+                                                     quad_position_3D + R_bi @ self.starboardRearMotorPos)
 
         self.starboardFrontMotor = self.update_object(self.starboardFrontMotor,
                                                       self.motor_points,
                                                       self.motor_indicies,
                                                       self.motor_meshColors,
                                                       R_bi,
-                                                      quad_position + R_bi @ self.starboardFrontMotorPos)
+                                                      quad_position_3D + R_bi @ self.starboardFrontMotorPos)
 
         self.forwardPropulsionMotor = self.update_object(self.forwardPropulsionMotor,
                                                   self.motor_points,
                                                   self.motor_indicies,
                                                   self.motor_meshColors,
                                                   R_bi @ self.R_motor,
-                                                  quad_position + R_bi @ self.forwardPropulsionMotorPos)
+                                                  quad_position_3D + R_bi @ self.forwardPropulsionMotorPos)
 
 
         self.portFront_rotor = self.update_object(self.portFront_rotor,
@@ -394,38 +422,40 @@ class DrawQuadplane():
                                                   self.rotor_indicies,
                                                   self.rotor_meshColors,
                                                   R_bi,
-                                                  quad_position + R_bi @ self.portFront_rotorPosition)
+                                                  quad_position_3D + R_bi @ self.portFront_rotorPosition)
 
         self.portRear_rotor = self.update_object(self.portRear_rotor,
                                                   self.rotor_points,
                                                   self.rotor_indicies,
                                                   self.rotor_meshColors,
                                                   R_bi,
-                                                  quad_position + R_bi @ self.portRear_rotorPosition)
+                                                  quad_position_3D + R_bi @ self.portRear_rotorPosition)
         
         self.starboardRear_rotor = self.update_object(self.starboardRear_rotor,
                                                   self.rotor_points,
                                                   self.rotor_indicies,
                                                   self.rotor_meshColors,
                                                   R_bi,
-                                                  quad_position + R_bi @ self.starboardRear_rotorPosition)
+                                                  quad_position_3D + R_bi @ self.starboardRear_rotorPosition)
         
         self.starboardFront_rotor = self.update_object(self.starboardFront_rotor,
                                                   self.rotor_points,
                                                   self.rotor_indicies,
                                                   self.rotor_meshColors,
                                                   R_bi,
-                                                  quad_position + R_bi @ self.starboardFront_rotorPosition)
+                                                  quad_position_3D + R_bi @ self.starboardFront_rotorPosition)
 
         self.forwardPropulsion_rotor = self.update_object(self.forwardPropulsion_rotor,
                                                           self.rotor_points,
                                                           self.rotor_indicies,
                                                           self.rotor_meshColors,
                                                           R_bi @ self.R_rotor,
-                                                          quad_position + R_bi @ self.forwardPropulsion_rotorPosition)
+                                                          quad_position_3D + R_bi @ self.forwardPropulsion_rotorPosition)
 
     #function to add object
-    def add_object(self, points, index, colors, R, position):
+    def add_object(self, 
+                   points: np.ndarray, 
+                   index, colors, R, position):
         rotated_points = self.rotate_points(points, R)
         translated_points = self.translate_points(rotated_points, position)
         translated_points = self.R_ned @ translated_points

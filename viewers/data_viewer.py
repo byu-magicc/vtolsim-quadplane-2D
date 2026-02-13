@@ -1,7 +1,7 @@
 import numpy as np
 from viewers.plotter import Plotter
 from tools.wrap import wrap
-from tools.rotations import rotation_to_euler
+from tools.old.rotations import rotation_to_euler
 from message_types.msg_state import MsgState
 from message_types.msg_delta import MsgDelta
 
@@ -107,20 +107,29 @@ class DataViewer:
         self._data_recording_delay += self._dt
         self._time += self._dt
         
-    def __update_data(self, true_state: MsgState, estimated_state: MsgState, commanded_state: MsgState, delta: MsgDelta, currentTime):
+    def __update_data(self, 
+                      true_state: MsgState, 
+                      estimated_state: MsgState, 
+                      commanded_state: MsgState, 
+                      delta: MsgDelta, 
+                      currentTime: float):
+        
+
+        theta = true_state.theta
+
         #add the true state data
         if true_state != None:
-            phi, theta, psi = rotation_to_euler(true_state.R)
+
             #adds the actual positions
-            self._plotter.add_data_point(plot_id='north', data_label='north', xvalue=currentTime, yvalue=true_state.pos[0,0])
-            self._plotter.add_data_point(plot_id='altitude', data_label='altitude', xvalue=currentTime, yvalue=-true_state.pos[2,0])
+            self._plotter.add_data_point(plot_id='north', data_label='north', xvalue=currentTime, yvalue=true_state.pos_2D[0,0])
+            self._plotter.add_data_point(plot_id='altitude', data_label='altitude', xvalue=currentTime, yvalue=-true_state.pos_2D[1,0])
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='v_n', data_label='v_n', xvalue=currentTime, yvalue=true_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='v_d', data_label='v_d', xvalue=currentTime, yvalue=true_state.vel[2,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n', xvalue=currentTime, yvalue=true_state.vel_2D[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d', xvalue=currentTime, yvalue=true_state.vel_2D[1,0])
             #adds the pitchw
             self._plotter.add_data_point(plot_id='pitch', data_label='pitch', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q
-            self._plotter.add_data_point(plot_id='q', data_label='q', xvalue=currentTime, yvalue=self.__rad_to_deg(true_state.omega[1,0]))
+            self._plotter.add_data_point(plot_id='q', data_label='q', xvalue=currentTime, yvalue=self.__rad_to_deg(true_state.q))
             #adds the Airspeed, alpha
             self._plotter.add_data_point(plot_id='Va', data_label='Va', xvalue=currentTime, yvalue=true_state.Va)
             self._plotter.add_data_point(plot_id='alpha', data_label='alpha', xvalue=currentTime, yvalue=true_state.alpha)
@@ -133,34 +142,33 @@ class DataViewer:
 
         #add the estimated state data
         if estimated_state != None:
-            phi, theta, psi = rotation_to_euler(estimated_state.R)
+
             #adds the actual positions
-            self._plotter.add_data_point(plot_id='north', data_label='north_e', xvalue=currentTime, yvalue=estimated_state.pos[0,0])
-            self._plotter.add_data_point(plot_id='altitude', data_label='altitude_e', xvalue=currentTime, yvalue=-estimated_state.pos[2,0])
+            self._plotter.add_data_point(plot_id='north', data_label='north_e', xvalue=currentTime, yvalue=estimated_state.pos_2D[0,0])
+            self._plotter.add_data_point(plot_id='altitude', data_label='altitude_e', xvalue=currentTime, yvalue=-estimated_state.pos_2D[1,0])
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_e', xvalue=currentTime, yvalue=estimated_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_e', xvalue=currentTime, yvalue=estimated_state.vel[2,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_e', xvalue=currentTime, yvalue=estimated_state.vel_2D[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_e', xvalue=currentTime, yvalue=estimated_state.vel_2D[1,0])
             #adds the pitchw
             self._plotter.add_data_point(plot_id='pitch', data_label='pitch_e', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q
-            self._plotter.add_data_point(plot_id='q', data_label='q_e', xvalue=currentTime, yvalue=self.__rad_to_deg(estimated_state.omega[1,0]))
+            self._plotter.add_data_point(plot_id='q', data_label='q_e', xvalue=currentTime, yvalue=self.__rad_to_deg(estimated_state.q))
             #adds the Airspeed, alpha
             self._plotter.add_data_point(plot_id='Va', data_label='Va_e', xvalue=currentTime, yvalue=estimated_state.Va)
             self._plotter.add_data_point(plot_id='alpha', data_label='alpha_e', xvalue=currentTime, yvalue=estimated_state.alpha)
 
         #add the commanded state data
         if commanded_state != None:
-            phi, theta, psi = rotation_to_euler(commanded_state.R)
             #adds the actual positions
-            self._plotter.add_data_point(plot_id='north', data_label='north_c', xvalue=currentTime, yvalue=commanded_state.pos[0,0])
-            self._plotter.add_data_point(plot_id='altitude', data_label='altitude_c', xvalue=currentTime, yvalue=-commanded_state.pos[2,0])
+            self._plotter.add_data_point(plot_id='north', data_label='north_c', xvalue=currentTime, yvalue=commanded_state.pos_2D[0,0])
+            self._plotter.add_data_point(plot_id='altitude', data_label='altitude_c', xvalue=currentTime, yvalue=-commanded_state.q)
             #adds the body frame velocities
-            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_c', xvalue=currentTime, yvalue=commanded_state.vel[0,0])
-            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_c', xvalue=currentTime, yvalue=commanded_state.vel[2,0])
+            self._plotter.add_data_point(plot_id='v_n', data_label='v_n_c', xvalue=currentTime, yvalue=commanded_state.vel_2D[0,0])
+            self._plotter.add_data_point(plot_id='v_d', data_label='v_d_c', xvalue=currentTime, yvalue=commanded_state.vel_2D[1,0])
             #adds the pitchw
             self._plotter.add_data_point(plot_id='pitch', data_label='pitch_c', xvalue=currentTime, yvalue=self.__rad_to_deg(theta))
             #adds the q
-            self._plotter.add_data_point(plot_id='q', data_label='q_c', xvalue=currentTime, yvalue=self.__rad_to_deg(commanded_state.omega[1,0]))
+            self._plotter.add_data_point(plot_id='q', data_label='q_c', xvalue=currentTime, yvalue=self.__rad_to_deg(commanded_state.q))
             #adds the Airspeed, alpha
             self._plotter.add_data_point(plot_id='Va', data_label='Va_c', xvalue=currentTime, yvalue=commanded_state.Va)
 

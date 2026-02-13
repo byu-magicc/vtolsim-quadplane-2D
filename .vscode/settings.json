@@ -1,4 +1,10 @@
 {
     "cmake.sourceDirectory": "C:/Users/dben1/Documents/001_School/Masters/vtolsim/planners/trajectorygenerator",
-    "ros.distro": "humble"
+    "ros.distro": "humble",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/../eVTOL_BSplines",
+        "${workspaceFolder}/../eVTOL_BSplines/path_generator",
+        "${workspaceFolder}/../rrt_mavsim"
+    ]
 }

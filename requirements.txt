@@ -1,0 +1,13 @@
+numpy
+matplotlib
+scipy
+cvxpy
+pyqtgraph
+pyqt6
+pyopengl
+pynput
+pandas
+shapely
+pyrsistent
+control
+imageio
