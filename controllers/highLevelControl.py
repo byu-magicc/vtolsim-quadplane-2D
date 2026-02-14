@@ -22,6 +22,8 @@ class highLevelControl:
     def __init__(self,
                  state: MsgState,
                  plane: MsgPlane,
+                 theta_0: float = 0.0,
+                 theta_dot_0: float = 0.0,
                  Ts: float = SIM.ts_simulation,
                  pitchControl_riseTime: float = CAP.pitchControl_riseTime,
                  pitchControl_zeta: float = CAP.pitchControl_zeta):
@@ -48,6 +50,8 @@ class highLevelControl:
         #creates the pitch controller
         self.pitchController = feedForwardControl(kp=kp_pitch,
                                                   kd=kd_pitch,
+                                                  theta_0=theta_0,
+                                                  theta_dot_0=theta_dot_0,
                                                   Ts=SIM.ts_simulation,
                                                   Jy=CONDA.Jy,
                                                   u_max=CAP.tau_max,
@@ -78,13 +82,10 @@ class highLevelControl:
                trajectory_ref: MsgTrajectory,
                state: MsgState):
 
-        
-
         #gets the position
         position = state.pos_2D
         #and the velocity
         velocity = state.vel_2D
-
 
         #gets the position error
         position_error = trajectory_ref.pos - position
@@ -126,10 +127,6 @@ class highLevelControl:
         F_des_i = CONDA.mass * accel_des_i
 
         #given the Force desired, we call the pitch optimization function to get the optimal theta
-        '''theta_ref = self.pitchOptimizer.update(state=state,
-                                           state_ref=trajectory_ref,
-                                           F_des_i=F_des_i)
-                    '''
         theta_ref = self.pitchOptimizer.update(state=state,
                                                state_ref=trajectory_ref,
                                                F_des_i=F_des_i)
@@ -144,7 +141,9 @@ class highLevelControl:
                                     state_ref=theta_ref)
         
         #gets the force desired in the body frame
-        F_des_b = theta_to_rotation_2D(theta=theta) @ F_des_i
+        R_b2i = theta_to_rotation_2D(theta=theta)
+        R_i2b = R_b2i.T
+        F_des_b = R_i2b @ F_des_i
 
         #saves the current position error as delayed by 1
         self.pos_error_d1 = position_error

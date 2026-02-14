@@ -7,7 +7,6 @@ from controllers.feedforwardControl import feedForwardControl, saturate
 from message_types.msg_delta import MsgDelta
 from message_types.msg_state import MsgState
 import parameters.anaconda_parameters as CONDA
-from tools.old.rotations import *
 
 import scipy.optimize as spo
 from scipy.optimize import minimize
@@ -37,10 +36,10 @@ class LowLevelControl:
         T_t_des = F_des_n_body
 
         #creates the desired forces and moments vector
-        forcesMoments_des = np.array([[F_des_d_body],[M_des_body]])
+        forcesMoments_vertical_des = np.array([[F_des_d_body],[M_thrusters_des]])
 
         #gets the vertical thrusts desired
-        verticalThrusts_des = CONDA.individualThrustUnmixer @ forcesMoments_des
+        verticalThrusts_des = CONDA.individualThrustUnmixer @ forcesMoments_vertical_des
 
         #gets the front and rear desired Thrusts
         T_front_des = verticalThrusts_des.item(0)

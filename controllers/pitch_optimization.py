@@ -94,13 +94,13 @@ class PitchOptimization:
         #gets the Va from the state message
         Va = state.Va
 
-        forcesMomentsUncontrolled = self.forceCalculator.forces_moments_uncontrolledAero(Va=Va,
+        forcesMomentsUncontrolled_body = self.forceCalculator.forces_moments_uncontrolledAero(Va=Va,
                                                                                  alpha=alpha)
         
-        forcesUncontrolled = forcesMomentsUncontrolled[0:2,:]
+        forcesUncontrolled_body = forcesMomentsUncontrolled_body[0:2,:]
         
         #gets the forces difference (the difference between what force we want, and what we can achieve)
-        forcesDifference = F_des_b - forcesUncontrolled
+        forcesDifference = F_des_b - forcesUncontrolled_body
 
         #gets the objective
         objective = np.linalg.norm(forcesDifference, 
@@ -140,9 +140,4 @@ class PitchOptimization:
         thetaBounds = [(minBound, maxBound)]
 
         return thetaBounds
-
-        
-
-
-
 

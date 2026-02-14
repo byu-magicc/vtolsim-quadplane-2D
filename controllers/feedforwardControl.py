@@ -21,6 +21,8 @@ class feedForwardControl:
                  kd: float,
                  Ts: float,
                  Jy: float,
+                 theta_0: float,
+                 theta_dot_0: float,
                  u_max: float,
                  sigma: float = 0.05):
         
@@ -29,15 +31,19 @@ class feedForwardControl:
         self.Ts = Ts
         self.Jy = Jy
         self.sigma = sigma
+        self.theta_0 = theta_0
+        self.theta_dot_0 = theta_dot_0
         self.u_max = u_max
 
 
         #variables for saving the variables we are taking the dirty derivative of theta_ref, and theta_dot_ref
         self.theta_dot_ref_diff = dirtyDerivative(Ts=self.Ts,
-                                                  sigma=self.sigma)
+                                                  sigma=self.sigma,
+                                                  state_0=self.theta_0)
         #same for theta_ddot
         self.theta_ddot_ref_diff = dirtyDerivative(Ts=self.Ts,
-                                                   sigma=self.sigma)
+                                                   sigma=self.sigma,
+                                                   state_0=self.theta_dot_0)
         
 
     #update function.
