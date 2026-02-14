@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as CONDA
-import parameters.plane_parameters as PLANE
 import pandas as pd
 
 from models.quadplaneDynamics import QuadplaneDynamics
@@ -122,7 +121,7 @@ viewers.drawTrajectory(
 # instantiates the quadplane
 quadplane = QuadplaneDynamics(
     ts=SIM.ts_simulation,
-    plane_msg=PLANE.plane_msg,
+    plane_msg=CONDA.plane_msg,
     pos_3D_inertial_init=startPos_3D,
     vel_3D_inertial_init=startVel_3D,
 )
@@ -159,7 +158,6 @@ actualVelocity_list = []
 time_list = []
 
 counter = 0
-
 
 # iterates through until we get to the end time
 while sim_time < end_time:
