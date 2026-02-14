@@ -6,7 +6,7 @@ from message_types.msg_trajectory import MsgTrajectory
 from controllers.forceCalculator import forceCalculator
 
 import parameters.pitchOptimizationParameters as PITCH
-from tools.old.rotations import theta_to_rotation_2d
+from tools.rotations import theta_to_rotation_2D
 from tools.gamma import getGamma
 import numpy as np
 
@@ -81,9 +81,11 @@ class PitchOptimization:
         #to find the optimal theta to minimize the cost equation
         theta_variable = theta_array_variable.item(0)
 
-        Rot = theta_to_rotation_2d(theta=theta_variable)
+        R_i2b = theta_to_rotation_2D(theta=theta_variable)
+        R_b2i = R_i2b.T
+
         #gets the forces desired in the body frame
-        F_des_b =  Rot @ F_des_i
+        F_des_b =  R_b2i @ F_des_i
 
         #alpha = theta - gamma
         #gets the resultant alpha variable given the theta variable and gamma
