@@ -10,7 +10,6 @@ from copy import deepcopy
 
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as CONDA
-import parameters.plane_parameters as PLANE
 
 
 from models.quadplaneDynamics import QuadplaneDynamics
@@ -27,7 +26,7 @@ from message_types.msg_state import MsgState
 from message_types.msg_sensors import MsgSensors
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 from message_types.msg_trajectory import MsgTrajectory
-from rrt_mavsim.tools.plane_projections import *
+from rrt_mavsim.tools.plane_projections_2 import map_2D_to_3D, map_3D_to_2D
 from rrt_mavsim.parameters.colors import *
 
 
@@ -55,28 +54,25 @@ endAccel_3D = np.array([[0.0], [0.0], [endAccel]])
 
 endConditions_3D = [endPos_3D, endVel_3D, endAccel_3D]
 
-mapOrigin_2D = np.array([[0.0], [0.0]])
-mapOrigin_3D = np.array([[0.0], [0.0], [0.0]])
-n_hat = np.array([[0.0], [1.0], [0.0]])
-
-plane_msg = MsgPlane(n_hat=n_hat, origin_3D=mapOrigin_3D)
 
 startConditions_2D = []
 endConditions_2D = []
 
 for condition_3D in startConditions_3D:
-    condition_2D = map_3D_to_2D_planeMsg(vec_3D=condition_3D, plane_msg=plane_msg)
+    condition_2D = map_3D_to_2D(vec_3D=condition_3D,
+                                plane=CONDA.plane_msg)
     startConditions_2D.append(condition_2D)
 
 for condition_3D in endConditions_3D:
-    condition_2D = map_3D_to_2D_planeMsg(vec_3D=condition_3D, plane_msg=plane_msg)
+    condition_2D = map_3D_to_2D(vec_3D=condition_3D,
+                                plane=CONDA.plane_msg)
     endConditions_2D.append(condition_2D)
 
 
 rho = np.array([1.0, 1.0, 1.0])
 
 
-takeoffGen = flightPathGenerator(plane=plane_msg, rho=rho, numDimensions=2, d=3, M=10)
+takeoffGen = flightPathGenerator(plane=CONDA.plane_msg, rho=rho, numDimensions=2, d=3, M=10)
 
 controlPoints = takeoffGen.generatePath(
     pathType=pathTypes.PARABOLA_LANDING,
@@ -106,7 +102,7 @@ bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(
 
 # gets the same ouptut control points in 3D
 outputControlPoints_3D = map_2D_to_3D(
-    vec_2D=controlPoints, n_hat=n_hat, p0=mapOrigin_3D
+    vec_2D=controlPoints, plane=CONDA.plane_msg
 )
 
 
@@ -122,7 +118,7 @@ bspline_sampledPoints_3D, bspline_timeData_3D = bspline_object_3D.get_spline_dat
 
 
 viewers = ViewManager(
-    animation=True, data=True, video=False, video_name="takeoff", msg_plane=plane_msg
+    animation=True, data=True, video=False, video_name="takeoff", msg_plane=CONDA.plane_msg
 )
 
 viewers.drawTrajectory(
@@ -137,13 +133,14 @@ viewers.drawTrajectory(
 # instantiates the quadplane
 quadplane = QuadplaneDynamics(
     ts=SIM.ts_simulation,
-    plane_msg=PLANE.plane_msg,
+    plane_msg=CONDA.plane_msg,
     pos_3D_inertial_init=startPos_3D,
     vel_3D_inertial_init=startVel_3D,
 )
 
 # creates the controller
-high_level_controller = highLevelControl(state=quadplane.true_state)
+high_level_controller = highLevelControl(state=quadplane.true_state,
+                                         plane=CONDA.plane_msg)
 
 # creates the low level controller
 low_level_controller = LowLevelControl()

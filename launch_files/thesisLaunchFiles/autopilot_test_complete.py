@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as CONDA
-import parameters.plane_parameters as PLANE
 import pandas as pd
 
 
@@ -139,7 +138,7 @@ viewers.drawTrajectory(
 # instantiates the quadplane
 quadplane = QuadplaneDynamics(
     ts=SIM.ts_simulation,
-    plane_msg=PLANE.plane_msg,
+    plane_msg=CONDA.plane_msg,
     pos_3D_inertial_init=startPosition_3D,
     vel_3D_inertial_init=startVelocity_3D,
 )

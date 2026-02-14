@@ -278,9 +278,12 @@ class QuadplaneDynamics:
     #creates the new motor thrust and torque function, which is an over simplification,
     #but is better for our simpler modelling and figuring everything out
     def _motor_thrust_torque_simplified(self, delta_t: float):
-
+        
+        #defines the saturation function for the delta
         if delta_t > 1.0:
             delta_t = 1.0
+        elif delta_t < 0.0:
+            delta_t = 0.0
         #returns the delta_t times the max thrust
         return delta_t*CONDA.MaxThrust
 
