@@ -1,9 +1,3 @@
-"""
-mavsim: manage_viewers
-    - Beard & McLain, PUP, 2012
-    - Update history:
-        3/11/2024 - RWB
-"""
 
 import pyqtgraph as pg
 from viewers.quadplane_viewer import QuadplaneViewer
@@ -30,6 +24,9 @@ class ViewManager:
     # 1.
     def __init__(
         self,
+        video_name: str,
+        msg_plane: MsgPlane,
+        world_map: MsgWorldMap=None,
         video: bool = False,
         data: bool = False,
         pathPlot: bool = False,
@@ -37,9 +34,6 @@ class ViewManager:
         animation: bool = False,
         save_plots: bool = False,
         draw_trajectory: bool = False,
-        video_name: str = [],
-        world_map: MsgWorldMap = None,
-        msg_plane: MsgPlane = None,
     ):
         self.video_flag = video
         self.data_plot_flag = data
@@ -97,8 +91,8 @@ class ViewManager:
         commanded_state: MsgState,
         delta: MsgDelta,
         measurements: MsgSensors,
-        integrator: MsgIntegrator = None,
-        trajectory: MsgTrajectory = None,
+        integrator: MsgIntegrator,
+        trajectory: MsgTrajectory,
     ):
         if self.animation_flag:
             self.quadplane_view.update(true_state)
@@ -117,29 +111,19 @@ class ViewManager:
             self.sensor_view.update(measurements)
         if self.animation_flag or self.data_plot_flag or self.sensor_plot_flag:
             self.app.processEvents()
-        if self.video_flag is True:
-            self.video.update(sim_time)
 
     def drawWaypoints(
         self,
         waypoints: MsgWaypoints_SFC,
-        n_hat: np.ndarray = None,
-        p0: np.ndarray = None,
         color="r",
     ):
         self.quadplane_view.drawWaypoints(
-            waypoints=waypoints, n_hat=n_hat, p0=p0, lineColor=color
+            waypoints=waypoints, plane=self.msg_plane, lineColor=color
         )
 
-    def close(self, dataplot_name: str = [], sensorplot_name: str = []):
+    def close(self, dataplot_name: str, sensorplot_name: str):
         # Save an Image of the Plot
-        if self.save_plots_flag:
-            if self.data_plots_flag:
-                self.data_view.save_plot_image(dataplot_name)
-            if self.sensor_plots_flag:
-                self.sensor_view.save_plot_image(sensorplot_name)
-        if self.video_flag:
-            self.video.close()
+        pass
 
     # creates the function to  draw a trajectory
     def drawTrajectory(

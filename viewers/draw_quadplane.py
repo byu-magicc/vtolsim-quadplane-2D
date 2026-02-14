@@ -6,7 +6,7 @@ from tools.old.rotations import euler_to_rotation, pitch_2d_to_3d
 from message_types.msg_state import MsgState
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 import pyqtgraph.opengl as gl
-from rrt_mavsim.tools.plane_projections import *
+from rrt_mavsim.tools.plane_projections_2 import map_2D_to_3D, map_3D_to_2D
 
 
 class DrawQuadplane():
@@ -23,13 +23,11 @@ class DrawQuadplane():
         quad_position_2D = state.pos_2D
 
         #gets the n_hat and Map Origin 3D vectors
-        self.n_hat = msg_plane.n_hat
-        self.origin_3D = msg_plane.origin_3D
+        self.msp_plane = msg_plane
 
         #with the n_hat and the origin_3D, we get the 3D position of the quadplane
         quad_position_3D = map_2D_to_3D(vec_2D=quad_position_2D,
-                                        n_hat=self.n_hat,
-                                        p0=self.origin_3D)
+                                        plane=self.msg_plane)
 
         #gets the body to inertial rotation matrix. after converting it to a 3d rotation and everything.
         R_bi = pitch_2d_to_3d(R=state.R)
@@ -312,8 +310,7 @@ class DrawQuadplane():
 
         #gets the function to convert between 2D and 3D quadplane position
         quad_position_3D = map_2D_to_3D(vec_2D=quad_position_2D,
-                                        n_hat=self.n_hat,
-                                        p0=self.origin_3D)
+                                        plane=self.msg_plane)
 
         #gets the 3D pitch rotation matrix (generated from the 2D equivalent)
         R_bi = pitch_2d_to_3d(state.R)

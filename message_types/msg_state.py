@@ -5,7 +5,7 @@ import numpy as np
 from tools.old.rotations import rotation_to_euler, rotation_to_theta_2d, theta_to_rotation_2d
 import scipy as sp
 from rrt_mavsim.message_types.msg_plane import MsgPlane
-from rrt_mavsim.tools.plane_projections import *
+from rrt_mavsim.tools.plane_projections_2 import map_2D_to_3D, map_3D_to_2D
 
 
 #NOTE: Notice that this message class is all based in a 2D environment. In a 2d world, this is where it operates. 
@@ -58,9 +58,10 @@ class MsgState:
 
         self.R = theta_to_rotation_2d(theta=theta)
 
-        #gets the position and velocities in 3D using the plane tools
-        self.pos_3D = map_2D_to_3D_planeMsg(vec_2D=self.pos_2D,
-                                            plane_msg=self.plane_msg)
-        
-        self.vel_3D = map_2D_to_3D_planeMsg(vec_2D=self.vel_2D,
-                                            plane_msg=self.plane_msg)
+        self.pos_3D = map_2D_to_3D(vec_2D=self.pos_2D,
+                                   plane=self.plane_msg)
+        self.vel_3D = map_2D_to_3D(vec_2D=self.vel_2D,
+                                   plane=self.plane_msg)
+
+        testPoint = 0
+

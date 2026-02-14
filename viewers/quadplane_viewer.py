@@ -19,8 +19,9 @@ from rrt_mavsim.viewers.draw_map import DrawMap
 from rrt_mavsim.message_types.msg_waypoints import MsgWaypoints_SFC
 from rrt_mavsim.viewers.draw_waypoints import DrawWaypoints
 from rrt_mavsim.viewers.draw_trajectory import DrawTrajectory
+from rrt_mavsim.tools.plane_projections_2 import map_2D_to_3D, map_3D_to_2D
 from scipy.spatial.transform import Rotation as R
-from rrt_mavsim.tools.plane_projections import *
+
 
 from viewers.video_writer import videoWriter
 
@@ -43,14 +44,14 @@ class QuadplaneViewer:
     def __init__(
         self,
         app,
+        worldMap: MsgWorldMap,
+        msg_plane: MsgPlane,
         dt=0.01,
         plot_period=0.2,
         ts_refresh=1.0 / 30.0,  # time interval between a plot update
         grid_on: bool = True,  # toggles whether or not the grid is on
         axes_on: bool = False,  # toggles whether or not the x and z axes stay on with the airplane to show the orientation
         alpha_axis_on: bool = False,  # toggles whether or not the axis in the direction of velocity is on (visualizing alpha)
-        worldMap: MsgWorldMap = None,
-        msg_plane: MsgPlane = None,
     ):
         # initialize Qt gui application and window
         self._dt = dt
@@ -104,17 +105,14 @@ class QuadplaneViewer:
     def drawWaypoints(
         self,
         waypoints: MsgWaypoints_SFC,
+        plane: MsgPlane,
         lineColor: np.ndarray = red,
-        n_hat: np.ndarray = None,
-        p0: np.ndarray = None,
     ):
-        DrawWaypoints(
-            waypoints=waypoints,
-            window=self.window,
-            lineColor=lineColor,
-            n_hat=n_hat,
-            p0=p0,
-        )
+        DrawWaypoints(waypoints=waypoints,
+                      window=self.window,
+                      lineColor=lineColor,
+                      R_ned_to_alt=Rot,
+                      plane=plane)
 
     def drawTrajectory(
         self,
@@ -136,9 +134,7 @@ class QuadplaneViewer:
     def update(self, state: MsgState):
         # gets the position in 3D
         pos_2D = state.pos_2D
-        n_hat = self.msg_plane.n_hat
-        mapOrigin_3D = self.msg_plane.origin_3D
-        pos_3D = map_2D_to_3D(vec_2D=pos_2D, n_hat=n_hat, p0=mapOrigin_3D)
+        pos_3D = map_2D_to_3D(vec_2D=pos_2D, plane=self.msg_plane)
         # initialize the drawing the first time update() is called
         if not self.plot_initialized:
             self.quadplane_plot = DrawQuadplane(
@@ -182,3 +178,7 @@ class QuadplaneViewer:
         blue_color = np.array([[30, 144, 255, 255]]) / 255.0
         # creates an instance of the drawtrajectory class
         self.trajectory = DrawTrajectory(points, blue_color, self.window, width=width)
+
+
+
+
