@@ -253,4 +253,28 @@ deltaArray = np.concatenate((deltaList_numerical), axis=1).T
 df5 = pd.DataFrame(deltaArray)
 df5.to_csv('takeoffModifiedCSV/deltas.csv', index=False, header=False)
 
+
+accelList, errorList, integratorList = high_level_controller.getTermsList()
+
+accelArray = np.concatenate((accelList), axis=1).T
+errorArray = np.concatenate((errorList), axis=1).T
+integratorArray = np.concatenate((integratorList), axis=1).T
+
+df6 = pd.DataFrame(accelArray)
+df6.to_csv('takeoffModifiedCSV/accelTerms.csv', index=False, header=False)
+
+df7 = pd.DataFrame(errorArray)
+df7.to_csv('takeoffModifiedCSV/errorTerms.csv', index=False, header=False)
+
+df8 = pd.DataFrame(integratorArray)
+df8.to_csv('takeoffModifiedCSV/integratorTerms.csv', index=False, header=False)
+
+
+thetaRefList = high_level_controller.getThetaRefList()
+thetaRefArray = np.concatenate((thetaRefList), axis=1).T
+
+df9 = pd.DataFrame(thetaRefArray)
+df9.to_csv('takeoffModifiedCSV/thetaRefArray.csv', index=False, header=False)
+
+
 potato = 0

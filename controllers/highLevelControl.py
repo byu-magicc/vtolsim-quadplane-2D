@@ -72,6 +72,11 @@ class highLevelControl:
 
         self.integrator_msg = MsgIntegrator()
 
+        self.accelTermList = []
+        self.errorTermList = []
+        self.integratorTermList = []
+        self.thetaRefList = []
+
     #Arguments:
     #1. trajectory reference
     #2. state of aircraft
@@ -148,6 +153,12 @@ class highLevelControl:
         #saves the current position error as delayed by 1
         self.pos_error_d1 = position_error
 
+
+        self.accelTermList.append(accelTerm_accel)
+        self.errorTermList.append(errorStateTerm_accel)
+        self.integratorTermList.append(integratorTerm_accel)
+        self.thetaRefList.append(theta_ref)
+
         #returns these two things to go to the low level control
         return F_des_b, M_des_b
 
@@ -183,3 +194,11 @@ class highLevelControl:
 
     def getIntegrator(self):
         return self.integrator_msg
+
+
+    def getTermsList(self):
+        return self.accelTermList, self.errorTermList, self.integratorTermList
+
+
+    def getThetaRefList(self):
+        return self.thetaRefList
