@@ -1,11 +1,11 @@
 #implements the class to calculate and implement the pitch optimization piece
-
 from scipy.optimize import minimize
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
 from controllers.forceCalculator import forceCalculator
 
 import parameters.pitchOptimizationParameters as PITCH
+import parameters.anaconda_parameters as CONDA
 from tools.rotations import theta_to_rotation_2D
 from tools.gamma import getGamma
 import numpy as np
@@ -15,6 +15,7 @@ class PitchOptimization:
     def __init__(self,
                  state: MsgState,
                  Ts: float,
+                 scaling: float = CONDA.pitchOptScaling,
                  p_norm_order: int = 1):
 
         #creates an instance of the force calculator
@@ -24,6 +25,8 @@ class PitchOptimization:
         self.p_norm_order = p_norm_order
 
         self.Ts = Ts
+
+        self.scaling = scaling
 
         #creates the previous theta sample. initializes it to the state's theta
         self.theta_prev = np.array([state.theta])
@@ -76,8 +79,6 @@ class PitchOptimization:
 
         #returns the theta item 0
         return theta
-   
-
 
     #creates the optimization's objective function
     def objectiveFunction(self,
@@ -136,19 +137,21 @@ class PitchOptimization:
         theta_lower = PITCH.theta_min
         theta_upper = PITCH.theta_max
 
+
+        #sets the boundary
+        boundaryChange = self.scaling*Ts*PITCH.q_max
+
         #gets the upper and lower bounds with respect to theta previous 
-        previous_lower = theta_prev_array.item(0) - Ts*PITCH.q_max
-        previous_upper = theta_prev_array.item(0) + Ts*PITCH.q_max
+        previous_lower = theta_prev_array.item(0) - boundaryChange
+        previous_upper = theta_prev_array.item(0) + boundaryChange
 
         #TODO uncomment this and bring back original
-        '''
+        #'''
         #gets the maximum of the min bounds
         minBound = max(theta_lower, previous_lower)
         #gets the minimum of the max bounds
         maxBound = min(theta_upper, previous_upper)
-        '''
-        minBound = theta_lower
-        maxBound = theta_upper
+        #'''
 
 
         #creates the bounds for the device

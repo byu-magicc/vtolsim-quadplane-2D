@@ -269,7 +269,6 @@ df7.to_csv('takeoffModifiedCSV/errorTerms.csv', index=False, header=False)
 df8 = pd.DataFrame(integratorArray)
 df8.to_csv('takeoffModifiedCSV/integratorTerms.csv', index=False, header=False)
 
-
 thetaRefList = high_level_controller.getThetaRefList()
 thetaRefArray = np.array(thetaRefList)
 
@@ -287,6 +286,5 @@ constraintArray = np.array(constraints_list)
 constraintArray = constraintArray[:,0,:]
 df11 = pd.DataFrame(constraintArray)
 df11.to_csv('takeoffModifiedCSV/constraintsArray.csv', index=False, header=False)
-
 
 potato = 0
