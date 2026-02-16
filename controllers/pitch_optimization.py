@@ -31,6 +31,11 @@ class PitchOptimization:
         #sets the minimium value to take into account a vector
         self.minValue = 0.001
 
+        self.gamma_ref_list = []
+        self.constraints_list = []
+        self.theta_list = []
+
+
     #Arguments:
     #state: the current state of the aircraft
     #state_ref: the desired trajectory of the aircraft
@@ -63,6 +68,11 @@ class PitchOptimization:
 
         #gets the theta from the theta result
         theta = (theta_result.x).item(0)
+
+
+        self.gamma_ref_list.append(gamma_ref)
+        self.theta_list.append(theta)
+        self.constraints_list.append(theta_constraints)
 
         #returns the theta item 0
         return theta
@@ -130,14 +140,25 @@ class PitchOptimization:
         previous_lower = theta_prev_array.item(0) - Ts*PITCH.q_max
         previous_upper = theta_prev_array.item(0) + Ts*PITCH.q_max
 
+        #TODO uncomment this and bring back original
+        '''
         #gets the maximum of the min bounds
         minBound = max(theta_lower, previous_lower)
         #gets the minimum of the max bounds
         maxBound = min(theta_upper, previous_upper)
+        '''
+        minBound = theta_lower
+        maxBound = theta_upper
 
 
         #creates the bounds for the device
         thetaBounds = [(minBound, maxBound)]
 
         return thetaBounds
+
+
+    def getLists(self):
+        return self.gamma_ref_list, self.constraints_list, self.theta_list
+
+
 

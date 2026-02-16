@@ -191,14 +191,18 @@ class highLevelControl:
 
         self.integrator_msg.setIntegrator(integratorValue=self.integrator_posError)
 
-
     def getIntegrator(self):
         return self.integrator_msg
-
 
     def getTermsList(self):
         return self.accelTermList, self.errorTermList, self.integratorTermList
 
-
     def getThetaRefList(self):
         return self.thetaRefList
+
+    #gets the controller lists from the 
+    def getPitchControllerLists(self):
+        gamma_ref_list, constraints_list, theta_list = self.pitchOptimizer.getLists()
+        return gamma_ref_list, constraints_list, theta_list
+
+

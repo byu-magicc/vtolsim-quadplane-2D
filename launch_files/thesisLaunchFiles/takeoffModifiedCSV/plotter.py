@@ -24,6 +24,24 @@ plt.plot(t, delta_t_thrust, label='thrust')
 plt.legend()
 plt.show()
 
+df_theta_ref = pd.read_csv('thetaRefArray.csv', header=None)
+thetaRef = df_theta_ref[0].to_numpy()
+
+plt.figure(1)
+plt.plot(t, thetaRef, label='Theta ref')
+plt.legend()
+plt.show()
+
+
+df_theta_constraints = pd.read_csv('constraintsArray.csv', header=None)
+lowerConstraints = df_theta_constraints[0].to_numpy()
+upperConstraints = df_theta_constraints[1].to_numpy()
+
+plt.figure(2)
+plt.plot(t, lowerConstraints, label='lowerConstraints')
+plt.plot(t, upperConstraints, label='upperConstraints')
+plt.legend()
+plt.show()
 
 
 testPoint = 0

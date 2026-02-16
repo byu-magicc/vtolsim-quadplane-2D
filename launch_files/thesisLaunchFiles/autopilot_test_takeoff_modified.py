@@ -271,10 +271,22 @@ df8.to_csv('takeoffModifiedCSV/integratorTerms.csv', index=False, header=False)
 
 
 thetaRefList = high_level_controller.getThetaRefList()
-thetaRefArray = np.concatenate((thetaRefList), axis=1).T
+thetaRefArray = np.array(thetaRefList)
 
 df9 = pd.DataFrame(thetaRefArray)
 df9.to_csv('takeoffModifiedCSV/thetaRefArray.csv', index=False, header=False)
+
+gamma_ref_list, constraints_list, theta_list = high_level_controller.getPitchControllerLists()
+
+gammaRefArray = np.array(gamma_ref_list)
+df10 = pd.DataFrame(gammaRefArray)
+df10.to_csv('takeoffModifiedCSV/gammaRefArray.csv', index=False, header=False)
+
+constraintArray = np.array(constraints_list)
+#reshapes it
+constraintArray = constraintArray[:,0,:]
+df11 = pd.DataFrame(constraintArray)
+df11.to_csv('takeoffModifiedCSV/constraintsArray.csv', index=False, header=False)
 
 
 potato = 0
