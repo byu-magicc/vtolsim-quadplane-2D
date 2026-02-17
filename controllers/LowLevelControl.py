@@ -161,5 +161,25 @@ def saturate_delta_e(delta_e_unsat: float,
 #input the desired thrust, get the necessary delta_t
 def inverse_motor_thrust_simplified(Thrust_des: float):
 
-    delta_t = Thrust_des / CONDA.MaxThrust
-    return delta_t
+    delta_t_unsat = Thrust_des / CONDA.MaxThrust
+    #saturates it
+    delta_t_sat = saturate_delta_t(delta_t_unsat=delta_t_unsat)
+    return delta_t_sat
+
+
+def saturate_delta_t(delta_t_unsat: float,
+                     delta_t_min: float = CONDA.delta_t_min,
+                     delta_t_max: float = CONDA.delta_t_max):
+
+    #case less than
+    if delta_t_unsat < delta_t_min:
+        delta_t_sat = delta_t_min
+    #case greater than
+    elif delta_t_unsat > delta_t_max:
+        delta_t_sat = delta_t_max
+    #case within bounds
+    else:
+        delta_t_sat = delta_t_unsat
+
+    return delta_t_sat
+

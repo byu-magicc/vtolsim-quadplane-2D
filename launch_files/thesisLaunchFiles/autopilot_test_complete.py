@@ -1,4 +1,3 @@
-
 # generates the bspline via the evtolbsplines minimum snap path gen based on start and end conditions
 # and then uses the autopilot to command to those.
 import os, sys
@@ -12,7 +11,6 @@ import matplotlib.pyplot as plt
 import parameters.simulation_parameters as SIM
 import parameters.anaconda_parameters as CONDA
 import pandas as pd
-
 
 from models.quadplaneDynamics import QuadplaneDynamics
 from viewers.view_manager import ViewManager
@@ -32,9 +30,7 @@ from rrt_mavsim.parameters.colors import *
 from rrt_mavsim.tools.plane_projections_2 import map_2D_to_3D, map_3D_to_2D
 
 from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlightPath
-
 from bsplinegenerator.bsplines import BsplineEvaluation
-
 from planners.trajectoryGenerator import trajectoryGenerator
 
 polynomialDegree = 1/3
@@ -234,11 +230,11 @@ while sim_time < end_time:
 
 timeArray = np.concatenate(time_list, axis=0)
 df_m1 = pd.DataFrame(timeArray)
-df_m1.to_csv('launch_files/thesisLaunchFiles/completePathCSV/times.csv', index=False, header=False)
+df_m1.to_csv('completePathCSV/times.csv', index=False, header=False)
 
 deltasArray = np.concatenate(deltasList, axis=0)
 df_m2 = pd.DataFrame(deltasArray)
-df_m2.to_csv('launch_files/thesisLaunchFiles/completePathCSV/deltas.csv', index=False, header=False)
+df_m2.to_csv('completePathCSV/deltas.csv', index=False, header=False)
 
 
 testPoint = 0

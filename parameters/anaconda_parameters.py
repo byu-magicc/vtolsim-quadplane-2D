@@ -156,6 +156,10 @@ thrust_forces_mixing = np.array([[0.0, 0.0, 1.0],
                                  [-1.0, -1.0, 0.0]])
 thrust_moments_mixing = np.array([[ell_f, -ell_r, 0.0]])
 
+#sets the max and min throttles
+delta_t_min = 0.0
+delta_t_max = 1.0
+
 #sets the definition of upward direction
 e_up_3D = np.array([[0.0],[0.0],[-1.0]])
 

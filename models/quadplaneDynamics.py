@@ -188,9 +188,9 @@ class QuadplaneDynamics:
 
 
         #gets the three thrusts from the simplified (constant*delta) model
-        Thrust_front = self._motor_thrust_torque_simplified(delta_t=delta.throttle_front)
-        Thrust_rear = self._motor_thrust_torque_simplified(delta_t=delta.throttle_rear)
-        Thrust_forward = self._motor_thrust_torque_simplified(delta_t=delta.throttle_thrust)
+        Thrust_front = self._motor_thrust_torque_simplified(delta_t_unsat=delta.throttle_front)
+        Thrust_rear = self._motor_thrust_torque_simplified(delta_t_unsat=delta.throttle_rear)
+        Thrust_forward = self._motor_thrust_torque_simplified(delta_t_unsat=delta.throttle_thrust)
 
         #gets the thrust vector
         thrustVector = np.array([[Thrust_front],[Thrust_rear],[Thrust_forward]])
@@ -277,15 +277,23 @@ class QuadplaneDynamics:
 
     #creates the new motor thrust and torque function, which is an over simplification,
     #but is better for our simpler modelling and figuring everything out
-    def _motor_thrust_torque_simplified(self, delta_t: float):
+    def _motor_thrust_torque_simplified(self, 
+                                        delta_t_unsat: float,
+                                        delta_t_min: float = CONDA.delta_t_min,
+                                        delta_t_max: float = CONDA.delta_t_max):
         
         #defines the saturation function for the delta
-        if delta_t > 1.0:
-            delta_t = 1.0
-        elif delta_t < 0.0:
-            delta_t = 0.0
+        #case higher than max
+        if delta_t_unsat > delta_t_max:
+            delta_t_sat = delta_t_max
+        #case lower than min
+        elif delta_t_unsat < delta_t_min:
+            delta_t_sat = delta_t_min
+        #case within valid bounds
+        else:
+            delta_t_sat = delta_t_unsat
         #returns the delta_t times the max thrust
-        return delta_t*CONDA.MaxThrust
+        return delta_t_sat*CONDA.MaxThrust
 
 def alpha_to_rotation_2D(alpha: float)->np.ndarray:
 
@@ -294,7 +302,6 @@ def alpha_to_rotation_2D(alpha: float)->np.ndarray:
 
     R_alpha = np.array([[-c_alpha, s_alpha],
                         [-s_alpha, -c_alpha]])
-
 
     return R_alpha
 
@@ -307,7 +314,4 @@ def theta_to_rotation_2D(theta: float)->np.ndarray:
     R_bodyToInertial = np.array([[c_theta, s_theta],
                                  [-s_theta, c_theta]])
     return R_bodyToInertial
-
-
-
 
