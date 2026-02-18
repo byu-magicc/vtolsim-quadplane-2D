@@ -77,6 +77,9 @@ class highLevelControl:
         self.integratorTermList = []
         self.thetaRefList = []
 
+
+        self.counter = 0
+
     #Arguments:
     #1. trajectory reference
     #2. state of aircraft
@@ -158,6 +161,11 @@ class highLevelControl:
         self.errorTermList.append(errorStateTerm_accel)
         self.integratorTermList.append(integratorTerm_accel)
         self.thetaRefList.append(theta_ref)
+
+
+        if self.counter % 10 == 0:
+
+            testPoint = 0
 
         #returns these two things to go to the low level control
         return F_des_b, M_des_b

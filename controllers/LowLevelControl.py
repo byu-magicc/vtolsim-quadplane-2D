@@ -7,6 +7,7 @@ from controllers.feedforwardControl import feedForwardControl, saturate
 from message_types.msg_delta import MsgDelta
 from message_types.msg_state import MsgState
 import parameters.anaconda_parameters as CONDA
+from controllers.forceCalculator import forceCalculator
 
 import scipy.optimize as spo
 from scipy.optimize import minimize
@@ -16,9 +17,14 @@ from copy import copy
 class LowLevelControl:
 
     def __init__(self):
+        
+        self.force_calculator = forceCalculator()
 
         pass
 
+    #Note on arguments:
+    #F_des_body is the NET force desired. That is, after taking into account lift, drag, and the rotor forces
+    #this is what we want the net force on the aircraft to be.
     def update(self,
                state: MsgState,
                F_des_body: np.ndarray,
@@ -28,9 +34,23 @@ class LowLevelControl:
         delta_e, M_thrusters_des = self.getElevatorThrusters(state=state,
                                                              M_des_body=M_des_body)
 
+        #creates the delta message with just the elevator
+        delta_onlyElevator = MsgDelta(elevator=delta_e)
+        stateArray = state.getStateArray()
+        #obtains the aerodynamic forces and moments based on the current state
+        FM_aero_body = self.force_calculator.forces_moments_aerodynamics(delta=delta_onlyElevator,
+                                                                                      Va=state.Va,
+                                                                                      alpha=state.alpha,
+                                                                                      state=stateArray)
+
+        #gets the aero forces in the body frame
+        F_aero_body = FM_aero_body[:2,:]
+        #gets the desired propeller forces and moments in the body frame
+        F_des_prop_body = F_des_body - F_aero_body
+
         #obstains the forces desired in north and down directions
-        F_des_n_body = F_des_body.item(0)
-        F_des_d_body = F_des_body.item(1)
+        F_des_n_body = F_des_prop_body.item(0)
+        F_des_d_body = F_des_prop_body.item(1)
 
         #the thrust desired is the thrust forward desired (because they're in the same exact direction)
         T_t_des = F_des_n_body

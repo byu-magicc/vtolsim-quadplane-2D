@@ -29,7 +29,7 @@ max_iter = 50
 
 
 #Pitch control parameters
-pitchControl_riseTime = 1.0
+pitchControl_riseTime = 2.0
 pitchControl_zeta = 0.707
 
 omega_n = np.pi / (2.0*pitchControl_riseTime*np.sqrt(1-pitchControl_zeta**2))

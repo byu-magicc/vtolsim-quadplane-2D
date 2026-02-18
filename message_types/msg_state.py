@@ -65,3 +65,10 @@ class MsgState:
 
         testPoint = 0
 
+    #converts from this message to the state array
+    def getStateArray(self):
+
+        stateArray = np.concatenate((self.pos_2D, self.vel_2D, np.array([[self.theta]]), np.array([[self.q]])), axis=0)
+
+        return stateArray
+
