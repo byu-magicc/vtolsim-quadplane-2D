@@ -174,7 +174,6 @@ class highLevelControl:
     def update_integral(self,
                         pos_error: np.ndarray,
                         vel_error: np.ndarray):
-        
 
         #gets the number of bins to operate on
         numVelSlots = np.size(vel_error)
@@ -214,3 +213,7 @@ class highLevelControl:
         return gamma_ref_list, constraints_list, theta_list
 
 
+    def getPitchControllerObjectiveLists(self):
+
+        objectiveList, ForcesDifferenceList = self.pitchOptimizer.getObjectiveLists()
+        return objectiveList, ForcesDifferenceList

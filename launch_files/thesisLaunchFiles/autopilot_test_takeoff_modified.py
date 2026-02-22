@@ -287,4 +287,22 @@ constraintArray = constraintArray[:,0,:]
 df11 = pd.DataFrame(constraintArray)
 df11.to_csv('takeoffModifiedCSV/constraintsArray.csv', index=False, header=False)
 
-potato = 0
+#gets the objective Lists
+objectiveList, ForcesDifferenceList = high_level_controller.getPitchControllerObjectiveLists()
+
+northForces_body = [forceTemp[0,0] for forceTemp in ForcesDifferenceList]
+
+downForces_body = [forceTemp[1,0] for forceTemp in ForcesDifferenceList]
+
+plt.figure()
+plt.plot(objectiveList)
+plt.show()
+
+plt.figure()
+plt.plot(northForces_body, label='North Body')
+plt.plot(downForces_body, label='Down Body')
+plt.legend()
+plt.show()
+
+testPoint = 0
+

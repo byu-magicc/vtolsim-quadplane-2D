@@ -1,4 +1,5 @@
 #implements the class to calculate and implement the pitch optimization piece
+from typing import overload
 from scipy.optimize import minimize
 from message_types.msg_state import MsgState
 from message_types.msg_trajectory import MsgTrajectory
@@ -9,6 +10,10 @@ import parameters.anaconda_parameters as CONDA
 from tools.rotations import theta_to_rotation_2D
 from tools.gamma import getGamma
 import numpy as np
+
+from typing import overload, Literal, Tuple
+import numpy as np
+import numpy.typing as npt
 
 class PitchOptimization:
 
@@ -37,6 +42,9 @@ class PitchOptimization:
         self.gamma_ref_list = []
         self.constraints_list = []
         self.theta_list = []
+
+        self.objectiveList = []
+        self.ForcesDifferenceList = []
 
 
     #Arguments:
@@ -72,20 +80,51 @@ class PitchOptimization:
         #gets the theta from the theta result
         theta = (theta_result.x).item(0)
 
+        #for reference, we obtain the value of the objective function for each timestep for analysis
+        objectiveReturns = self.objectiveFunction(theta_array_variable=theta_result.x,
+                                                F_des_i=F_des_i,
+                                                state=state,
+                                                gamma=gamma_ref,
+                                                returnExtra=True)
 
         self.gamma_ref_list.append(gamma_ref)
         self.theta_list.append(theta)
         self.constraints_list.append(theta_constraints)
+        objectiveTemp = objectiveReturns[0]
+        ForcesDifference = objectiveReturns[1]
+        self.objectiveList.append(objectiveTemp)
+        self.ForcesDifferenceList.append(ForcesDifference)
 
         #returns the theta item 0
         return theta
+
+
+    #defines the overloads for the objective function
+    #so I can get more variables back in an alternate definition if I so desire.
+    @overload
+    def objectiveFunction(self,
+                          theta_array_variable: np.ndarray,
+                          F_des_i: np.ndarray,
+                          state: MsgState,
+                          gamma: float,
+                          returnExtra: Literal[False]) -> float: ...
+
+    @overload
+    def objectiveFunction(self,
+                          theta_array_variable: np.ndarray,
+                          F_des_i: np.ndarray,
+                          state: MsgState,
+                          gamma: float,
+                          returnExtra: Literal[True])-> Tuple[float, np.ndarray]: ...
+
 
     #creates the optimization's objective function
     def objectiveFunction(self,
                           theta_array_variable: np.ndarray,
                           F_des_i: np.ndarray,
                           state: MsgState,
-                          gamma: float):
+                          gamma: float,
+                          returnExtra: bool = False):
         
         #gets the theta from the theta as an array
         #it is called the theta variable, because it is what we are modifying
@@ -114,10 +153,13 @@ class PitchOptimization:
         forcesDifference = F_des_b - forcesUncontrolled_body
 
         #gets the objective
-        objective = np.linalg.norm(forcesDifference, 
-                                   ord=self.p_norm_order)
-        
+        objective = float(np.linalg.norm(forcesDifference, 
+                                   ord=self.p_norm_order))
 
+        #if we want to return the forces difference and the objective function,
+        #outside of the minimization function, this applies
+        if returnExtra:
+            return objective, forcesDifference
         return objective
 
 
@@ -162,6 +204,9 @@ class PitchOptimization:
 
     def getLists(self):
         return self.gamma_ref_list, self.constraints_list, self.theta_list
+
+    def getObjectiveLists(self):
+        return self.objectiveList, self.ForcesDifferenceList
 
 
 

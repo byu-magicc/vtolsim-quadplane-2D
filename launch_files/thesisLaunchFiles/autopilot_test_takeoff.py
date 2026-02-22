@@ -93,7 +93,6 @@ bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(
 outputControlPoints_3D = map_2D_to_3D(vec_2D=controlPoints,
                                       plane=CONDA.plane_msg)
 
-
 # gets the spline object
 bspline_object_3D = BsplineEvaluation(
     control_points=outputControlPoints_3D, order=3, start_time=0.0
@@ -117,7 +116,6 @@ viewers.drawTrajectory(
     pointWidth=4.0,
 )
 
-
 # instantiates the quadplane
 quadplane = QuadplaneDynamics(
     ts=SIM.ts_simulation,
@@ -130,7 +128,6 @@ quadplane = QuadplaneDynamics(
 high_level_controller = highLevelControl(state=quadplane.true_state,
                                          plane=CONDA.plane_msg)
 
-
 # creates the low level controller
 low_level_controller = LowLevelControl()
 
@@ -139,7 +136,6 @@ trajectory_ref = MsgTrajectory()
 
 # creates the wind
 wind = np.array([[0.0], [0.0], [0.0], [0.0]])
-
 
 # gets the time spacing between time data samples
 timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)

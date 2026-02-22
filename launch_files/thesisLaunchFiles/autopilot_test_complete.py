@@ -33,9 +33,9 @@ from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlight
 from bsplinegenerator.bsplines import BsplineEvaluation
 from planners.trajectoryGenerator import trajectoryGenerator
 
-polynomialDegree = 1/3
+polynomialDegree = 1/2
 
-straightLength = 2000.0
+straightLength = 500.0
 transitionLength = 500.0
 
 north_startTakeoff = 0.0
@@ -86,16 +86,23 @@ controlPoints = gen.generateCompleteTrajectory(startConditions_takeoff=startCond
 
 
 bspline_object = BsplineEvaluation(
-    control_points=controlPoints, order=3, start_time=0.0, scale_factor=2
+    control_points=controlPoints, order=3, start_time=0.0, scale_factor=1
 )
 
 # section to get the data for the position of the bspline's samples
 bspline_sampledPositions_2D, bspline_timeData_2D = bspline_object.get_spline_data(
     num_data_points_per_interval=100
 )
+
+#TODO remove this section
+#gets the numerical derivative for my own sanity
+delta_time = bspline_timeData_2D.item(1) - bspline_timeData_2D.item(0)
+
+
 bspline_sampledVelocity_2D, _ = bspline_object.get_spline_derivative_data(
     num_data_points_per_interval=100, rth_derivative=1
 )
+
 bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(
     num_data_points_per_interval=100, rth_derivative=2
 )
@@ -105,7 +112,6 @@ bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(
 
 outputControlPoints_3D = map_2D_to_3D(vec_2D=controlPoints,
                                       plane=CONDA.plane_msg)
-
 
 # gets the spline object
 bspline_object_3D = BsplineEvaluation(
@@ -117,9 +123,8 @@ bspline_sampledPoints_3D, bspline_timeData_3D = bspline_object_3D.get_spline_dat
     num_data_points_per_interval=100
 )
 
-
 viewers = ViewManager(
-    animation=True, data=True, video=False, video_name="takeoff", msg_plane=CONDA.plane_msg
+    animation=True, data=True, pathPlot=True, video=False, video_name="takeoff", msg_plane=CONDA.plane_msg
 )
 
 viewers.drawTrajectory(
@@ -210,6 +215,27 @@ while sim_time < end_time:
     actualPosition_list.append(pos_actual.T)
     actualVelocity_list.append(vel_actual.T)
 
+
+    if sim_time > 100.0:
+
+
+        #gets the objective Lists
+        objectiveList, ForcesDifferenceList = high_level_controller.getPitchControllerObjectiveLists()
+
+        northForces_body = [forceTemp[0,0] for forceTemp in ForcesDifferenceList]
+
+        downForces_body = [forceTemp[1,0] for forceTemp in ForcesDifferenceList]
+
+        plt.figure()
+        plt.plot(objectiveList)
+        plt.show()
+
+        plt.figure()
+        plt.plot(northForces_body, label='North Body')
+        plt.plot(downForces_body, label='Down Body')
+        plt.legend()
+        plt.show()
+
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)
 
@@ -235,6 +261,9 @@ df_m1.to_csv('completePathCSV/times.csv', index=False, header=False)
 deltasArray = np.concatenate(deltasList, axis=0)
 df_m2 = pd.DataFrame(deltasArray)
 df_m2.to_csv('completePathCSV/deltas.csv', index=False, header=False)
+
+
+
 
 
 testPoint = 0
