@@ -43,3 +43,18 @@ class MsgTrajectory:
         self.pitch = pitch
         self.pitch_rate = pitch_rate
         self.pitch_accel = pitch_accel
+
+    #gets the gamma from the trajectory
+    def getGammaRef(self):
+        vel_north = (self.vel)[0,0]
+        vel_down = (self.vel)[1,0]
+
+        #make sure to rememeber the negative symbol in front of the 
+        #downward velocity, which defines gamma as going away from the down direction
+        gamma_ref = np.arctan2(-vel_down, vel_north)
+
+        return gamma_ref
+
+
+
+

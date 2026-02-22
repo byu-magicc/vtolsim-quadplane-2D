@@ -53,6 +53,11 @@ class MsgState:
 
         self.Va = Va
 
+        #gets the current flight path angle gamma
+        #that is gamma, actual
+        v_north = self.vel_2D[0,0]
+        v_down = self.vel_2D[1,0]
+        self.gamma = np.arctan2(-v_down, v_north)
 
         self.alpha = alpha
 

@@ -9,8 +9,6 @@ from message_types.msg_delta import MsgDelta
 from rrt_mavsim.message_types.msg_plane import MsgPlane
 from rrt_mavsim.tools.plane_projections_2 import getNormalBasis, map_2D_to_3D, map_3D_to_2D
 
-
-
 class QuadplaneDynamics:
     
     #please note that everything in the main state vector is given in the INTERTIAL frame of reference
@@ -44,7 +42,6 @@ class QuadplaneDynamics:
         #calls the update true state function
         self._update_true_state()
 
-
     #creates the update function for the system
     def update(self, 
                delta: MsgDelta, 
@@ -62,8 +59,6 @@ class QuadplaneDynamics:
         self._update_velocity_data(wind=wind)
         # update the message class for the true state
         self._update_true_state()
-
-
 
     def _f(self,
            state: np.ndarray,
@@ -271,9 +266,6 @@ class QuadplaneDynamics:
             self._alpha = -np.sign(wr)*np.pi/2.
         else:
             self._alpha = np.arctan2(wr, ur)
-
-        testPoint = 0
-
 
     #creates the new motor thrust and torque function, which is an over simplification,
     #but is better for our simpler modelling and figuring everything out

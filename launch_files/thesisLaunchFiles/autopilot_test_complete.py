@@ -45,8 +45,6 @@ north_endLanding = north_startLanding + transitionLength
 
 cruisingVelocity = 25.0
 
-
-
 startConditions_takeoff = [np.array([[north_startTakeoff],[0.0],[0.0]]),
                    np.array([[0.0],[0.0],[-1.0]]),
                    np.array([[0.0],[0.0],[0.0]])]
@@ -65,12 +63,10 @@ startConditions_landing = [np.array([[north_startLanding],[0.0],[-100.0]]),
                    np.array([[cruisingVelocity],[0.0],[0.0]]),
                    np.array([[0.0],[0.0],[0.0]])]
 
-
 endConditions_landing = [np.array([[north_endLanding],[0.0],[0.0]]),
                    np.array([[0.0],[0.0],[1.0]]),
                    np.array([[0.0],[0.0],[0.0]])]
 #'''
-
 
 rho = np.array([1.0,1.0,1.0])
 
@@ -82,8 +78,6 @@ controlPoints = gen.generateCompleteTrajectory(startConditions_takeoff=startCond
                                startConditions_landing=startConditions_landing,
                                endConditions_landing=endConditions_landing,
                                polynomialDegree=polynomialDegree)
-
-
 
 bspline_object = BsplineEvaluation(
     control_points=controlPoints, order=3, start_time=0.0, scale_factor=1
@@ -107,9 +101,7 @@ bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(
     num_data_points_per_interval=100, rth_derivative=2
 )
 
-
 # gets the same ouptut control points in 3D
-
 outputControlPoints_3D = map_2D_to_3D(vec_2D=controlPoints,
                                       plane=CONDA.plane_msg)
 
@@ -135,7 +127,6 @@ viewers.drawTrajectory(
     pointWidth=4.0,
 )
 
-
 # instantiates the quadplane
 quadplane = QuadplaneDynamics(
     ts=SIM.ts_simulation,
@@ -157,7 +148,6 @@ trajectory_ref = MsgTrajectory()
 # creates the wind
 wind = np.array([[0.0], [0.0], [0.0], [0.0]])
 
-
 # gets the time spacing between time data samples
 timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)
 
@@ -172,10 +162,15 @@ desiredAcceleration_list = []
 actualPosition_list = []
 actualVelocity_list = []
 
+timeArray_list = []
 time_list = []
 
 deltasList = []
 
+
+#creates the gamma_ref and the gamma current lists
+gamma_list = []
+gamma_ref_list = []
 
 # iterates through until we get to the end time
 while sim_time < end_time:
@@ -190,7 +185,6 @@ while sim_time < end_time:
     desiredPosition_list.append(pos_desired.T)
     desiredVelocity_list.append(vel_desired.T)
     desiredAcceleration_list.append(accel_desired.T)
-
 
     # updates the trajectory reference (does not do theta yet.)
     trajectory_ref.update(pos=pos_desired, vel=vel_desired, accel=accel_desired)
@@ -215,27 +209,6 @@ while sim_time < end_time:
     actualPosition_list.append(pos_actual.T)
     actualVelocity_list.append(vel_actual.T)
 
-
-    if sim_time > 100.0:
-
-
-        #gets the objective Lists
-        objectiveList, ForcesDifferenceList = high_level_controller.getPitchControllerObjectiveLists()
-
-        northForces_body = [forceTemp[0,0] for forceTemp in ForcesDifferenceList]
-
-        downForces_body = [forceTemp[1,0] for forceTemp in ForcesDifferenceList]
-
-        plt.figure()
-        plt.plot(objectiveList)
-        plt.show()
-
-        plt.figure()
-        plt.plot(northForces_body, label='North Body')
-        plt.plot(downForces_body, label='Down Body')
-        plt.legend()
-        plt.show()
-
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)
 
@@ -250,20 +223,46 @@ while sim_time < end_time:
         trajectory=trajectory_ref,
     )
 
-    time_list.append(np.array([[sim_time]]))
+    time_list.append(sim_time)
+    timeArray_list.append(np.array([[sim_time]]))
+
+    
+    #section for analysis of the theta optimizer controller
+    if sim_time > 67.0 and sim_time < 68.0:
+
+        #gets the objective Lists
+        objectiveList, ForcesDifferenceList = high_level_controller.getPitchControllerObjectiveLists()
+
+        northForces_body = [forceTemp[0,0] for forceTemp in ForcesDifferenceList]
+
+        downForces_body = [forceTemp[1,0] for forceTemp in ForcesDifferenceList]
+
+        plt.figure(0)
+        plt.plot(time_list, objectiveList)
+        plt.xlabel('time (s)')
+        plt.ylabel('Forces Sum (N)')
+        plt.title("Objective Plot")
+        plt.show()
+
+        plt.figure(1)
+        plt.plot(time_list, northForces_body, label='North Body Force Differential')
+        plt.plot(time_list, downForces_body, label='Down Body Force Differential')
+        plt.legend()
+        plt.xlabel('time (s)')
+        plt.ylabel('Force (N)')
+        plt.title("Force Differential Plot")
+        plt.show()
+
+        testPoint = 0
+
     sim_time += SIM.ts_simulation
 
-
-timeArray = np.concatenate(time_list, axis=0)
+timeArray = np.concatenate(timeArray_list, axis=0)
 df_m1 = pd.DataFrame(timeArray)
 df_m1.to_csv('completePathCSV/times.csv', index=False, header=False)
 
 deltasArray = np.concatenate(deltasList, axis=0)
 df_m2 = pd.DataFrame(deltasArray)
 df_m2.to_csv('completePathCSV/deltas.csv', index=False, header=False)
-
-
-
-
 
 testPoint = 0
