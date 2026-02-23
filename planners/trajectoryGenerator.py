@@ -6,13 +6,9 @@ from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlight
 from enum import Enum
 import matplotlib.pyplot as plt
 
-
-
 class pathTypes(str, Enum):
     LINEAR = "Linear"
     POLYNOMIAL_TAKEOFF = "Polynomial_Takeoff"
-
-
 
 class trajectoryGenerator:
 
@@ -86,6 +82,47 @@ class trajectoryGenerator:
 
         testPoint = 0
 
+
+        return controlPoints
+
+    #velocity list should be 1 shorter than the points list
+    def generateLinearConnectedTrajectory(self,
+                                          start_conditions: list[np.ndarray],
+                                          secondaryPointsList: list[np.ndarray],
+                                          velocityList: list[float]):
+
+        #generates the start control points
+        #using the start conditions, we obtain the three start control points
+        startControlPoints = self.staticPathGenerator.getLocalizedControlPoints(conditions=start_conditions,
+                                                                                d=self.d,
+                                                                                M=self.M)
+
+        final_startControlPoint = startControlPoints[:,-1:]
+        
+        numPoints = len(secondaryPointsList)
+        
+        controlPoints_list = []
+
+        for i in range(numPoints - 1):
+
+            #case we are at the start, and need to use the start control points
+            if i == 0:
+                startPoint = final_startControlPoint
+            else:
+                startPoint = secondaryPointsList[i]
+            endPoint = secondaryPointsList[i+1]
+
+            tempControlPoints = self.generateLinearInterpolation(startControlPoint=startPoint,
+                                                                 endControlPoint=endPoint,
+                                                                 velocity=velocityList[i])
+            controlPoints_list.append(tempControlPoints)
+
+        #gets the control points array
+        controlPoints = np.concatenate((controlPoints_list), axis=1)
+
+        #concatenates on the start control points
+        controlPoints = np.concatenate((startControlPoints, controlPoints), axis=1)
+        
 
         return controlPoints
 

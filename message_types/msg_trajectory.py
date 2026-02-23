@@ -44,6 +44,8 @@ class MsgTrajectory:
         self.pitch_rate = pitch_rate
         self.pitch_accel = pitch_accel
 
+        self.gamma_ref = self.getGammaRef()
+
     #gets the gamma from the trajectory
     def getGammaRef(self):
         vel_north = (self.vel)[0,0]

@@ -1,5 +1,4 @@
-# generates the bspline via the evtolbsplines minimum snap path gen based on start and end conditions
-# and then uses the autopilot to command to those.
+#generates a simple inclined line for testing the autopilot
 import os, sys
 from pathlib import Path
 
@@ -33,51 +32,88 @@ from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlight
 from bsplinegenerator.bsplines import BsplineEvaluation
 from planners.trajectoryGenerator import trajectoryGenerator
 
-polynomialDegree = 1/2
+'''
+#creates the start and end positions
+startPosition_3D = np.array([[0.0],[0.0],[0.0]])
+gamma_deg = 15
+gamma = np.radians(gamma_deg)
+#sets the north length 
+north_end = 500
+down_end = -north_end*np.tan(gamma)
+endPosition_3D = np.array([[north_end],[0.0],[down_end]])
 
-straightLength = 500.0
-transitionLength = 500.0
+#sets the velocity
+velocity = 25.0
 
-north_startTakeoff = 0.0
-north_endTakeoff = north_startTakeoff + transitionLength
-north_startLanding = north_endTakeoff + straightLength
-north_endLanding = north_startLanding + transitionLength
+#creates the start velocity 3D
+startVelocity_3D = np.array([[velocity*np.cos(gamma)],[0.0],[-velocity*np.sin(gamma)]])
 
-cruisingVelocity = 25.0
+#converts to 2D
+startPosition_2D = map_3D_to_2D(vec_3D=startPosition_3D, plane=CONDA.plane_msg)
+endPosition_2D = map_3D_to_2D(vec_3D=endPosition_3D, plane=CONDA.plane_msg)
+starvVelocity_2D = map_3D_to_2D(vec_3D=startVelocity_3D, plane=CONDA.plane_msg)
+'''
 
-startConditions_takeoff = [np.array([[north_startTakeoff],[0.0],[0.0]]),
-                   np.array([[0.0],[0.0],[-1.0]]),
-                   np.array([[0.0],[0.0],[0.0]])]
+northSeperation = 1000.0
 
-startPosition_3D = startConditions_takeoff[0]
-startVelocity_3D = startConditions_takeoff[1]
+#creates the gamma list
+gamma_deg_list = [0.0,
+                  10.0,
+                  20.0,
+                  30.0]
 
-endConditions_takeoff = [np.array([[north_endTakeoff],[0.0],[-100.0]]),
-                   np.array([[cruisingVelocity],[0.0],[0.0]]),
-                   np.array([[0.0],[0.0],[0.0]])]
-#'''
+velocity = 25.0
 
-#'''
-#Landing
-startConditions_landing = [np.array([[north_startLanding],[0.0],[-100.0]]),
-                   np.array([[cruisingVelocity],[0.0],[0.0]]),
-                   np.array([[0.0],[0.0],[0.0]])]
+gamma_list = [np.radians(gamma_deg_temp) for gamma_deg_temp in gamma_deg_list]
 
-endConditions_landing = [np.array([[north_endLanding],[0.0],[0.0]]),
-                   np.array([[0.0],[0.0],[1.0]]),
-                   np.array([[0.0],[0.0],[0.0]])]
-#'''
+positions_list = []
+velocities_list = []
+
+previous_end_down = 0.0
+
+for i, gamma in enumerate(gamma_list):
+    current_start_north = i*northSeperation
+    current_end_north = (i+1)*northSeperation
+
+    delta_down = -northSeperation*np.tan(gamma)
+
+    current_start_down = previous_end_down
+    current_end_down = current_start_down + delta_down
+
+    previous_end_down = current_end_down
+
+    #case we append the start
+    if i == 0:
+        positions_list.append(np.array([[current_start_north],[current_start_down]]))
+
+    positions_list.append(np.array([[current_end_north],[current_end_down]]))
+
+    velocities_list.append(velocity)
+    
+
+
+startPosition_2D = positions_list[0]
+#gets the start velocity
+startVelocity_2D = positions_list[1] - positions_list[0]
+startVelocity_2D = startVelocity_2D / np.linalg.norm(startVelocity_2D)
+startVelocity_2D = velocity*startVelocity_2D
+startAccel_2D = np.array([[0.0],[0.0]])
+#creates the 2D start conditions
+startConditions_2D = [startPosition_2D, startVelocity_2D, startAccel_2D]
+startPosition_3D = map_2D_to_3D(vec_2D=startPosition_2D, plane=CONDA.plane_msg)
+startVelocity_3D = map_2D_to_3D(vec_2D=startVelocity_2D, plane=CONDA.plane_msg)
+
+
+start_gamma = gamma_list[0]
 
 rho = np.array([1.0,1.0,1.0])
 
-gen = trajectoryGenerator(plane=CONDA.plane_msg,
-                          rho=rho)
+traj_gen = trajectoryGenerator(plane=CONDA.plane_msg,
+                               rho=rho)
 
-controlPoints = gen.generateCompleteTrajectory(startConditions_takeoff=startConditions_takeoff,
-                               endConditions_takeoff=endConditions_takeoff,
-                               startConditions_landing=startConditions_landing,
-                               endConditions_landing=endConditions_landing,
-                               polynomialDegree=polynomialDegree)
+controlPoints = traj_gen.generateLinearConnectedTrajectory(secondaryPointsList=positions_list,
+                                                           velocityList=velocities_list,
+                                                           start_conditions=startConditions_2D)
 
 bspline_object = BsplineEvaluation(
     control_points=controlPoints, order=3, start_time=0.0, scale_factor=1
@@ -91,7 +127,6 @@ bspline_sampledPositions_2D, bspline_timeData_2D = bspline_object.get_spline_dat
 #TODO remove this section
 #gets the numerical derivative for my own sanity
 delta_time = bspline_timeData_2D.item(1) - bspline_timeData_2D.item(0)
-
 
 bspline_sampledVelocity_2D, _ = bspline_object.get_spline_derivative_data(
     num_data_points_per_interval=100, rth_derivative=1
@@ -133,6 +168,7 @@ quadplane = QuadplaneDynamics(
     plane_msg=CONDA.plane_msg,
     pos_3D_inertial_init=startPosition_3D,
     vel_3D_inertial_init=startVelocity_3D,
+    theta0=start_gamma,
 )
 
 # creates the controller
@@ -153,6 +189,8 @@ timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)
 
 sim_time = SIM.start_time
 end_time = 220.0
+
+
 
 #section to create the lists to store the data for later analysis
 desiredPosition_list = []
@@ -236,88 +274,8 @@ while sim_time < end_time:
     alpha_list.append(quadplane.true_state.alpha)
 
 
-
-    
-    #section for analysis of the theta optimizer controller
-    if (sim_time > 67.0 and firstStopUnvisited) or (sim_time > 85.0 and secondStopUnvisited):
-
-        #gets the objective Lists
-        objectiveList, ForcesDifferenceList = high_level_controller.getPitchControllerObjectiveLists()
-
-        northForces_body = [forceTemp[0,0] for forceTemp in ForcesDifferenceList]
-
-        downForces_body = [forceTemp[1,0] for forceTemp in ForcesDifferenceList]
-
-        plt.figure(0)
-        plt.plot(time_list, objectiveList)
-        plt.xlabel('time (s)')
-        plt.ylabel('Forces Sum (N)')
-        plt.title("Objective Plot")
-        plt.show()
-
-        plt.figure(1)
-        plt.plot(time_list, northForces_body, label='North Body Force Differential')
-        plt.plot(time_list, downForces_body, label='Down Body Force Differential')
-        plt.legend()
-        plt.xlabel('time (s)')
-        plt.ylabel('Force (N)')
-        plt.title("Force Differential Plot")
-        plt.show()
-
-        #plot showing the relationship between the Force differentials from the objective function
-        #and with angle of attack.
-        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True)
-        #plots the force differential components with respect to time
-        ax1.plot(time_list, northForces_body, label='North Body Force Differential')
-        ax1.plot(time_list, downForces_body, label='Down Body Force Differential')
-        ax1.set_ylabel('Force (N)')
-        ax1.legend()
-        ax1.grid(True)
-        
-        ax2.plot(time_list, np.degrees(alpha_list), label='Angle of Attack (alpha)')
-        ax2.set_ylabel('Angle of Attack (degrees)')
-        ax2.legend()
-        ax2.grid(True)
-
-        #gets the delta components
-        delta_elevator = [tempDelta[0,0] for tempDelta in deltasList]
-        delta_front = [tempDelta[0,1] for tempDelta in deltasList]
-        delta_rear = [tempDelta[0,2] for tempDelta in deltasList]
-        delta_thrust = [tempDelta[0,3] for tempDelta in deltasList]
-
-        ax3.plot(time_list, delta_front, label='Front Throttle')
-        ax3.plot(time_list, delta_rear, label='Rear Throttle')
-        ax3.plot(time_list, delta_thrust, label='Forward Throttle')
-        ax3.set_ylabel('Throttle Deltas')
-        ax3.set_xlabel('Time (s)')
-        ax3.legend()
-        ax3.grid(True)
-
-        plt.suptitle('Force and Angle of attack')
-        plt.show()
-
-        #plots the gamma ref and gamma actual
-        plt.figure(3)
-        plt.plot(time_list, np.degrees(gamma_list), label='gamma actual')
-        plt.plot(time_list, np.degrees(gamma_ref_list), label='gamma ref')
-        plt.legend()
-        plt.show()
-
-        if not firstStopUnvisited:
-            secondStopUnvisited = False
-
-        firstStopUnvisited = False
-
-        testPoint = 0
+    testPoint = 0
 
     sim_time += SIM.ts_simulation
-
-timeArray = np.concatenate(timeArray_list, axis=0)
-df_m1 = pd.DataFrame(timeArray)
-df_m1.to_csv('completePathCSV/times.csv', index=False, header=False)
-
-deltasArray = np.concatenate(deltasList, axis=0)
-df_m2 = pd.DataFrame(deltasArray)
-df_m2.to_csv('completePathCSV/deltas.csv', index=False, header=False)
 
 testPoint = 0

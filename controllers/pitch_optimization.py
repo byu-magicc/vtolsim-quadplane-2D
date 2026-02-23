@@ -46,7 +46,6 @@ class PitchOptimization:
         self.objectiveList = []
         self.ForcesDifferenceList = []
 
-
     #Arguments:
     #state: the current state of the aircraft
     #state_ref: the desired trajectory of the aircraft
@@ -94,6 +93,9 @@ class PitchOptimization:
         ForcesDifference = objectiveReturns[1]
         self.objectiveList.append(objectiveTemp)
         self.ForcesDifferenceList.append(ForcesDifference)
+
+        #saves the current theta to the previous theta
+        self.theta_prev = np.array([theta])
 
         #returns the theta item 0
         return theta
@@ -181,7 +183,7 @@ class PitchOptimization:
 
 
         #sets the boundary
-        boundaryChange = self.scaling*Ts*PITCH.q_max
+        boundaryChange = Ts*PITCH.q_max
 
         #gets the upper and lower bounds with respect to theta previous 
         previous_lower = theta_prev_array.item(0) - boundaryChange
