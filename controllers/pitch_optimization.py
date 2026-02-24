@@ -68,6 +68,8 @@ class PitchOptimization:
         objective_args = (F_des_i,
                           state,
                           gamma_ref)
+
+
         
         #given the constraints on theta and so forth, finds the optimized theta
         theta_result = minimize(fun=self.objectiveFunction,

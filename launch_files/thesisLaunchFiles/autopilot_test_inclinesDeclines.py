@@ -33,13 +33,13 @@ from bsplinegenerator.bsplines import BsplineEvaluation
 from planners.trajectoryGenerator import trajectoryGenerator
 
 
-northSeperation = 1000.0
+northSeperation = 400.0
 
 #creates the gamma list
 gamma_deg_list = [0.0,
                   10.0,
-                  20.0,
-                  30.0]
+                  -10.0,
+                  0.0]
 
 velocity = 25.0
 
@@ -102,6 +102,9 @@ bspline_object = BsplineEvaluation(
 bspline_sampledPositions_2D, bspline_timeData_2D = bspline_object.get_spline_data(
     num_data_points_per_interval=100
 )
+
+#gets the number of sampled positions
+num_sampled_positions = bspline_sampledPositions_2D.shape[1]
 
 #TODO remove this section
 #gets the numerical derivative for my own sanity
@@ -166,10 +169,6 @@ wind = np.array([[0.0], [0.0], [0.0], [0.0]])
 # gets the time spacing between time data samples
 timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)
 
-sim_time = SIM.start_time
-end_time = 220.0
-
-
 
 #section to create the lists to store the data for later analysis
 desiredPosition_list = []
@@ -184,16 +183,24 @@ time_list = []
 deltasList = []
 
 #creates the gamma_ref and the gamma current lists
+theta_list = []
 gamma_list = []
 gamma_ref_list = []
 alpha_list = []
+
 
 #bools to help us only stop at two points for plotting
 firstStopUnvisited = True
 secondStopUnvisited = True
 
+
+counter = 0
+
+sim_time = SIM.start_time
+end_time = 220.0
+
 # iterates through until we get to the end time
-while sim_time < end_time:
+while sim_time < end_time and counter < num_sampled_positions:
     # gets the current time index
     currentTimeIndex = int(sim_time / timeSpacing)
 
@@ -229,6 +236,7 @@ while sim_time < end_time:
     actualPosition_list.append(pos_actual.T)
     actualVelocity_list.append(vel_actual.T)
 
+
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)
 
@@ -246,6 +254,8 @@ while sim_time < end_time:
     time_list.append(sim_time)
     timeArray_list.append(np.array([[sim_time]]))
 
+    theta = quadplane.true_state.theta
+    theta_list.append(theta)
     gamma = quadplane.true_state.gamma
     gamma_ref = trajectory_ref.gamma_ref
     gamma_list.append(gamma)
@@ -255,6 +265,45 @@ while sim_time < end_time:
 
     testPoint = 0
 
+    counter += 1
     sim_time += SIM.ts_simulation
+
+
+#saves the various components
+timeArray = np.concatenate((timeArray_list), axis=0)
+positionsActual_array = np.concatenate((actualPosition_list), axis=0)
+velocitiesActual_array = np.concatenate((actualVelocity_list), axis=0)
+
+positionsRef_array = np.concatenate((desiredPosition_list), axis=0)
+velocitiesRef_array = np.concatenate((desiredVelocity_list), axis=0)
+delta_array = np.concatenate((deltasList), axis=0)
+
+thetaArray = np.array(theta_list).reshape((len(theta_list),1))
+gammaArray = np.array(gamma_list).reshape((len(gamma_list),1))
+gammaRefArray = np.array(gamma_ref_list).reshape((len(gamma_ref_list),1))
+alphaArray = np.array(alpha_list).reshape((len(alpha_list),1))
+anglesArray = np.concatenate((thetaArray, gammaArray, gammaRefArray, alphaArray), axis=1)
+
+
+df1 = pd.DataFrame(timeArray)
+df1.to_csv('inclinesDeclinesCSV/times.csv', index=False, header=False)
+
+df2 = pd.DataFrame(positionsActual_array)
+df2.to_csv('inclinesDeclinesCSV/positionsActual.csv', index=False, header=False)
+
+df3 = pd.DataFrame(velocitiesActual_array)
+df3.to_csv('inclinesDeclinesCSV/velocitiesActual.csv', index=False, header=False)
+
+df4 = pd.DataFrame(positionsRef_array)
+df4.to_csv('inclinesDeclinesCSV/positionsRef.csv', index=False, header=False)
+
+df5 = pd.DataFrame(velocitiesRef_array)
+df5.to_csv('inclinesDeclinesCSV/velocitiesRef.csv', index=False, header=False)
+
+df6 = pd.DataFrame(delta_array)
+df6.to_csv('inclinesDeclinesCSV/deltas.csv', index=False, header=False)
+
+df7 = pd.DataFrame(anglesArray)
+df7.to_csv('inclinesDeclinesCSV/angles.csv', index=False, header=False)
 
 testPoint = 0
