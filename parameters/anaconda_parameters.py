@@ -176,6 +176,10 @@ fn_index = 0
 fd_index = 1
 My_index = 2
 
+
+#sets the scaling factor for pitch optimization
+pitchOptScaling = 100.0
+
 #
 #
 #
@@ -186,6 +190,3 @@ n_hat = np.array([[0.0], [-1.0], [0.0]])
 
 plane_msg = MsgPlane(n_hat=n_hat, origin_3D=mapOrigin_3D)
 
-
-#sets the scaling factor for pitch optimization
-pitchOptScaling = 100.0
