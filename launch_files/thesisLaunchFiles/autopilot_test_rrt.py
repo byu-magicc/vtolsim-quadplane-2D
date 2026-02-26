@@ -73,5 +73,13 @@ path_gen.generateSFCPaths(startPosition_3D=RRT.startPosition_3D,
                           worldMap=world_map,
                           segmentLength=SFC.segmentLength)
 
+#gets the smooth and not smooth waypoints
+waypoints_not_smooth = path_gen.getWaypointsNotSmooth()
+
+waypoints_smooth = path_gen.getWaypointsSmooth()
+
+#draws the waypoints, starting with the waypoints_not_smooth
+viewers.drawWaypoints(waypoints=waypoints_not_smooth, color='blue')
+viewers.drawWaypoints(waypoints=waypoints_smooth, color='purple')
 
 testPoint = 0
