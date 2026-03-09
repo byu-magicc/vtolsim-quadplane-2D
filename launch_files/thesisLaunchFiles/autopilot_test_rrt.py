@@ -92,22 +92,17 @@ controlPoints_notSmooth_2D = path_gen.generateControlPoints(waypoints=waypoints_
 bspline_notSmooth = BsplineEvaluation(control_points=controlPoints_notSmooth_2D,
                                       order=3,
                                       start_time=0.0)
+
 #samples the not smooth bspline
 splineSampledPoints_notSmooth_2D, timeData = bspline_notSmooth.get_spline_data(num_data_points_per_interval=100)
 
 #maps the 2D points to 3D
 controlPoints_notSmooth_3D = map_2D_to_3D(vec_2D=controlPoints_notSmooth_2D,
                                           plane=CONDA.plane_msg)
+
 splineSampledPoints_notSmooth_3D = map_2D_to_3D(vec_2D=splineSampledPoints_notSmooth_2D,
                                                 plane=CONDA.plane_msg)
 
-#draws the not smooth trajecotry
-viewers.drawTrajectory(controlPoints=controlPoints_notSmooth_3D,
-                       sampledPoints_spline=splineSampledPoints_notSmooth_3D,
-                       lineColor=np.array([[1.,1.,0.,1.],
-                                           [1.,1.,0.,1.]]),
-                       lineWidth=2.0,
-                       pointWidth=5.0)
 
 #creates the control points
 controlPoints_smooth_2D = path_gen.generateControlPoints(waypoints=waypoints_smooth,
@@ -131,6 +126,7 @@ splineAccelPoints_smooth_2D, _ = bspline_smooth.get_spline_derivative_data(
 #maps the 2D points to 3D
 controlPoints_smooth_3D = map_2D_to_3D(vec_2D=controlPoints_smooth_2D,
                                           plane=CONDA.plane_msg)
+
 splineSampledPoints_smooth_3D = map_2D_to_3D(vec_2D=splineSampledPoints_smooth_2D,
                                                 plane=CONDA.plane_msg)
 
@@ -200,7 +196,6 @@ theta_list = []
 gamma_list = []
 gamma_ref_list = []
 alpha_list = []
-
 
 #bools to help us only stop at two points for plotting
 firstStopUnvisited = True
