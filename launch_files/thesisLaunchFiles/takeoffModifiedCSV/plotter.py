@@ -62,7 +62,6 @@ df7 = pd.read_csv('ControlPoints.csv', header=None)
 controlPoints_northPosition = df7[0].to_numpy()
 controlPoints_downPosition = df7[1].to_numpy()
 
-
 #gets the positional errors
 pos_north_error = desired_northPosition - actual_northPosition
 pos_down_error = desired_downPosition - actual_downPosition
@@ -88,6 +87,44 @@ ax2.set_xlabel('time')
 ax2.set_ylabel('Velocity Error (meters/second)')
 
 plt.show()
+
+
+fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
+ax1.plot(time_array, desired_northPosition, label='North Position Desired')
+ax1.plot(time_array, actual_northPosition, label='North Position Actual')
+ax1.legend()
+ax1.grid(True)
+ax1.set_ylabel('Position (m)')
+
+ax2.plot(time_array, desired_downPosition, label='Down Position Desired')
+ax2.plot(time_array, actual_downPosition, label='Down Position Actual')
+ax2.legend()
+ax2.grid(True)
+ax2.set_ylabel('Position (m)')
+
+ax2.set_xlabel('time (s)')
+
+plt.show()
+
+
+
+fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
+ax1.plot(time_array, desired_northVel, label='North Vel Desired')
+ax1.plot(time_array, actual_northVel, label='North Vel Actual')
+ax1.legend()
+ax1.grid(True)
+ax1.set_ylabel('Vel (m/s)')
+
+ax2.plot(time_array, desired_downVel, label='Down Vel Desired')
+ax2.plot(time_array, actual_downVel, label='Down Vel Actual')
+ax2.legend()
+ax2.grid(True)
+ax2.set_ylabel('Vel (m/s)')
+
+ax2.set_xlabel('time (s)')
+
+plt.show()
+
 
 
 fig, (ax1) = plt.subplots(1,1, sharex=True)
@@ -118,6 +155,71 @@ ax3.set_title('Down Velocity Trajectory')
 ax3.set_ylabel('Down Velocity (m/s)')
 ax3.set_xlabel('North Position (meters)')
 
+plt.show()
+
+df8 = pd.read_csv('forcesActual.csv', header=None)
+northForce_actual = df8[0].to_numpy()
+downForce_actual = df8[1].to_numpy()
+
+df9 = pd.read_csv('forcesDesired.csv', header=None)
+northForce_desired = df9[0].to_numpy()
+downForce_desired = df9[1].to_numpy()
+
+northForce_error = northForce_desired - northForce_actual
+downForce_error = downForce_desired - downForce_actual
+
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True)
+ax1.plot(time_array, northForce_error, label='North Force Error')
+ax1.plot(time_array, downForce_error, label='Down Force Error')
+ax1.legend()
+ax1.grid(True)
+
+
+ax2.plot(time_array, northForce_desired, label='North Force Desired')
+ax2.plot(time_array, northForce_actual, label='North Force Actual')
+ax2.legend()
+ax2.grid(True)
+
+
+ax3.plot(time_array, downForce_desired, label='Down Force Desired')
+ax3.plot(time_array, downForce_actual, label='Down Force Actual')
+ax3.set_xlabel('Time (s)')
+ax3.legend()
+ax3.grid(True)
+
+plt.show()
+
+
+df10=pd.read_csv('angles.csv',header=None)
+
+#gets the angles
+theta = df10[0].to_numpy()
+gamma = df10[1].to_numpy()
+gamma_ref = df10[2].to_numpy()
+alpha = df10[3].to_numpy()
+
+
+fig, (ax1, ax2, ax3) = plt.subplots(3,1,sharex=True)
+
+ax1.plot(time_array, np.degrees(theta), label='Pitch (deg)')
+ax1.grid(True)
+ax1.legend()
+ax1.set_ylabel('Angle (degrees)')
+ax1.set_title('Pitch')
+
+ax2.plot(time_array, np.degrees(gamma), label='flight path angle (deg)')
+ax2.plot(time_array, np.degrees(gamma_ref), label='flight path angle ref (deg)')
+ax2.grid(True)
+ax2.legend()
+ax2.set_ylabel('Angle (degrees)')
+ax2.set_title('Flight Path Angle')
+
+ax3.plot(time_array, np.degrees(alpha), label='angle of attack (deg)')
+ax3.grid(True)
+ax3.legend()
+ax3.set_xlabel('Time (seconds)')
+ax3.set_ylabel('Angle (degrees)')
+ax3.set_title('Angle of Attack')
 
 plt.show()
 

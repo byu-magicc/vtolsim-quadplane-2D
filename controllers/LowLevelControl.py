@@ -13,14 +13,10 @@ import scipy.optimize as spo
 from scipy.optimize import minimize
 from copy import copy
 
-
 class LowLevelControl:
 
     def __init__(self):
-        
         self.force_calculator = forceCalculator()
-
-        pass
 
     #Note on arguments:
     #F_des_body is the NET force desired. That is, after taking into account lift, drag, and the rotor forces

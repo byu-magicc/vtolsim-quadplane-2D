@@ -177,12 +177,9 @@ class PitchOptimization:
         #because scipy only allows one set of bounds for each variable,
         #we have to mind the minimum max bound and the maximum min bound
         
-
-
         #gets the upper and lower bounds with respect to total theta
         theta_lower = PITCH.theta_min
         theta_upper = PITCH.theta_max
-
 
         #sets the boundary
         boundaryChange = Ts*PITCH.q_max

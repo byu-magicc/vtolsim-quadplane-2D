@@ -42,6 +42,9 @@ class QuadplaneDynamics:
         #calls the update true state function
         self._update_true_state()
 
+
+        self.forces_moments_list = []
+
     #creates the update function for the system
     def update(self, 
                delta: MsgDelta, 
@@ -101,6 +104,9 @@ class QuadplaneDynamics:
         forcesMoments_props = self.forces_moments_props(delta=delta)
 
         forces_moments = forcesMoments_gravity + forcesMoments_aero + forcesMoments_props
+
+
+        self.forces_moments_list.append(forcesMoments_aero + forcesMoments_props)
         
         return forces_moments
 
@@ -286,6 +292,10 @@ class QuadplaneDynamics:
             delta_t_sat = delta_t_unsat
         #returns the delta_t times the max thrust
         return delta_t_sat*CONDA.MaxThrust
+
+
+    def getForcesMoments_list(self):
+        return self.forces_moments_list
 
 def alpha_to_rotation_2D(alpha: float)->np.ndarray:
 

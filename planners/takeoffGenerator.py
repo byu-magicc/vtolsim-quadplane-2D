@@ -103,6 +103,8 @@ class flightPathGenerator:
             conditions=endConditions_2D, d=self.d, M=self.M
         )
 
+
+
         # gets the highest start control point (the beginning point for the parabola)
         parabolaStart = startControlPoints[:, -1:]
         # and the ending point for the parabola

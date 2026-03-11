@@ -154,9 +154,15 @@ desiredAcceleration_list = []
 
 actualPosition_list = []
 actualVelocity_list = []
+forcesDesired_list = []
 
 time_list = []
 
+#creates the gamma_ref and the gamma current lists
+theta_list = []
+gamma_list = []
+gamma_ref_list = []
+alpha_list = []
 
 #section for the deltas list
 deltasList = []
@@ -200,6 +206,16 @@ while sim_time < end_time:
     
     actualPosition_list.append(pos_actual.T)
     actualVelocity_list.append(vel_actual.T)
+
+    forcesDesired_list.append(F_des_b)
+
+    theta = quadplane.true_state.theta
+    theta_list.append(theta)
+    gamma = quadplane.true_state.gamma
+    gamma_ref = trajectory_ref.gamma_ref
+    gamma_list.append(gamma)
+    gamma_ref_list.append(gamma_ref)
+    alpha_list.append(quadplane.true_state.alpha)
 
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)
@@ -305,8 +321,21 @@ plt.plot(downForces_body, label='Down Body')
 plt.legend()
 plt.show()
 
+forces_actual = np.concatenate((quadplane.getForcesMoments_list()), axis=1).T
+forces_desired = np.concatenate((forcesDesired_list), axis=1).T
+df13 = pd.DataFrame(forces_actual)
+df13.to_csv('takeoffModifiedCSV/forcesActual.csv', index=False, header=False)
+df14 = pd.DataFrame(forces_desired)
+df14.to_csv('takeoffModifiedCSV/forcesDesired.csv', index=False, header=False)
 
+thetaArray = np.array(theta_list).reshape((len(theta_list),1))
+gammaArray = np.array(gamma_list).reshape((len(gamma_list),1))
+gammaRefArray = np.array(gamma_ref_list).reshape((len(gamma_ref_list),1))
+alphaArray = np.array(alpha_list).reshape((len(alpha_list),1))
+anglesArray = np.concatenate((thetaArray, gammaArray, gammaRefArray, alphaArray), axis=1)
 
+df7 = pd.DataFrame(anglesArray)
+df7.to_csv('takeoffModifiedCSV/angles.csv', index=False, header=False)
 
 testPoint = 0
 
