@@ -59,6 +59,7 @@ world_map = MsgWorldMap(obstacleFieldType=MapTypes.PLANAR_VTOL_SIMPLIFIED,
                         planarVTOLSimplified_Params=planar_params)
 
 
+
 viewers = ViewManager(
     world_map=world_map,
     animation=True, 
@@ -81,8 +82,7 @@ waypoints_not_smooth = path_gen.getWaypointsNotSmooth()
 waypoints_smooth = path_gen.getWaypointsSmooth()
 
 #draws the waypoints, starting with the waypoints_not_smooth
-viewers.drawWaypoints(waypoints=waypoints_not_smooth, color='blue')
-viewers.drawWaypoints(waypoints=waypoints_smooth, color='purple')
+viewers.drawWaypoints(waypoints=waypoints_smooth, color=np.array([[150/255, 0.0, 150/255, 1.0]]))
 
 #creates the control points
 controlPoints_notSmooth_2D = path_gen.generateControlPoints(waypoints=waypoints_not_smooth,
@@ -92,6 +92,8 @@ controlPoints_notSmooth_2D = path_gen.generateControlPoints(waypoints=waypoints_
 bspline_notSmooth = BsplineEvaluation(control_points=controlPoints_notSmooth_2D,
                                       order=3,
                                       start_time=0.0)
+
+
 
 #samples the not smooth bspline
 splineSampledPoints_notSmooth_2D, timeData = bspline_notSmooth.get_spline_data(num_data_points_per_interval=100)
@@ -137,6 +139,8 @@ viewers.drawTrajectory(controlPoints=controlPoints_smooth_3D,
                                            [1.,156.0/255.0,0.,1.]]),
                        lineWidth=2.0,
                        pointWidth=5.0)
+
+
 
 staticGen = staticFlightPath()
 
@@ -271,6 +275,17 @@ while sim_time < end_time and counter < num_sampled_positions:
     gamma_ref_list.append(gamma_ref)
     alpha_list.append(quadplane.true_state.alpha)
 
+    if sim_time == 0.0:
+
+        plotter = PlotMapPath(map=world_map,
+                              waypoints_smooth=waypoints_smooth,
+                              controlPoints_smooth_list=[controlPoints_smooth_2D],
+                              plane=CONDA.plane_msg)
+
+        plotter.plot(x_limits=RRT.x_limits,
+                     y_limits=RRT.y_limits,
+                     z_limits=RRT.z_limits,
+                     aspectRatio=RRT.aspect_ratio)
 
     testPoint = 0
 
@@ -295,25 +310,25 @@ anglesArray = np.concatenate((thetaArray, gammaArray, gammaRefArray, alphaArray)
 
 
 df1 = pd.DataFrame(timeArray)
-df1.to_csv('multipleInclinesCSV/times.csv', index=False, header=False)
+df1.to_csv('rrtCSV/times.csv', index=False, header=False)
 
 df2 = pd.DataFrame(positionsActual_array)
-df2.to_csv('multipleInclinesCSV/positionsActual.csv', index=False, header=False)
+df2.to_csv('rrtCSV/positionsActual.csv', index=False, header=False)
 
 df3 = pd.DataFrame(velocitiesActual_array)
-df3.to_csv('multipleInclinesCSV/velocitiesActual.csv', index=False, header=False)
+df3.to_csv('rrtCSV/velocitiesActual.csv', index=False, header=False)
 
 df4 = pd.DataFrame(positionsRef_array)
-df4.to_csv('multipleInclinesCSV/positionsRef.csv', index=False, header=False)
+df4.to_csv('rrtCSV/positionsRef.csv', index=False, header=False)
 
 df5 = pd.DataFrame(velocitiesRef_array)
-df5.to_csv('multipleInclinesCSV/velocitiesRef.csv', index=False, header=False)
+df5.to_csv('rrtCSV/velocitiesRef.csv', index=False, header=False)
 
 df6 = pd.DataFrame(delta_array)
-df6.to_csv('multipleInclinesCSV/deltas.csv', index=False, header=False)
+df6.to_csv('rrtCSV/deltas.csv', index=False, header=False)
 
 df7 = pd.DataFrame(anglesArray)
-df7.to_csv('multipleInclinesCSV/angles.csv', index=False, header=False)
+df7.to_csv('rrtCSV/angles.csv', index=False, header=False)
 
 testPoint = 0
 

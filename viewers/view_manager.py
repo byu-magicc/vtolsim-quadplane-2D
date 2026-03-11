@@ -115,7 +115,7 @@ class ViewManager:
     def drawWaypoints(
         self,
         waypoints: MsgWaypoints_SFC,
-        color="r",
+        color: np.ndarray,
     ):
         self.quadplane_view.drawWaypoints(
             waypoints=waypoints, plane=self.msg_plane, lineColor=color

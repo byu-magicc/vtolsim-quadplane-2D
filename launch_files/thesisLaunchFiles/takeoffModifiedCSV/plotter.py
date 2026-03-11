@@ -7,7 +7,7 @@ print(Path.cwd())
 
 
 df_time = pd.read_csv('times.csv', header=None)
-t = df_time[0].to_numpy()
+time_array = df_time[0].to_numpy()
 
 #deltas section
 df_deltas = pd.read_csv('deltas.csv', header=None)
@@ -17,10 +17,10 @@ delta_t_rear = df_deltas[2].to_numpy()
 delta_t_thrust = df_deltas[3].to_numpy()
 
 plt.figure(0)
-plt.plot(t, delta_e, label='elevator')
-plt.plot(t, delta_t_front, label='front')
-plt.plot(t, delta_t_rear, label='rear')
-plt.plot(t, delta_t_thrust, label='thrust')
+plt.plot(time_array, delta_e, label='elevator')
+plt.plot(time_array, delta_t_front, label='front')
+plt.plot(time_array, delta_t_rear, label='rear')
+plt.plot(time_array, delta_t_thrust, label='thrust')
 plt.legend()
 plt.show()
 
@@ -28,20 +28,97 @@ df_theta_ref = pd.read_csv('thetaRefArray.csv', header=None)
 thetaRef = df_theta_ref[0].to_numpy()
 
 plt.figure(1)
-plt.plot(t, thetaRef, label='Theta ref')
+plt.plot(time_array, thetaRef, label='Theta ref')
 plt.legend()
 plt.show()
-
 
 df_theta_constraints = pd.read_csv('constraintsArray.csv', header=None)
 lowerConstraints = df_theta_constraints[0].to_numpy()
 upperConstraints = df_theta_constraints[1].to_numpy()
 
 plt.figure(2)
-plt.plot(t, lowerConstraints, label='lowerConstraints')
-plt.plot(t, upperConstraints, label='upperConstraints')
+plt.plot(time_array, lowerConstraints, label='lowerConstraints')
+plt.plot(time_array, upperConstraints, label='upperConstraints')
 plt.legend()
 plt.show()
 
+df3 = pd.read_csv('ActualPositions.csv', header=None)
+actual_northPosition = df3[0].to_numpy()
+actual_downPosition = df3[1].to_numpy()
+
+df4 = pd.read_csv('desiredPositions.csv', header=None)
+desired_northPosition = df4[0].to_numpy()
+desired_downPosition = df4[1].to_numpy()
+
+df5 = pd.read_csv('actualVelocities.csv', header=None)
+actual_northVel = df5[0].to_numpy()
+actual_downVel = df5[1].to_numpy()
+
+df6 = pd.read_csv('desiredVelocities.csv', header=None)
+desired_northVel = df6[0].to_numpy()
+desired_downVel = df6[1].to_numpy()
+
+df7 = pd.read_csv('ControlPoints.csv', header=None)
+controlPoints_northPosition = df7[0].to_numpy()
+controlPoints_downPosition = df7[1].to_numpy()
+
+
+#gets the positional errors
+pos_north_error = desired_northPosition - actual_northPosition
+pos_down_error = desired_downPosition - actual_downPosition
+
+#gets the velocity errors
+vel_north_error = desired_northVel - actual_northVel
+vel_down_error = desired_downVel - actual_downVel
+
+fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
+ax1.plot(time_array, pos_north_error, label='North Position Error')
+ax1.plot(time_array, pos_down_error, label='Down Position Error')
+ax1.legend()
+ax1.grid(True)
+ax1.set_xlabel('time')
+ax1.set_ylabel('Position Error (meters)')
+
+
+ax2.plot(time_array, vel_north_error, label='North Velocity Error')
+ax2.plot(time_array, vel_down_error, label='Down Velocity Error')
+ax2.legend()
+ax2.grid(True)
+ax2.set_xlabel('time')
+ax2.set_ylabel('Velocity Error (meters/second)')
+
+plt.show()
+
+
+fig, (ax1) = plt.subplots(1,1, sharex=True)
+ax1.plot(desired_northPosition, -1*desired_downPosition, label='Position Trajectory')
+#ax1.scatter(controlPoints_northPosition, -1*controlPoints_downPosition, label='Control Points', linewidths=0.5)
+ax1.legend()
+ax1.set_title('Position Trajectory')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_ylabel('Altitude Position (m)')
+
+plt.show()
+
+fig, (ax1, ax2, ax3) = plt.subplots(3,1, sharex=True)
+ax1.plot(desired_northPosition, -1*desired_downPosition, label='Position Trajectory')
+ax1.legend()
+ax1.set_title('Position Trajectory')
+ax1.set_aspect('equal', adjustable='box')
+ax1.set_ylabel('Altitude Position (m)')
+
+ax2.plot(desired_northPosition, desired_northVel, label='North Velocity Trajectory')
+ax2.legend()
+ax2.set_title('North Velocity Trajectory')
+ax2.set_ylabel('North Velocity (m/s)')
+
+ax3.plot(desired_northPosition, desired_downVel, label='Down Velocity Trajectory')
+ax3.legend()
+ax3.set_title('Down Velocity Trajectory')
+ax3.set_ylabel('Down Velocity (m/s)')
+ax3.set_xlabel('North Position (meters)')
+
+
+plt.show()
 
 testPoint = 0
