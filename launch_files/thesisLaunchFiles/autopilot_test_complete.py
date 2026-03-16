@@ -152,7 +152,7 @@ wind = np.array([[0.0], [0.0], [0.0], [0.0]])
 timeSpacing = bspline_timeData_3D.item(1) - bspline_timeData_3D.item(0)
 
 sim_time = SIM.start_time
-end_time = 220.0
+end_time = 85.0
 
 #section to create the lists to store the data for later analysis
 desiredPosition_list = []
@@ -161,15 +161,18 @@ desiredAcceleration_list = []
 
 actualPosition_list = []
 actualVelocity_list = []
+forcesDesired_list = []
 
-timeArray_list = []
 time_list = []
-deltasList = []
 
 #creates the gamma_ref and the gamma current lists
+theta_list = []
 gamma_list = []
 gamma_ref_list = []
 alpha_list = []
+
+#section for the deltas list
+deltasList = []
 
 #bools to help us only stop at two points for plotting
 firstStopUnvisited = True
@@ -204,13 +207,23 @@ while sim_time < end_time:
         state=quadplane.true_state, F_des_body=F_des_b, M_des_body=M_des_b
     )
 
-    deltasList.append((delta.to_array()).T)
+    deltasList.append(delta)
 
     pos_actual = quadplane.true_state.pos_2D
     vel_actual = quadplane.true_state.vel_2D
     
     actualPosition_list.append(pos_actual.T)
     actualVelocity_list.append(vel_actual.T)
+
+    forcesDesired_list.append(F_des_b)
+
+    theta = quadplane.true_state.theta
+    theta_list.append(theta)
+    gamma = quadplane.true_state.gamma
+    gamma_ref = trajectory_ref.gamma_ref
+    gamma_list.append(gamma)
+    gamma_ref_list.append(gamma_ref)
+    alpha_list.append(quadplane.true_state.alpha)
 
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)
@@ -226,98 +239,107 @@ while sim_time < end_time:
         trajectory=trajectory_ref,
     )
 
-    time_list.append(sim_time)
-    timeArray_list.append(np.array([[sim_time]]))
 
-    gamma = quadplane.true_state.gamma
-    gamma_ref = trajectory_ref.gamma_ref
-    gamma_list.append(gamma)
-    gamma_ref_list.append(gamma_ref)
-    alpha_list.append(quadplane.true_state.alpha)
-
-
-
-    
-    #section for analysis of the theta optimizer controller
-    if (sim_time > 67.0 and firstStopUnvisited) or (sim_time > 85.0 and secondStopUnvisited):
-
-        #gets the objective Lists
-        objectiveList, ForcesDifferenceList = high_level_controller.getPitchControllerObjectiveLists()
-
-        northForces_body = [forceTemp[0,0] for forceTemp in ForcesDifferenceList]
-
-        downForces_body = [forceTemp[1,0] for forceTemp in ForcesDifferenceList]
-
-        plt.figure(0)
-        plt.plot(time_list, objectiveList)
-        plt.xlabel('time (s)')
-        plt.ylabel('Forces Sum (N)')
-        plt.title("Objective Plot")
-        plt.show()
-
-        plt.figure(1)
-        plt.plot(time_list, northForces_body, label='North Body Force Differential')
-        plt.plot(time_list, downForces_body, label='Down Body Force Differential')
-        plt.legend()
-        plt.xlabel('time (s)')
-        plt.ylabel('Force (N)')
-        plt.title("Force Differential Plot")
-        plt.show()
-
-        #plot showing the relationship between the Force differentials from the objective function
-        #and with angle of attack.
-        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True)
-        #plots the force differential components with respect to time
-        ax1.plot(time_list, northForces_body, label='North Body Force Differential')
-        ax1.plot(time_list, downForces_body, label='Down Body Force Differential')
-        ax1.set_ylabel('Force (N)')
-        ax1.legend()
-        ax1.grid(True)
-        
-        ax2.plot(time_list, np.degrees(alpha_list), label='Angle of Attack (alpha)')
-        ax2.set_ylabel('Angle of Attack (degrees)')
-        ax2.legend()
-        ax2.grid(True)
-
-        #gets the delta components
-        delta_elevator = [tempDelta[0,0] for tempDelta in deltasList]
-        delta_front = [tempDelta[0,1] for tempDelta in deltasList]
-        delta_rear = [tempDelta[0,2] for tempDelta in deltasList]
-        delta_thrust = [tempDelta[0,3] for tempDelta in deltasList]
-
-        ax3.plot(time_list, delta_front, label='Front Throttle')
-        ax3.plot(time_list, delta_rear, label='Rear Throttle')
-        ax3.plot(time_list, delta_thrust, label='Forward Throttle')
-        ax3.set_ylabel('Throttle Deltas')
-        ax3.set_xlabel('Time (s)')
-        ax3.legend()
-        ax3.grid(True)
-
-        plt.suptitle('Force and Angle of attack')
-        plt.show()
-
-        #plots the gamma ref and gamma actual
-        plt.figure(3)
-        plt.plot(time_list, np.degrees(gamma_list), label='gamma actual')
-        plt.plot(time_list, np.degrees(gamma_ref_list), label='gamma ref')
-        plt.legend()
-        plt.show()
-
-        if not firstStopUnvisited:
-            secondStopUnvisited = False
-
-        firstStopUnvisited = False
-
-        testPoint = 0
-
+    time_list.append(np.array([[sim_time]]))
     sim_time += SIM.ts_simulation
 
-timeArray = np.concatenate(timeArray_list, axis=0)
+timeArray = np.concatenate(time_list, axis=0)
 df_m1 = pd.DataFrame(timeArray)
 df_m1.to_csv('completePathCSV/times.csv', index=False, header=False)
 
-deltasArray = np.concatenate(deltasList, axis=0)
-df_m2 = pd.DataFrame(deltasArray)
-df_m2.to_csv('completePathCSV/deltas.csv', index=False, header=False)
+actualPositions = np.concatenate((actualPosition_list), axis = 0)
+df0 = pd.DataFrame(actualPositions)
+df0.to_csv('completePathCSV/ActualPositions.csv', index=False, header=False)
+
+actualVelocities = np.concatenate((actualVelocity_list), axis = 0)
+df1 = pd.DataFrame(actualVelocities)
+df1.to_csv('completePathCSV/actualVelocities.csv', index=False, header=False)
+
+desiredVelocities = np.concatenate((desiredVelocity_list), axis = 0)
+df2 = pd.DataFrame(desiredVelocities)
+df2.to_csv('completePathCSV/desiredVelocities.csv', index=False, header=False)
+
+desiredPositions = np.concatenate((desiredPosition_list), axis = 0)
+df3 = pd.DataFrame(desiredPositions)
+df3.to_csv('completePathCSV/desiredPositions.csv', index=False, header=False)
+
+desiredAccelerations = np.concatenate((desiredAcceleration_list), axis = 0)
+df4 = pd.DataFrame(desiredAccelerations)
+df4.to_csv('completePathCSV/desiredAccelerations.csv', index=False, header=False)
+
+#saves the delta
+deltaList_numerical = [tempDelta.to_array() for tempDelta in deltasList]
+deltaArray = np.concatenate((deltaList_numerical), axis=1).T
+df5 = pd.DataFrame(deltaArray)
+df5.to_csv('completePathCSV/deltas.csv', index=False, header=False)
+
+accelList, errorList, integratorList = high_level_controller.getTermsList()
+
+accelArray = np.concatenate((accelList), axis=1).T
+errorArray = np.concatenate((errorList), axis=1).T
+integratorArray = np.concatenate((integratorList), axis=1).T
+
+df6 = pd.DataFrame(accelArray)
+df6.to_csv('completePathCSV/accelTerms.csv', index=False, header=False)
+
+df7 = pd.DataFrame(errorArray)
+df7.to_csv('completePathCSV/errorTerms.csv', index=False, header=False)
+
+df8 = pd.DataFrame(integratorArray)
+df8.to_csv('completePathCSV/integratorTerms.csv', index=False, header=False)
+
+thetaRefList = high_level_controller.getThetaRefList()
+thetaRefArray = np.array(thetaRefList)
+
+df9 = pd.DataFrame(thetaRefArray)
+df9.to_csv('completePathCSV/thetaRefArray.csv', index=False, header=False)
+
+gamma_ref_list, constraints_list, theta_list = high_level_controller.getPitchControllerLists()
+
+gammaRefArray = np.array(gamma_ref_list)
+df10 = pd.DataFrame(gammaRefArray)
+df10.to_csv('completePathCSV/gammaRefArray.csv', index=False, header=False)
+
+constraintArray = np.array(constraints_list)
+#reshapes it
+constraintArray = constraintArray[:,0,:]
+df11 = pd.DataFrame(constraintArray)
+df11.to_csv('completePathCSV/constraintsArray.csv', index=False, header=False)
+
+df12 = pd.DataFrame(controlPoints.T)
+df12.to_csv('completePathCSV/ControlPoints.csv', index=False, header=False)
+
+#gets the objective Lists
+objectiveList, ForcesDifferenceList = high_level_controller.getPitchControllerObjectiveLists()
+
+northForces_body = [forceTemp[0,0] for forceTemp in ForcesDifferenceList]
+downForces_body = [forceTemp[1,0] for forceTemp in ForcesDifferenceList]
+
+plt.figure()
+plt.plot(objectiveList)
+plt.show()
+
+plt.figure()
+plt.plot(northForces_body, label='North Body')
+plt.plot(downForces_body, label='Down Body')
+plt.legend()
+plt.show()
+
+forces_actual = np.concatenate((quadplane.getForcesMoments_list()), axis=1).T
+forces_desired = np.concatenate((forcesDesired_list), axis=1).T
+df13 = pd.DataFrame(forces_actual)
+df13.to_csv('completePathCSV/forcesActual.csv', index=False, header=False)
+df14 = pd.DataFrame(forces_desired)
+df14.to_csv('completePathCSV/forcesDesired.csv', index=False, header=False)
+
+thetaArray = np.array(theta_list).reshape((len(theta_list),1))
+gammaArray = np.array(gamma_list).reshape((len(gamma_list),1))
+gammaRefArray = np.array(gamma_ref_list).reshape((len(gamma_ref_list),1))
+alphaArray = np.array(alpha_list).reshape((len(alpha_list),1))
+anglesArray = np.concatenate((thetaArray, gammaArray, gammaRefArray, alphaArray), axis=1)
+
+df7 = pd.DataFrame(anglesArray)
+df7.to_csv('completePathCSV/angles.csv', index=False, header=False)
 
 testPoint = 0
+

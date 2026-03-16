@@ -58,6 +58,10 @@ df6 = pd.read_csv('desiredVelocities.csv', header=None)
 desired_northVel = df6[0].to_numpy()
 desired_downVel = df6[1].to_numpy()
 
+df65 = pd.read_csv('desiredAccelerations.csv', header=None)
+desired_northAccel = df65[0].to_numpy()
+desired_downAccel = df65[1].to_numpy()
+
 df7 = pd.read_csv('ControlPoints.csv', header=None)
 controlPoints_northPosition = df7[0].to_numpy()
 controlPoints_downPosition = df7[1].to_numpy()
@@ -105,8 +109,6 @@ ax2.set_ylabel('Position (m)')
 ax2.set_xlabel('time (s)')
 
 plt.show()
-
-
 
 fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
 ax1.plot(time_array, desired_northVel, label='North Vel Desired')
@@ -157,6 +159,18 @@ ax3.set_xlabel('North Position (meters)')
 
 plt.show()
 
+#generates the actual versus desired positions
+fig, ax = plt.subplots(1,1,sharex=True)
+ax.plot(desired_northPosition, -1*desired_downPosition, label='Desired Trajectory')
+ax.plot(actual_northPosition, -1*actual_downPosition, label='Actual Trajectory')
+ax.set_xlabel('North Position (m)')
+ax.set_ylabel('Altitude (m)')
+ax.set_title('Actual versus desired trajectory')
+ax.set_aspect('equal', adjustable='box')
+ax.legend()
+
+plt.show()
+
 df8 = pd.read_csv('forcesActual.csv', header=None)
 northForce_actual = df8[0].to_numpy()
 downForce_actual = df8[1].to_numpy()
@@ -188,7 +202,6 @@ ax3.legend()
 ax3.grid(True)
 
 plt.show()
-
 
 df10=pd.read_csv('angles.csv',header=None)
 
@@ -222,5 +235,31 @@ ax3.set_ylabel('Angle (degrees)')
 ax3.set_title('Angle of Attack')
 
 plt.show()
+
+fig, (ax1, ax2, ax3) = plt.subplots(3,1,sharex=True)
+
+ax1.plot(time_array, desired_northPosition, label='North Position Ref')
+ax1.plot(time_array, desired_downPosition, label='Down Position Ref')
+ax1.grid(True)
+ax1.legend()
+ax1.set_ylabel('Position (m)')
+ax1.set_title('Position Ref')
+
+ax2.plot(time_array, desired_northVel, label='North Velocity Ref')
+ax2.plot(time_array, desired_downVel, label='Down Velocity Ref')
+ax2.grid(True)
+ax2.legend()
+ax2.set_ylabel('Velocity (m/s)')
+ax2.set_title('Velocity Ref')
+
+ax3.plot(time_array, desired_northAccel, label='North Acceleration Ref')
+ax3.plot(time_array, desired_downAccel, label='Down Acceleration Ref')
+ax3.grid(True)
+ax3.legend()
+ax3.set_ylabel('Acceleration (m/s^2)')
+ax3.set_title('Acceleration Ref')
+
+plt.show()
+
 
 testPoint = 0

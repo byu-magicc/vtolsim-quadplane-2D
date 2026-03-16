@@ -172,7 +172,6 @@ class PitchOptimization:
                           gamma: float,
                           theta_prev_array: np.ndarray,
                           Ts: float):
-        
 
         #because scipy only allows one set of bounds for each variable,
         #we have to mind the minimum max bound and the maximum min bound

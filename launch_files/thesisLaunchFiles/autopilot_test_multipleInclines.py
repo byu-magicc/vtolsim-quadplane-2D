@@ -188,19 +188,37 @@ gamma_list = []
 gamma_ref_list = []
 alpha_list = []
 
-
 #bools to help us only stop at two points for plotting
 firstStopUnvisited = True
 secondStopUnvisited = True
 
+sim_time = SIM.start_time
+end_time = 60.0
+
+#section to create the lists to store the data for later analysis
+desiredPosition_list = []
+desiredVelocity_list = []
+desiredAcceleration_list = []
+
+actualPosition_list = []
+actualVelocity_list = []
+forcesDesired_list = []
+
+time_list = []
+
+#creates the gamma_ref and the gamma current lists
+theta_list = []
+gamma_list = []
+gamma_ref_list = []
+alpha_list = []
+
+#section for the deltas list
+deltasList = []
 
 counter = 0
 
-sim_time = SIM.start_time
-end_time = 220.0
-
 # iterates through until we get to the end time
-while sim_time < end_time and counter < num_sampled_positions:
+while sim_time < end_time:
     # gets the current time index
     currentTimeIndex = int(sim_time / timeSpacing)
 
@@ -212,6 +230,7 @@ while sim_time < end_time and counter < num_sampled_positions:
     desiredPosition_list.append(pos_desired.T)
     desiredVelocity_list.append(vel_desired.T)
     desiredAcceleration_list.append(accel_desired.T)
+
 
     # updates the trajectory reference (does not do theta yet.)
     trajectory_ref.update(pos=pos_desired, vel=vel_desired, accel=accel_desired)
@@ -228,7 +247,7 @@ while sim_time < end_time and counter < num_sampled_positions:
         state=quadplane.true_state, F_des_body=F_des_b, M_des_body=M_des_b
     )
 
-    deltasList.append((delta.to_array()).T)
+    deltasList.append(delta)
 
     pos_actual = quadplane.true_state.pos_2D
     vel_actual = quadplane.true_state.vel_2D
@@ -236,6 +255,15 @@ while sim_time < end_time and counter < num_sampled_positions:
     actualPosition_list.append(pos_actual.T)
     actualVelocity_list.append(vel_actual.T)
 
+    forcesDesired_list.append(F_des_b)
+
+    theta = quadplane.true_state.theta
+    theta_list.append(theta)
+    gamma = quadplane.true_state.gamma
+    gamma_ref = trajectory_ref.gamma_ref
+    gamma_list.append(gamma)
+    gamma_ref_list.append(gamma_ref)
+    alpha_list.append(quadplane.true_state.alpha)
 
     # updates the quadplane dynamic simulation based on the delta input
     quadplane.update(delta=delta, wind=wind)
@@ -251,32 +279,102 @@ while sim_time < end_time and counter < num_sampled_positions:
         trajectory=trajectory_ref,
     )
 
-    time_list.append(sim_time)
-    timeArray_list.append(np.array([[sim_time]]))
+    if counter % 10 == 0:
 
-    theta = quadplane.true_state.theta
-    theta_list.append(theta)
-    gamma = quadplane.true_state.gamma
-    gamma_ref = trajectory_ref.gamma_ref
-    gamma_list.append(gamma)
-    gamma_ref_list.append(gamma_ref)
-    alpha_list.append(quadplane.true_state.alpha)
+        testPoint = 0
 
-
-    testPoint = 0
-
-    counter += 1
+    time_list.append(np.array([[sim_time]]))
     sim_time += SIM.ts_simulation
+    counter += 1
 
+timeArray = np.concatenate(time_list, axis=0)
+df_m1 = pd.DataFrame(timeArray)
+df_m1.to_csv('multipleInclinesCSV/times.csv', index=False, header=False)
 
-#saves the various components
-timeArray = np.concatenate((timeArray_list), axis=0)
-positionsActual_array = np.concatenate((actualPosition_list), axis=0)
-velocitiesActual_array = np.concatenate((actualVelocity_list), axis=0)
+actualPositions = np.concatenate((actualPosition_list), axis = 0)
+df0 = pd.DataFrame(actualPositions)
+df0.to_csv('multipleInclinesCSV/ActualPositions.csv', index=False, header=False)
 
-positionsRef_array = np.concatenate((desiredPosition_list), axis=0)
-velocitiesRef_array = np.concatenate((desiredVelocity_list), axis=0)
-delta_array = np.concatenate((deltasList), axis=0)
+actualVelocities = np.concatenate((actualVelocity_list), axis = 0)
+df1 = pd.DataFrame(actualVelocities)
+df1.to_csv('multipleInclinesCSV/actualVelocities.csv', index=False, header=False)
+
+desiredVelocities = np.concatenate((desiredVelocity_list), axis = 0)
+df2 = pd.DataFrame(desiredVelocities)
+df2.to_csv('multipleInclinesCSV/desiredVelocities.csv', index=False, header=False)
+
+desiredPositions = np.concatenate((desiredPosition_list), axis = 0)
+df3 = pd.DataFrame(desiredPositions)
+df3.to_csv('multipleInclinesCSV/desiredPositions.csv', index=False, header=False)
+
+desiredAccelerations = np.concatenate((desiredAcceleration_list), axis = 0)
+df4 = pd.DataFrame(desiredAccelerations)
+df4.to_csv('multipleInclinesCSV/desiredAccelerations.csv', index=False, header=False)
+
+#saves the delta
+deltaList_numerical = [tempDelta.to_array() for tempDelta in deltasList]
+deltaArray = np.concatenate((deltaList_numerical), axis=1).T
+df5 = pd.DataFrame(deltaArray)
+df5.to_csv('multipleInclinesCSV/deltas.csv', index=False, header=False)
+
+accelList, errorList, integratorList = high_level_controller.getTermsList()
+
+accelArray = np.concatenate((accelList), axis=1).T
+errorArray = np.concatenate((errorList), axis=1).T
+integratorArray = np.concatenate((integratorList), axis=1).T
+
+df6 = pd.DataFrame(accelArray)
+df6.to_csv('multipleInclinesCSV/accelTerms.csv', index=False, header=False)
+
+df7 = pd.DataFrame(errorArray)
+df7.to_csv('multipleInclinesCSV/errorTerms.csv', index=False, header=False)
+
+df8 = pd.DataFrame(integratorArray)
+df8.to_csv('multipleInclinesCSV/integratorTerms.csv', index=False, header=False)
+
+thetaRefList = high_level_controller.getThetaRefList()
+thetaRefArray = np.array(thetaRefList)
+
+df9 = pd.DataFrame(thetaRefArray)
+df9.to_csv('multipleInclinesCSV/thetaRefArray.csv', index=False, header=False)
+
+gamma_ref_list, constraints_list, theta_list = high_level_controller.getPitchControllerLists()
+
+gammaRefArray = np.array(gamma_ref_list)
+df10 = pd.DataFrame(gammaRefArray)
+df10.to_csv('multipleInclinesCSV/gammaRefArray.csv', index=False, header=False)
+
+constraintArray = np.array(constraints_list)
+#reshapes it
+constraintArray = constraintArray[:,0,:]
+df11 = pd.DataFrame(constraintArray)
+df11.to_csv('multipleInclinesCSV/constraintsArray.csv', index=False, header=False)
+
+df12 = pd.DataFrame(controlPoints.T)
+df12.to_csv('multipleInclinesCSV/ControlPoints.csv', index=False, header=False)
+
+#gets the objective Lists
+objectiveList, ForcesDifferenceList = high_level_controller.getPitchControllerObjectiveLists()
+
+northForces_body = [forceTemp[0,0] for forceTemp in ForcesDifferenceList]
+downForces_body = [forceTemp[1,0] for forceTemp in ForcesDifferenceList]
+
+plt.figure()
+plt.plot(objectiveList)
+plt.show()
+
+plt.figure()
+plt.plot(northForces_body, label='North Body')
+plt.plot(downForces_body, label='Down Body')
+plt.legend()
+plt.show()
+
+forces_actual = np.concatenate((quadplane.getForcesMoments_list()), axis=1).T
+forces_desired = np.concatenate((forcesDesired_list), axis=1).T
+df13 = pd.DataFrame(forces_actual)
+df13.to_csv('multipleInclinesCSV/forcesActual.csv', index=False, header=False)
+df14 = pd.DataFrame(forces_desired)
+df14.to_csv('multipleInclinesCSV/forcesDesired.csv', index=False, header=False)
 
 thetaArray = np.array(theta_list).reshape((len(theta_list),1))
 gammaArray = np.array(gamma_list).reshape((len(gamma_list),1))
@@ -284,26 +382,8 @@ gammaRefArray = np.array(gamma_ref_list).reshape((len(gamma_ref_list),1))
 alphaArray = np.array(alpha_list).reshape((len(alpha_list),1))
 anglesArray = np.concatenate((thetaArray, gammaArray, gammaRefArray, alphaArray), axis=1)
 
-
-df1 = pd.DataFrame(timeArray)
-df1.to_csv('multipleInclinesCSV/times.csv', index=False, header=False)
-
-df2 = pd.DataFrame(positionsActual_array)
-df2.to_csv('multipleInclinesCSV/positionsActual.csv', index=False, header=False)
-
-df3 = pd.DataFrame(velocitiesActual_array)
-df3.to_csv('multipleInclinesCSV/velocitiesActual.csv', index=False, header=False)
-
-df4 = pd.DataFrame(positionsRef_array)
-df4.to_csv('multipleInclinesCSV/positionsRef.csv', index=False, header=False)
-
-df5 = pd.DataFrame(velocitiesRef_array)
-df5.to_csv('multipleInclinesCSV/velocitiesRef.csv', index=False, header=False)
-
-df6 = pd.DataFrame(delta_array)
-df6.to_csv('multipleInclinesCSV/deltas.csv', index=False, header=False)
-
 df7 = pd.DataFrame(anglesArray)
 df7.to_csv('multipleInclinesCSV/angles.csv', index=False, header=False)
 
 testPoint = 0
+

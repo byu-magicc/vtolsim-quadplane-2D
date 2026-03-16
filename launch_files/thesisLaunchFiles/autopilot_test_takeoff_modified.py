@@ -35,7 +35,6 @@ from bsplinegenerator.bsplines import BsplineEvaluation
 
 from planners.takeoffGenerator import flightPathGenerator, pathTypes
 
-
 # creates the start position in 3D
 startPos_3D = np.array([[0.0], [0.0], [0.0]])
 startVel_3D = np.array([[0.0], [0.0], [-1.0]])
@@ -48,7 +47,6 @@ endVel_3D = np.array([[25.0], [0.0], [0.0]])
 endAccel_3D = np.array([[0.0], [0.0], [0.0]])
 
 endConditions_3D = [endPos_3D, endVel_3D, endAccel_3D]
-
 
 startConditions_2D = []
 endConditions_2D = []
@@ -63,7 +61,6 @@ for condition_3D in endConditions_3D:
 
 rho = np.array([1.0, 1.0, 1.0])
 
-
 takeoffGen = flightPathGenerator(plane=CONDA.plane_msg, rho=rho, numDimensions=2, d=3, M=10)
 
 controlPoints = takeoffGen.generatePath(
@@ -71,7 +68,6 @@ controlPoints = takeoffGen.generatePath(
     startConditions_3D=startConditions_3D,
     endConditions_3D=endConditions_3D
 )
-
 
 bspline_object = BsplineEvaluation(
     control_points=controlPoints, order=3, start_time=0.0, scale_factor=2
@@ -81,18 +77,18 @@ bspline_object = BsplineEvaluation(
 bspline_sampledPositions_2D, bspline_timeData_2D = bspline_object.get_spline_data(
     num_data_points_per_interval=100
 )
+
 bspline_sampledVelocity_2D, _ = bspline_object.get_spline_derivative_data(
     num_data_points_per_interval=100, rth_derivative=1
 )
+
 bspline_sampledAcceleration_2d, _ = bspline_object.get_spline_derivative_data(
     num_data_points_per_interval=100, rth_derivative=2
 )
 
-
 # gets the same ouptut control points in 3D
 outputControlPoints_3D = map_2D_to_3D(vec_2D=controlPoints,
                                       plane=CONDA.plane_msg)
-
 
 # gets the spline object
 bspline_object_3D = BsplineEvaluation(
@@ -103,7 +99,6 @@ bspline_object_3D = BsplineEvaluation(
 bspline_sampledPoints_3D, bspline_timeData_3D = bspline_object_3D.get_spline_data(
     num_data_points_per_interval=100
 )
-
 
 viewers = ViewManager(
     animation=True, data=True, video=False, video_name="takeoff", msg_plane=CONDA.plane_msg
