@@ -14,6 +14,7 @@ from controllers.feedforwardControl import feedForwardControl
 from controllers.pitch_optimization import PitchOptimization
 from tools.rotations import theta_to_rotation_2D
 import numpy as np
+from time import time
 
 
 class highLevelControl:
@@ -77,6 +78,7 @@ class highLevelControl:
         self.integratorTermList = []
         self.thetaRefList = []
 
+        self.controlTimes = []
 
         self.counter = 0
 
@@ -131,18 +133,27 @@ class highLevelControl:
         #plus gravity (negated because of the positive d vector pointing down, and we want a force to oppose that)
         #plus State-Feedback matrix K times error state 
         #TODO make gravity generalized-planable
+
+        pitchFree_startTime = time()
         accel_des_i = trajectory_ref.accel + CONDA.gravity*e_up_2D + HLC.K @ errorState + HLC.Ki @ self.integrator_msg.getIntegrator()
         F_des_i = CONDA.mass * accel_des_i
+        pitchFree_endTime = time()
+        pitchFreeTime = pitchFree_endTime - pitchFree_startTime
 
+        pitchOpt_startTime = time()
         #given the Force desired, we call the pitch optimization function to get the optimal theta
         theta_ref = self.pitchOptimizer.update(state=state,
                                                state_ref=trajectory_ref,
                                                F_des_i=F_des_i)
+        pitchOpt_endTime = time()
+        pitchOpt_time = pitchOpt_endTime - pitchOpt_startTime
         
         #gets the actual theta
         theta = state.theta
         q = state.q
 
+
+        momentControl_startTime = time()
         #with the theta desired, we call the pitch controller to get the M desired
         M_des_b = self.pitchController.update(state=theta,
                                     state_dot=q,
@@ -152,6 +163,8 @@ class highLevelControl:
         R_b2i = theta_to_rotation_2D(theta=theta)
         R_i2b = R_b2i.T
         F_des_b = R_i2b @ F_des_i
+        momentControl_endTime = time()
+        momentControl_time = momentControl_endTime - momentControl_startTime
 
         #saves the current position error as delayed by 1
         self.pos_error_d1 = position_error
@@ -166,6 +179,9 @@ class highLevelControl:
         if self.counter % 10 == 0:
 
             testPoint = 0
+
+
+        self.controlTimes.append([pitchFreeTime, pitchOpt_time, momentControl_time])
 
         #returns these two things to go to the low level control
         return F_des_b, M_des_b
@@ -217,3 +233,6 @@ class highLevelControl:
 
         objectiveList, ForcesDifferenceList = self.pitchOptimizer.getObjectiveLists()
         return objectiveList, ForcesDifferenceList
+
+    def getTimesList(self):
+        return self.controlTimes

@@ -34,6 +34,7 @@ from eVTOL_BSplines.path_generation_helpers.staticFlightPath import staticFlight
 from bsplinegenerator.bsplines import BsplineEvaluation
 
 from planners.takeoffGenerator import flightPathGenerator, pathTypes
+from time import time
 
 # creates the start position in 3D
 startPos_3D = np.array([[0.0], [0.0], [0.0]])
@@ -159,6 +160,8 @@ gamma_list = []
 gamma_ref_list = []
 alpha_list = []
 
+lowLevelTimes = []
+
 #section for the deltas list
 deltasList = []
 
@@ -189,10 +192,14 @@ while sim_time < end_time:
 
     integrator = high_level_controller.getIntegrator()
 
+    lowLevel_startTime = time()
     # calls the low level controller
     delta = low_level_controller.update(
         state=quadplane.true_state, F_des_body=F_des_b, M_des_body=M_des_b
     )
+    lowLevel_endTime = time()
+    lowLevelTime = lowLevel_endTime - lowLevel_startTime
+    lowLevelTimes.append(lowLevelTime)
 
     deltasList.append(delta)
 
@@ -233,6 +240,25 @@ while sim_time < end_time:
     time_list.append(np.array([[sim_time]]))
     sim_time += SIM.ts_simulation
     counter += 1
+
+
+
+highLevelTimes = high_level_controller.getTimesList()
+
+pitchFreeList = []
+pitchOptList = []
+momentList = []
+for timeList in highLevelTimes:
+    pitchFreeList.append(timeList[0])
+    pitchOptList.append(timeList[1])
+    momentList.append(timeList[2])
+
+pitchFreeAverage = sum(pitchFreeList)/len(pitchFreeList)
+pitchOptAverage = sum(pitchOptList)/len(pitchOptList)
+momentAverage = sum(momentList)/len(momentList)
+lowLevelAverage = sum(lowLevelTimes)/len(lowLevelTimes)
+totalTimeAverage = pitchFreeAverage + pitchOptAverage + momentAverage + lowLevelAverage
+
 
 timeArray = np.concatenate(time_list, axis=0)
 df_m1 = pd.DataFrame(timeArray)
