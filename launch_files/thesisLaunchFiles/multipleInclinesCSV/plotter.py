@@ -2,9 +2,20 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import matplotlib.font_manager as fm
 
-print(Path.cwd())
 
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
+    "mathtext.fontset": "stix",   # math matches Times style
+    "axes.titlesize": 12,
+    "axes.labelsize": 10,
+    "font.size": 10,
+    "legend.fontsize": 20,
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
+})
 
 df_time = pd.read_csv('times.csv', header=None)
 time_array = df_time[0].to_numpy()
@@ -16,14 +27,14 @@ delta_t_front = df_deltas[1].to_numpy()
 delta_t_rear = df_deltas[2].to_numpy()
 delta_t_thrust = df_deltas[3].to_numpy()
 
-plt.figure(0)
-plt.plot(time_array, delta_e, label='elevator')
-plt.plot(time_array, delta_t_front, label='front')
-plt.plot(time_array, delta_t_rear, label='rear')
-plt.plot(time_array, delta_t_thrust, label='thrust')
-plt.legend()
-plt.title('Deltas')
-plt.xlabel('Time (s)')
+fig, ax = plt.subplots(figsize=(8,4))
+ax.plot(time_array, delta_e, label='elevator')
+ax.plot(time_array, delta_t_front, label='front')
+ax.plot(time_array, delta_t_rear, label='rear')
+ax.plot(time_array, delta_t_thrust, label='thrust')
+font = fm.FontProperties(family='serif', size=14)
+ax.legend(prop=font)
+ax.set_title("Multiple Ascensions Control Inputs", fontsize=14)
 plt.show()
 
 df_theta_ref = pd.read_csv('thetaRefArray.csv', header=None)
@@ -73,20 +84,23 @@ vel_north_error = desired_northVel - actual_northVel
 vel_down_error = desired_downVel - actual_downVel
 
 fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
-ax1.plot(time_array, pos_north_error, label='North Position Error')
-ax1.plot(time_array, pos_down_error, label='Down Position Error')
-ax1.legend()
+ax1.plot(time_array, pos_north_error, label='N Pos Error')
+ax1.plot(time_array, pos_down_error, label='D Pos Error')
+font = fm.FontProperties(family='serif', size=14)
+ax1.legend(prop=font)
 ax1.grid(True)
-ax1.set_xlabel('time')
-ax1.set_ylabel('Position Error (meters)')
+ax1.set_title("Position Error", fontsize=14)
+ax1.set_ylabel('Position Error (m)', fontsize=12)
 
 
-ax2.plot(time_array, vel_north_error, label='North Velocity Error')
-ax2.plot(time_array, vel_down_error, label='Down Velocity Error')
-ax2.legend()
+ax2.plot(time_array, vel_north_error, label='N Vel Error')
+ax2.plot(time_array, vel_down_error, label='D Vel Error')
+font = fm.FontProperties(family='serif', size=14)
+ax2.legend(prop=font)
 ax2.grid(True)
-ax2.set_xlabel('time')
-ax2.set_ylabel('Velocity Error (meters/second)')
+ax2.set_title("Velocity Error", fontsize=14)
+ax2.set_xlabel('time (s)', fontsize=12)
+ax2.set_ylabel('Velocity Error (m/s)', fontsize=12)
 
 plt.show()
 
